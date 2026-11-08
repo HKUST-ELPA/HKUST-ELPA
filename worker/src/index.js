@@ -2,7 +2,7 @@
  * Deploy separately from GitHub Pages. Secrets must never enter this repository.
  */
 // Only production origins, never preview domains or wildcard subdomains.
-const ORIGINS = new Set(['https://hkust-elpa.github.io', 'https://hkust-elpa.vercel.app', 'https://futseyi.github.io']);
+const ORIGINS = new Set(['https://hkust-elpa.github.io', 'https://hkust-elpa.vercel.app']);
 const OWNER = 'HKUST-ELPA';
 const REPO = 'HKUST-ELPA-Site-Source';
 const MAX_BODY_BYTES = 24576;

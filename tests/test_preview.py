@@ -25,15 +25,12 @@ class PreviewTests(unittest.TestCase):
         (root / "_site/index.html").write_text("last good build")
 
     def test_hosts_publish_the_same_portable_static_build(self):
-        import json
         root = Path(__file__).resolve().parents[1]
-        config = json.loads((root / "vercel.json").read_text(encoding="utf-8"))
-        self.assertIsNone(config["framework"])
-        self.assertEqual(config["buildCommand"], "python3 preview.py --build-only")
-        self.assertEqual(config["outputDirectory"], "_site")
+        self.assertFalse((root / "vercel.json").exists())
         workflows = "\n".join(path.read_text(encoding="utf-8") for path in (root / ".github/workflows").glob("*.yml"))
         self.assertIn("python preview.py --build-only", workflows)
         self.assertIn("_site/ published/", workflows)
+        self.assertIn("Path('_site/vercel.json')", workflows)
 
     def test_build_only_does_not_bind_preview_port(self):
         with patch.object(preview.sys, "argv", ["preview.py", "--build-only"]), \
