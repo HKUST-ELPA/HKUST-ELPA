@@ -1,5 +1,10 @@
 # HKUST-ELPA.github.io
 
-本仓库只保存自动生成的网站文件。源码、题库、审核记录与构建工作流位于 [HKUST-ELPA-Site-Source](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source)。请在 Source 提交修改，不要直接修改本仓库。
+> [!WARNING]
+> 本仓库是自动生成的静态网站发布仓库。请勿直接修改文件：后续自动发布可能覆盖手动更改。
 
-Source Actions 构建并验证 `_site/` 后，通过仅限本仓库的 GitHub App 短期 token 发布。GitHub Pages 和 Vercel 直接部署本仓库 `main`，不重复构建。`build-info.json` 记录源码提交与构建运行。
+网站源码、题库、投稿审核、构建脚本与发布配置统一维护在 [HKUST-ELPA-Site-Source](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source)。
+
+Source 的 GitHub Actions 生成唯一的 `_site/` 静态产物，并在文件发生变化时通过 **HKUST-ELPA Site Automation** GitHub App Bot 推送到本仓库 `main`。[GitHub Pages](https://hkust-elpa.github.io/) 与 [Vercel](https://hkust-elpa.vercel.app/) 使用同一份产物，不在此重复构建。
+
+`README.md` 由 Source 的 [PUBLISHED_README.md](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/blob/main/PUBLISHED_README.md) 生成；`build-info.json` 记录对应的源码提交和构建运行，供追溯与回滚。
