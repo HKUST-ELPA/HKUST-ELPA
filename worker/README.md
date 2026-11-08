@@ -31,7 +31,7 @@ It does **not** edit website files or publish a question. Maintainer review rema
 
 ## Security posture
 
-- Exact-origin CORS for the two production domains (no wildcard/preview hosts), with the verified Turnstile hostname matched against each request's own origin and action validation;
+- Exact-origin CORS for the new Pages domain, Vercel domain, and legacy Pages domain (no wildcard/preview hosts), with the verified Turnstile hostname matched against each request's own origin and action validation;
   the Worker also checks token server-side with Siteverify. The endpoint is opt-in: `SUBMISSIONS_DISABLED` must be explicitly `false`.
 - Cloudflare native binding limits attempted POSTs to **3 per 60 seconds per IP
   at each edge location**. This is approximate/edge-local, not a globally strict quota.
@@ -78,7 +78,7 @@ configuration stays closed; verify the actual account and both origins before a 
 - Rate limiter: `SUBMISSION_LIMITER`, namespace `11247601`, 3 requests / 60 seconds per IP per Cloudflare location
 - Worker plaintext switch: production uses `SUBMISSION_MODE=public` and `SUBMISSIONS_DISABLED=false`; repository Wrangler defaults stay closed to prevent accidental public re-enablement.
 - GitHub token: configured as encrypted Worker Secret `GITHUB_TOKEN`; its value is never committed
-- GitHub repository is `HKUST-ELPA/HKUST-ELPA-Site-Source`; pending label and Actions write permission have been configured by the owner
+- At the time of this snapshot, the GitHub repository was `FuTseYi/HKUST-ELPA`. The current Source repository is `HKUST-ELPA/HKUST-ELPA-Site-Source`; the Worker Issue token must be reissued for its new organization ownership.
 - Keep development branches after merges; this repository does not manage unrelated Workers.
 
 **Recorded verification**: GitHub Pages completed Turnstile-to-Issue testing (test Issue #13, closed); previous approval-to-PR automation was separately tested (test Issue #9 / PR #10, closed; historical only, replaced by Completed closure publication). This snapshot did not complete the Vercel browser check. Re-check both origins for a new release. Never merge test questions into the bank. To stop submissions immediately, set `SUBMISSIONS_DISABLED=true` in Cloudflare.

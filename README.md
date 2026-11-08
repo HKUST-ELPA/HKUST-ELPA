@@ -4,7 +4,7 @@
 
 面向香港科技大学及香港科技大学（广州）同学的非官方 ELPA 口语备考网站。查阅考试流程、筛选题库、随机抽题、计时练习、保存笔记，也欢迎分享考试回忆与备考经验。
 
-[首页](https://hkust-elpa.vercel.app/) · [指南与经验](https://hkust-elpa.vercel.app/guide.html) · [题库练习](https://hkust-elpa.vercel.app/practice.html) · [分享经验](https://hkust-elpa.vercel.app/submit.html) · [资料来源](https://hkust-elpa.vercel.app/sources.html)
+[首页](https://hkust-elpa.github.io/) · [指南与经验](https://hkust-elpa.github.io/guide.html) · [题库练习](https://hkust-elpa.github.io/practice.html) · [分享经验](https://hkust-elpa.github.io/submit.html) · [资料来源](https://hkust-elpa.github.io/sources.html)
 
 [![Website validation](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/site-checks.yml/badge.svg)](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/site-checks.yml)
 

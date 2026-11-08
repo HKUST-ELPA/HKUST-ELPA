@@ -141,7 +141,7 @@ test('test window accepts only exact allowlisted synthetic payload',async()=>{
 
 test('both exact production origins have scoped CORS preflight, previews are rejected',async()=>{
   const x=makeWorker();
-  for (const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app']){
+ for (const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app','https://futseyi.github.io']){
     const res=await x.handler.fetch(new Request('https://hkust-elpa-submissions.futseyi.workers.dev/submit',{
       method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST'}
     }),x.env);
@@ -184,7 +184,7 @@ test('Turnstile siteverify hostname must match the exact calling origin',async()
 });
 
 test('disabled mode returns CORS-scoped response on both official sites',async()=>{
-  for(const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app']){
+ for(const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app','https://futseyi.github.io']){
     const x=makeWorker();x.env.SUBMISSIONS_DISABLED='true';
     const response=await x.handler.fetch(x.request(baseBody,{Origin:origin}),x.env);
     assert.equal(response.status,503);
