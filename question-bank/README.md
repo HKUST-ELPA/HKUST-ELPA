@@ -50,7 +50,7 @@
 - 新增题前先查是否已有同主题记录，避免重复编号；确有不同问法时保留来源和差异。
 - **完整的主问题**优先采用来源英文问法；原资料仅有中文时，可以提供忠于原意的自然英文练习表达，但必须在来源文档标明其属于整理表述，不能冒充现场逐字题卡。
 - 对残缺题干与未记录的小问不擅自补全。备考思路可另写，但不写成“题卡原文”。
-- 不含个人学号、联系方式等信息；如需修订，提交 [Issue](https://github.com/FuTseYi/HKUST-ELPA/issues) 或 Pull Request。
+- 不含个人学号、联系方式等信息；如需修订，提交 [Issue](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues) 或 Pull Request。
 
 ## 审核与持续更新
 

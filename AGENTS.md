@@ -2,6 +2,8 @@
 
 HKUST-ELPA is a student-maintained static ELPA preparation website built with HTML, CSS, JavaScript and Python. Cloudflare Workers handles submissions; GitHub Issues handles moderation.
 
+`HKUST-ELPA/HKUST-ELPA-Site-Source` owns source, issue moderation and the only production build. `HKUST-ELPA/HKUST-ELPA.github.io` contains generated output only; never edit it directly after bootstrapping. See `README.md` for the publishing flow and `PREVIEW.md` for commands.
+
 **Every line of code should justify its existence. Define once. Reuse everywhere.**
 
 ## Architecture
@@ -12,7 +14,7 @@ HKUST-ELPA is a student-maintained static ELPA preparation website built with HT
 - `assets/` holds front-end CSS, JavaScript and media; `data/` holds the public submission configuration and initial record template.
 - `question-bank/` is the canonical source for questions, appearances, reviewed advice, taxonomy and provenance. Python generates browser-ready resources.
 - `worker/` validates untrusted submissions and creates public Issues. Owner-approved Issue closures trigger the importer in `scripts/`, which updates canonical question data.
-- `.github/workflows/` runs PR-only full validation, trusted-main deployment and reviewed-Issue publication. `tests/` covers data, user interactions, publication and Worker security.
+- `.github/workflows/` runs PR-only full validation, trusted-main build and Published publication, and reviewed-Issue import. `tests/` covers data, user interactions, publication and Worker security.
 
 ## Engineering principles
 
@@ -23,14 +25,14 @@ HKUST-ELPA is a student-maintained static ELPA preparation website built with HT
 - Keep the browser record keys `elpa-q-status-v1`, `elpa-notes-v1`, `elpa-data-snapshot-v2` and `elpa-autosave`, plus the IndexedDB folder-handle storage contract, unless a tested migration is introduced.
 - Preserve historical question reports, attribution, uncertainty and student wording. Never fabricate dates, questions or translations.
 - Keep browser validation, Worker security validation and trusted importer verification at their respective trust boundaries.
-- Publish reviewed content only after the repository owner closes the Issue as completed. Imports must remain idempotent; writes must be constrained to authorized data files and must not force-push.
+- Publish reviewed content only after maintainer `FuTseYi` closes the Source Issue as completed. Imports must remain idempotent; writes must be constrained to authorized data files and must not force-push.
 - Retain support for existing v1 and v2 submissions. Keep production credentials out of the repository and public frontend.
 - Maintain a single coherent PR for substantial architectural changes and verify before merging.
 
 ## Development and verification
 
 - Local preview: `py -3 preview.py` on Windows or `python3 preview.py` elsewhere.
-- Build: `preview.py --build-only` through the matching Python launcher; publish `_site/` on Vercel and GitHub Pages.
+- Build: `preview.py --build-only` through the matching Python launcher; Source Actions copies `_site/` to Published, and Pages/Vercel serve Published `main`.
 - JavaScript/site checks: `node scripts/validate-site.cjs` and `node --test` (Node.js 22+). Publish to Pages only after the same validation and Python tests succeed.
 - Python tests: `python -m unittest discover -s tests -t . -p 'test_*.py'`.
 - Browser regression: install `requirements-dev.txt` and Chromium/WebKit, then run `python tests/browser_smoke.py`. Run full browser regression on PRs; main pushes publish through the existing validated Pages build without repeating browser tests.
@@ -39,7 +41,7 @@ HKUST-ELPA is a student-maintained static ELPA preparation website built with HT
 
 ## Documentation
 
-- `README.md`: usage, local development, architecture overview.
+- `README.md`: usage and publishing architecture. `PREVIEW.md`: development, verification and deployment operations. `PUBLISHED_README.md`: generated Published notice.
 - `question-bank/README.md`: editorial provenance and question data.
 - `question-bank/MODERATION.md`: review approval and recovery.
 - `worker/README.md`: Worker deployment, security settings and operations.

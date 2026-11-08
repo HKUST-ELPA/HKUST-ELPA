@@ -6,7 +6,7 @@
 
 [首页](https://hkust-elpa.vercel.app/) · [指南与经验](https://hkust-elpa.vercel.app/guide.html) · [题库练习](https://hkust-elpa.vercel.app/practice.html) · [分享经验](https://hkust-elpa.vercel.app/submit.html) · [资料来源](https://hkust-elpa.vercel.app/sources.html)
 
-[![Website validation](https://github.com/FuTseYi/HKUST-ELPA/actions/workflows/site-checks.yml/badge.svg)](https://github.com/FuTseYi/HKUST-ELPA/actions/workflows/site-checks.yml)
+[![Website validation](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/site-checks.yml/badge.svg)](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/site-checks.yml)
 
 ![考试指南、抽题计时、笔记进度与考题分享演示](./assets/demos/feature-grid.gif)
 
@@ -76,13 +76,13 @@ HKUST-ELPA/
 
 ## 技术与维护
 
-网站通过 Vercel 和 GitHub Pages 发布 `_site/`，无需前端框架或应用服务器。题库以 JSON 为权威来源，由 Python 构建浏览器资源。用户学习记录仅保存在本地。
+本仓库是 **Source**：维护源码、题库、Issue 审核及唯一生产构建。Source 的 Actions 测试并构建 `_site/`，再用仅限目标仓库的短期 GitHub App token 更新 [Published](https://github.com/HKUST-ELPA/HKUST-ELPA.github.io)。GitHub Pages 和 Vercel 均从 Published `main` 部署同一份静态文件，不在 Published 重建。题库以 JSON 为权威来源；用户学习记录仅保存在本地。
 
 投稿由 Cloudflare Worker 校验并创建 GitHub Issue。仓库所有者审核后，使用 **Close as completed** 触发自动入库；`submission:published` 表示数据已写入 `main`，上线状态以部署结果为准。
 
-相关文档：[题库说明](./question-bank/README.md) · [投稿审核](./question-bank/MODERATION.md) · [Worker 部署](./worker/README.md)
+相关文档：[开发与发布操作](./PREVIEW.md) · [题库说明](./question-bank/README.md) · [投稿审核](./question-bank/MODERATION.md) · [Worker 部署](./worker/README.md)
 
-欢迎通过 [Issues](https://github.com/FuTseYi/HKUST-ELPA/issues) 反馈资料问题，或通过 [Pull Requests](https://github.com/FuTseYi/HKUST-ELPA/pulls) 参与共建。投稿请勿包含姓名、学号或联系方式等个人信息。
+欢迎通过 [Issues](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues) 反馈资料问题，或通过 [Pull Requests](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/pulls) 参与共建。投稿请勿包含姓名、学号或联系方式等个人信息。
 
 **Built with Passion. Shared with Everyone.**
 

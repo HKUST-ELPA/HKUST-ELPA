@@ -1,51 +1,95 @@
-name: Deploy ELPA to GitHub Pages
+name: Build and publish ELPA site
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
-  # GITHUB_TOKEN pushes from the reviewed-Issue importer do not trigger push workflows.
   workflow_run:
     workflows: ["Publish completed ELPA submissions"]
     types: [completed]
 
-concurrency:
-  group: elpa-pages-deployment
-  cancel-in-progress: false
-
 permissions:
   contents: read
-  pages: write
-  id-token: write
+
+concurrency:
+  group: elpa-static-publish
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  publish:
     if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'issues' && github.sha != github.event.workflow_run.head_sha) }}
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # Always build trusted, current main. Never check out an untrusted workflow_run head.
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
         with:
           ref: main
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Build and validate portable site
+      - name: Test and build source
         run: |
           node scripts/validate-site.cjs
           node --test
           python -m unittest discover -s tests -t . -p 'test_*.py'
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
+          python preview.py --build-only
+      - name: Add publication metadata
+        env:
+          SOURCE_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          SOURCE_SHA="$(git rev-parse HEAD)"
+          export SOURCE_SHA
+          echo "SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_ENV"
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          Path('_site/README.md').write_bytes(Path('PUBLISHED_README.md').read_bytes())
+          Path('_site/build-info.json').write_text(json.dumps({
+              'source_repository': os.environ['GITHUB_REPOSITORY'],
+              'source_sha': os.environ['SOURCE_SHA'],
+              'source_run': os.environ['SOURCE_RUN'],
+              'built_at': datetime.now(timezone.utc).isoformat(),
+          }, indent=2) + '\n', encoding='utf-8')
+          Path('_site/vercel.json').write_text(json.dumps({
+              'git': {'deploymentEnabled': {'main': True, '*': False}}
+          }, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Create short-lived publishing token
+        id: app
+        uses: actions/create-github-app-token@v2
         with:
-          path: _site
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+          app-id: ${{ vars.PUBLISH_APP_ID }}
+          private-key: ${{ secrets.PUBLISH_APP_PRIVATE_KEY }}
+          owner: HKUST-ELPA
+          repositories: HKUST-ELPA.github.io
+          permission-contents: write
+      - name: Resolve publishing bot identity
+        id: bot
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          APP_SLUG: ${{ steps.app.outputs.app-slug }}
+        run: echo "id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          repository: HKUST-ELPA/HKUST-ELPA.github.io
+          ref: main
+          token: ${{ steps.app.outputs.token }}
+          path: published
+          persist-credentials: true
+      - name: Replace static output and publish
+        run: |
+          if [ -z "$(rsync -rcni --delete --exclude='.git/' --exclude='build-info.json' _site/ published/)" ]; then
+            echo 'Website output unchanged; skipping metadata-only publish'
+            exit 0
+          fi
+          rsync -a --delete --exclude='.git/' _site/ published/
+          cd published
+          git config user.name '${{ steps.app.outputs.app-slug }}[bot]'
+          git config user.email '${{ steps.bot.outputs.id }}+${{ steps.app.outputs.app-slug }}[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m "Publish source ${SOURCE_SHA}"
+          git push origin HEAD:main

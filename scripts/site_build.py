@@ -63,7 +63,7 @@ def render_guide_advice(page, root):
         issue = entry.get("issueNumber")
         if type(issue) is int and issue > 0:
             source_html = ('<a class="elpa-advice-source" target="_blank" rel="noopener noreferrer" '
-                           'href="https://github.com/FuTseYi/HKUST-ELPA/issues/' + str(issue)
+                           'href="https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/' + str(issue)
                            + '">原始分享 / Original post</a>')
         cards.append(
             '<article class="elpa-advice-card" data-track="' + escape(track, quote=True)

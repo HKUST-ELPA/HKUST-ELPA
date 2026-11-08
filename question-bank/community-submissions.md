@@ -4,7 +4,7 @@
 
 ## 2026 Fall · 南沙校区 · 常规 ELPA · Issue #57
 
-考试阶段：mid ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：D-5 ｜ [投稿记录](https://github.com/FuTseYi/HKUST-ELPA/issues/57)
+考试阶段：mid ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：D-5 ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/57)
 
 **English**
 
@@ -24,7 +24,7 @@
 
 ## 2026 Fall · 南沙校区 · 常规 ELPA · Issue #58
 
-考试阶段：mid ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：C-10 ｜ [投稿记录](https://github.com/FuTseYi/HKUST-ELPA/issues/58)
+考试阶段：mid ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：C-10 ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/58)
 
 **English**
 

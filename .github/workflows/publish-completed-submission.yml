@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Ensure publication labels exist
         run: |
-          gh label create submission:published --color 0e8a16 --description "已写入 main（不代表已上线）" --force
+          gh label create submission:published --color 0e8a16 --description "已写入 Source main（不代表已上线）" --force
           gh label create submission:failed --color b60205 --description "自动入库失败，请查看 Actions" --force
       - uses: actions/checkout@v7
         if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && github.event.sender.login == 'FuTseYi' }}

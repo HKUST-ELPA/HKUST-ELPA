@@ -76,7 +76,7 @@ const doc=fs.existsSync(docPath)?fs.readFileSync(docPath,'utf8'):
 const quote=(text)=>String(text).split(/\r?\n/).map(s=>'> '+s.replace(/</g,'&lt;')).join('\n');
 const source=data.source==='firsthand'?'本人亲历':'同学转述';
 const addition='\n## '+data.term+' · Issue #'+number+
-  '\n\n来源：'+source+' ｜ [投稿记录](https://github.com/FuTseYi/HKUST-ELPA/issues/'+number+')'+
+  '\n\n来源：'+source+' ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/'+number+')'+
   ' ｜ 练习题 ID：D-'+num+
   '\n\n**主问题（回忆版）**\n\n'+quote(data.question)+
   '\n\n**提示小问**\n\n'+(data.subquestions?quote(data.subquestions):'> 未记录')+'\n';
@@ -155,7 +155,7 @@ function runV2(event){
    writeJSON(adviceFile,existing);
    appendDoc(adviceDoc,'# 社区备考经验 · Reviewed Preparation Advice\n\n> 考生分享，不代表学校官方建议。\n',
      '\n## '+id+' · '+quote(text(data.title))+'\n\n考试方式：'+(data.track||'regular')+' ｜ 阶段：'+data.phase+
-     ' ｜ 标签：'+data.tags.join(', ')+' ｜ [原始投稿](https://github.com/FuTseYi/HKUST-ELPA/issues/'+number+')'+
+     ' ｜ 标签：'+data.tags.join(', ')+' ｜ [原始投稿](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/'+number+')'+
      '\n\n'+quote(text(data.body))+'\n');
    output('added');return;
  }
@@ -209,7 +209,7 @@ function runV2(event){
    ' ｜ 来源：'+(data.source==='firsthand'?'本人亲历':'同学转述')+
    ' ｜ 类型：'+(data.intent==='supplement'?'补充题目内容':'新增考试经历')+
    ' ｜ 关联题目：'+id+
-   ' ｜ [投稿记录](https://github.com/FuTseYi/HKUST-ELPA/issues/'+number+')'+
+   ' ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/'+number+')'+
    '\n\n**English**\n\n'+quote(text(data.main.en))+
    '\n\n**中文**\n\n'+quote(text(data.main.cn))+
    '\n\n**相似问法**\n\n'+(data.alternatives?.length?data.alternatives.map(s=>

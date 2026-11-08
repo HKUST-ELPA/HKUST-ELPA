@@ -4,21 +4,22 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
+const workflow=fs.readFileSync(path.join(root,'.github/workflows/deploy-pages.yml'),'utf8');
 
-test('Pages and Vercel publish the identical Python-built site directory',()=>{
-  const workflow=fs.readFileSync(path.join(root,'.github/workflows/deploy-pages.yml'),'utf8');
-  const vercel=JSON.parse(fs.readFileSync(path.join(root,'vercel.json'),'utf8'));
-  assert.equal(vercel.outputDirectory,'_site');
+test('Source builds once and publishes only generated output to Published with a scoped App token',()=>{
   assert.match(workflow,/node scripts\/validate-site\.cjs/);
   assert.match(workflow,/node --test/);
   assert.match(workflow,/python -m unittest discover/);
-  assert.match(fs.readFileSync(path.join(root,'scripts/validate-site.cjs'),'utf8'),/preview\.py','--build-only'/);
-  assert.match(workflow,/actions\/upload-pages-artifact@v5[\s\S]*?path: _site/);
-  assert.match(workflow,/actions\/deploy-pages@v5/);
+  assert.match(workflow,/python preview\.py --build-only/);
+  assert.match(workflow,/actions\/create-github-app-token@v2/);
+  assert.match(workflow,/repositories: HKUST-ELPA\.github\.io/);
+  assert.match(workflow,/permission-contents: write/);
+  assert.match(workflow,/repository: HKUST-ELPA\/HKUST-ELPA\.github\.io/);
+  assert.match(workflow,/rsync -a --delete --exclude='\.git\/' _site\/ published\//);
+  assert.match(workflow,/Path\('_site\/build-info\.json'\)/);
 });
 
-test('Pages handles manual pushes and owner-approved Issue publication without unsafe checkout',()=>{
-  const workflow=fs.readFileSync(path.join(root,'.github/workflows/deploy-pages.yml'),'utf8');
+test('reviewed Issue imports and direct Source pushes both trigger a trusted-main build',()=>{
   assert.match(workflow,/push:\n    branches: \[main\]/);
   assert.match(workflow,/workflow_dispatch:/);
   assert.match(workflow,/workflow_run:\n    workflows: \["Publish completed ELPA submissions"\]/);
@@ -27,18 +28,11 @@ test('Pages handles manual pushes and owner-approved Issue publication without u
   assert.match(workflow,/github\.sha != github\.event\.workflow_run\.head_sha/);
   assert.match(workflow,/ref: main/);
   assert.doesNotMatch(workflow,/ref:\s*\$\{\{.*head_sha/);
-  assert.match(workflow,/pages: write\n  id-token: write/);
-  assert.match(workflow,/group: elpa-pages-deployment/);
 });
 
-test('full browser regression runs only on PRs; main pushes deploy the validated site',()=>{
+test('full browser regression remains on PRs',()=>{
   const checks=fs.readFileSync(path.join(root,'.github/workflows/site-checks.yml'),'utf8');
-  const deployment=fs.readFileSync(path.join(root,'.github/workflows/deploy-pages.yml'),'utf8');
   assert.ok(checks.includes('pull_request:'));
   assert.ok(!checks.includes('  push:'));
   assert.ok(checks.includes('python tests/browser_smoke.py'));
-  assert.ok(checks.includes('python -m playwright install --with-deps chromium webkit'));
-  assert.ok(deployment.includes('branches: [main]'));
-  assert.ok(deployment.includes('node scripts/validate-site.cjs'));
-  assert.ok(deployment.includes('actions/deploy-pages@v5'));
 });

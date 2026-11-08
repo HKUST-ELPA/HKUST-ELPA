@@ -1,17 +1,17 @@
 # HKUST-ELPA submission Worker
 
 This **separate Cloudflare Worker** accepts anonymous submissions from
-`https://futseyi.github.io/HKUST-ELPA/submit.html` and
+`https://hkust-elpa.github.io/submit.html` and
 `https://hkust-elpa.vercel.app/submit.html`; both create a **public GitHub Issue**.
 It does **not** edit website files or publish a question. Maintainer review remains mandatory.
 
 ## Deploy prerequisites
 
-1. Create a Cloudflare Turnstile widget restricted to **futseyi.github.io** and **hkust-elpa.vercel.app**.
+1. Configure the Cloudflare Turnstile widget for **hkust-elpa.github.io** and **hkust-elpa.vercel.app**.
    Use action **elpa_submit**. Keep the Site Key public; keep the Secret private.
 2. Use a Wrangler version supporting this `wrangler.jsonc` and the native Rate Limiting binding. The configured `namespace_id` is `11247601`; it is account-specific and must be checked when deploying to another account.
 3. Create the GitHub label `submission:pending` in the repository before accepting submissions. The pending label is applied by the Worker when it creates an Issue. Then create a **fine-grained GitHub PAT** restricted to only
-   `FuTseYi/HKUST-ELPA`, permission **Issues: Read and write**;
+   `HKUST-ELPA/HKUST-ELPA-Site-Source`, permission **Issues: Read and write**;
    no Contents/Actions/Admin permissions. Store it only as a Worker secret.
 4. Configure Worker secrets via:
    - `npx wrangler secret put TURNSTILE_SECRET`
@@ -72,13 +72,13 @@ These notes record a previous deployment, not a live status check. The checked-i
 configuration stays closed; verify the actual account and both origins before a release.
 
 - Worker: `hkust-elpa-submissions`; endpoint `https://hkust-elpa-submissions.futseyi.workers.dev/submit`
-- Turnstile widget: `HKUST-ELPA Question Submissions`, hostnames `futseyi.github.io` and `hkust-elpa.vercel.app`
+- Turnstile widget: `HKUST-ELPA Question Submissions`, historical hostnames `futseyi.github.io` and `hkust-elpa.vercel.app`; add `hkust-elpa.github.io` for the new Published site.
 - Public Turnstile Site Key: `0x4AAAAAAFWWsgbB9w0JPOm3` (safe to publish)
 - Turnstile secret: bound to Worker (never commit or paste it)
 - Rate limiter: `SUBMISSION_LIMITER`, namespace `11247601`, 3 requests / 60 seconds per IP per Cloudflare location
 - Worker plaintext switch: production uses `SUBMISSION_MODE=public` and `SUBMISSIONS_DISABLED=false`; repository Wrangler defaults stay closed to prevent accidental public re-enablement.
 - GitHub token: configured as encrypted Worker Secret `GITHUB_TOKEN`; its value is never committed
-- GitHub repository is `FuTseYi/HKUST-ELPA`; pending label and Actions write permission have been configured by the owner
+- GitHub repository is `HKUST-ELPA/HKUST-ELPA-Site-Source`; pending label and Actions write permission have been configured by the owner
 - Keep development branches after merges; this repository does not manage unrelated Workers.
 
 **Recorded verification**: GitHub Pages completed Turnstile-to-Issue testing (test Issue #13, closed); previous approval-to-PR automation was separately tested (test Issue #9 / PR #10, closed; historical only, replaced by Completed closure publication). This snapshot did not complete the Vercel browser check. Re-check both origins for a new release. Never merge test questions into the bank. To stop submissions immediately, set `SUBMISSIONS_DISABLED=true` in Cloudflare.

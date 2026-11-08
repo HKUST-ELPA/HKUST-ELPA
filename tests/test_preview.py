@@ -33,7 +33,7 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(config["outputDirectory"], "_site")
         workflows = "\n".join(path.read_text(encoding="utf-8") for path in (root / ".github/workflows").glob("*.yml"))
         self.assertIn("python preview.py --build-only", workflows)
-        self.assertIn("path: _site", workflows)
+        self.assertIn("_site/ published/", workflows)
 
     def test_build_only_does_not_bind_preview_port(self):
         with patch.object(preview.sys, "argv", ["preview.py", "--build-only"]), \

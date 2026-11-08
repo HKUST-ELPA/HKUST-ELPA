@@ -11,7 +11,7 @@ const baseBody={
   subquestions:'a. Why does it matter?\nb. Give an example.',source:'firsthand',
   turnstileToken:'mock-valid-token'
 };
-function makeWorker({siteverify={success:true,hostname:'futseyi.github.io',action:'elpa_submit'},rateLimit={success:true}}={}){
+function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'},rateLimit={success:true}}={}){
   const calls=[];
   const sandbox={
     module:{exports:{}},
@@ -21,8 +21,8 @@ function makeWorker({siteverify={success:true,hostname:'futseyi.github.io',actio
     fetch:async(url,init)=>{
       calls.push({url:String(url),init});
       if(String(url).includes('/siteverify'))return Response.json(siteverify);
-      if(String(url).includes('/repos/FuTseYi/HKUST-ELPA/issues'))
-        return Response.json({html_url:'https://github.com/FuTseYi/HKUST-ELPA/issues/123'},{status:201});
+      if(String(url).includes('/repos/HKUST-ELPA/HKUST-ELPA-Site-Source/issues'))
+        return Response.json({html_url:'https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/123'},{status:201});
       throw Error('Unexpected network request to '+url);
     }
   };
@@ -35,7 +35,7 @@ function makeWorker({siteverify={success:true,hostname:'futseyi.github.io',actio
     SUBMISSION_LIMITER:{limit:async()=>rateLimit}
   };
   const request=(body,headers={})=>new Request('https://hkust-elpa-submissions.futseyi.workers.dev/submit',{
-    method:'POST',headers:{Origin:'https://futseyi.github.io','Content-Type':'application/json',...headers},
+    method:'POST',headers:{Origin:'https://hkust-elpa.github.io','Content-Type':'application/json',...headers},
     body:JSON.stringify(body)
   });
   return {handler:sandbox.module.exports,env,calls,request};
@@ -67,10 +67,10 @@ test('valid long Chinese submission accepted and queued only as an issue',async(
  assert.ok(!payload.body.includes('CF-Connecting-IP'));
 });
 test('invalid Turnstile hostname/action cannot create GitHub issue',async()=>{
- for(const bad of [null,{success:1,hostname:'futseyi.github.io',action:'elpa_submit'},
+ for(const bad of [null,{success:1,hostname:'hkust-elpa.github.io',action:'elpa_submit'},
                   {success:true,hostname:'attacker.example',action:'elpa_submit'},
-                  {success:true,hostname:'futseyi.github.io',action:'other'},
-                  {success:false,hostname:'futseyi.github.io',action:'elpa_submit'}]){
+                  {success:true,hostname:'hkust-elpa.github.io',action:'other'},
+                  {success:false,hostname:'hkust-elpa.github.io',action:'elpa_submit'}]){
   const x=makeWorker({siteverify:bad});
   const r=await x.handler.fetch(x.request(baseBody),x.env);
   assert.equal(r.status,403);
@@ -141,7 +141,7 @@ test('test window accepts only exact allowlisted synthetic payload',async()=>{
 
 test('both exact production origins have scoped CORS preflight, previews are rejected',async()=>{
   const x=makeWorker();
-  for (const origin of ['https://futseyi.github.io','https://hkust-elpa.vercel.app']){
+  for (const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app']){
     const res=await x.handler.fetch(new Request('https://hkust-elpa-submissions.futseyi.workers.dev/submit',{
       method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST'}
     }),x.env);
@@ -171,8 +171,8 @@ test('Vercel-origin successful submission uses matching hostname from siteverify
 
 test('Turnstile siteverify hostname must match the exact calling origin',async()=>{
   for (const [origin,verifiedHostname] of [
-    ['https://futseyi.github.io','hkust-elpa.vercel.app'],
-    ['https://hkust-elpa.vercel.app','futseyi.github.io'],
+    ['https://hkust-elpa.github.io','hkust-elpa.vercel.app'],
+    ['https://hkust-elpa.vercel.app','hkust-elpa.github.io'],
     ['https://hkust-elpa.vercel.app','preview.vercel.app']
   ]){
     const x=makeWorker({siteverify:{success:true,hostname:verifiedHostname,action:'elpa_submit'}});
@@ -184,7 +184,7 @@ test('Turnstile siteverify hostname must match the exact calling origin',async()
 });
 
 test('disabled mode returns CORS-scoped response on both official sites',async()=>{
-  for(const origin of ['https://futseyi.github.io','https://hkust-elpa.vercel.app']){
+  for(const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app']){
     const x=makeWorker();x.env.SUBMISSIONS_DISABLED='true';
     const response=await x.handler.fetch(x.request(baseBody,{Origin:origin}),x.env);
     assert.equal(response.status,503);
@@ -311,7 +311,7 @@ test('Vercel v2 verified hostname must match the caller',async()=>{
   const yes=makeWorker({siteverify:{success:true,hostname:'hkust-elpa.vercel.app',action:'elpa_submit'}});
   const accepted=await yes.handler.fetch(yes.request(v2Question,{Origin:'https://hkust-elpa.vercel.app'}),yes.env);
   assert.equal(accepted.status,201);
-  const no=makeWorker({siteverify:{success:true,hostname:'futseyi.github.io',action:'elpa_submit'}});
+  const no=makeWorker({siteverify:{success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'}});
   const rejected=await no.handler.fetch(no.request(v2Question,{Origin:'https://hkust-elpa.vercel.app'}),no.env);
   assert.equal(rejected.status,403);
   assert.equal(no.calls.length,1);
