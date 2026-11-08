@@ -4,6 +4,8 @@
 
 [![Website validation](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/site-checks.yml/badge.svg)](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/site-checks.yml) [![Build and publish](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/deploy-pages.yml)
 
+![考试指南、抽题计时、笔记进度与考题分享演示](./assets/demos/feature-grid.gif)
+
 ## 网站功能
 
 - **考试指南**：查阅常规 ELPA、Fast Track 流程与学生备考经验。
