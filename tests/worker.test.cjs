@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const {webcrypto,generateKeyPairSync}=require('node:crypto');
+const {webcrypto,generateKeyPairSync,createPublicKey,verify}=require('node:crypto');
 const pem=generateKeyPairSync('rsa',{modulusLength:2048}).privateKey.export({format:'pem',type:'pkcs8'});
 const source=fs.readFileSync(path.resolve(__dirname,'../worker/src/index.js'),'utf8');
 const question=(campus='gz',track='regular')=>({
@@ -47,6 +47,10 @@ test('v3 question with advice uses scoped App token and one issue',async()=>{
  const embedded=JSON.parse(Buffer.from(issue.body.match(/elpa-submission-v3:([\w-]+)/)[1],'base64url'));
  assert.equal(embedded.campus,'hk');assert.equal(embedded.track,'fast-track');
  assert.equal(embedded.version,3);assert.equal(Object.hasOwn(embedded,'turnstileToken'),false);
+ const envelope=issue.body.match(/elpa-submission-v3:([\\w-]+):([\\w-]+)/);
+ assert.ok(envelope,'Signed payload is present');
+ assert.equal(verify('sha256',Buffer.from('HKUST-ELPA:submission:v3:'+envelope[1]),
+   createPublicKey(pem),Buffer.from(envelope[2],'base64url')),true);
 });
 test('four campus domains produce canonical v3 markers',async()=>{
  for(const campus of ['gz','hk'])for(const track of ['regular','fast-track']){
