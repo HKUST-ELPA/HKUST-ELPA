@@ -10,19 +10,35 @@ concurrency:
   queue: max
 
 permissions:
-  contents: write
-  issues: write
+  contents: read
 
 jobs:
   review:
     if: ${{ !github.event.issue.pull_request && startsWith(github.event.issue.title, '[ELPA 投稿]') }}
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
+      - name: Create source publication installation token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.PUBLISH_APP_ID }}
+          private-key: ${{ secrets.PUBLISH_APP_PRIVATE_KEY }}
+          owner: HKUST-ELPA
+          repositories: HKUST-ELPA-Site-Source
+          permission-contents: write
+          permission-issues: write
+      - name: Resolve App bot identity
+        id: bot
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          APP_SLUG: ${{ steps.app.outputs.app-slug }}
+        run: echo "id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
       - name: Ensure publication labels exist
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
         run: |
           gh label create submission:published --color 0e8a16 --description "已写入 Source main（不代表已上线）" --force
           gh label create submission:failed --color b60205 --description "自动入库失败，请查看 Actions" --force
@@ -31,6 +47,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ steps.app.outputs.token }}
           persist-credentials: true
       - uses: actions/setup-node@v7
         if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && github.event.sender.login == 'FuTseYi' }}
@@ -44,10 +61,13 @@ jobs:
         id: publish
         if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && github.event.sender.login == 'FuTseYi' }}
         shell: bash
+        env:
+          APP_SLUG: ${{ steps.app.outputs.app-slug }}
+          BOT_ID: ${{ steps.bot.outputs.id }}
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${BOT_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
           python -m pip install -r requirements.txt
           for attempt in 1 2 3; do
             git fetch origin main
@@ -76,6 +96,7 @@ jobs:
       - name: Synchronize Issue labels
         if: ${{ success() }}
         env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
           EVENT_ACTION: ${{ github.event.action }}
           CLOSE_REASON: ${{ github.event.issue.state_reason }}
           CLOSING_USER: ${{ github.event.sender.login }}
@@ -105,6 +126,7 @@ jobs:
       - name: Report publication failure
         if: ${{ failure() && steps.publish.outcome == 'failure' }}
         env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           # Never replace an already-published status with a failure label.
