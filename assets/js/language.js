@@ -34,7 +34,7 @@
       if (!saved[name] || current !== saved[name].rendered)
         saved[name] = {source: current, rendered: current};
       const desired = root.dataset.lang === 'en'
-        ? english[saved[name].source] || saved[name].source : saved[name].source;
+        ? element.getAttribute('data-i18n-'+name) || english[saved[name].source] || saved[name].source : saved[name].source;
       saved[name].rendered = desired;
       attributes.set(element, saved);
       if (current !== desired) element.setAttribute(name, desired);
