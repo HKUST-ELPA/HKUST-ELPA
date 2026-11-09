@@ -47,7 +47,7 @@ function selectAdviceTrack(track){
     select.value='';
   }
   document.getElementById('guideAdviceFilters').hidden=entries.length===0;
-  document.getElementById('guideAdviceShare').href='./submit.html?kind=advice&track='+track;
+  document.getElementById('guideAdviceShare').href='./submit.html?experience=1&track='+track;
   renderCommunityAdvice();
 }
 function renderCommunityAdvice(){
