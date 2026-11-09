@@ -49,7 +49,7 @@ test('structured notifications use verified v3 domain, include reviewer instruct
  const msg=render(payload,{team:'gz-regular-reviewers',issueUrl:'https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/93'});
  for(const part of ['@HKUST-ELPA/gz-regular-reviewers','广州校区','常规 ELPA','2026 Fall','What is your research?','你的研究是什么？','Follow-up','Preparation tips','Practice daily','Close as completed','Close as not planned','elpa-review-notification-v1'])
    assert.ok(msg.includes(part),part);
- assert.match(workflow,/gh issue comment "\\$ISSUE_NUMBER" --body-file/);
+ assert.match(workflow,/gh issue comment "\$ISSUE_NUMBER" --body-file/);
  assert.match(workflow,/grep -Fq '<!-- elpa-review-notification-v1 -->'/);
  assert.match(workflow,/ELPA_APP_PRIVATE_KEY/);
  assert.doesNotMatch(msg,/Review queue:/);
