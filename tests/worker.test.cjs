@@ -145,7 +145,7 @@ test('payload size cap rejects oversized request without reaching GitHub',async(
  assert.equal(x.calls.length,0);
 });
 test('empty or unconfigured secrets fail closed',async()=>{
- const x=makeWorker();x.env.GITHUB_TOKEN='';
+ const x=makeWorker();x.env.GITHUB_APP_PRIVATE_KEY='';
  const r=await x.handler.fetch(x.request(baseBody),x.env);
  assert.equal(r.status,503);assert.equal(x.calls.length,0);
 });
