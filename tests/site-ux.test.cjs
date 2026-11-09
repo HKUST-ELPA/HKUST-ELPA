@@ -301,7 +301,7 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.match(home,/先有 1 分钟准备，接着进入 2 分钟陈述/);
  assert.match(home,/不同校区和考试类型的收录情况可能不同/);
  assert.match(home,/不会自动评价回答/);
- assert.match(home,/点击页面右下角的「练习」，再选「随机抽题」/);
+ assert.match(home,/点击题库筛选栏的「练习」，再选「随机抽题」/);
  assert.match(home,/换手机或电脑，怎么接着练？/);
  assert.match(home,/「恢复」会替换当前设备已有的记录/);
  assert.doesNotMatch(read('index.html'),/模拟口语|Markdown|JSON|elpa_data\.json/);
@@ -367,7 +367,8 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.match(practice,/sec-bankA'\)\.hidden=!count\|\|\(!!selectedValue&&selectedIsCurrent\)/);
  assert.match(practice,/const items=selectedValue\?/);
  assert.match(practice,/\.page-practice \.to-top\{[\s\S]*?display:inline-grid!important/);
- assert.match(practice,/\.page-practice \.practice-launcher\{[\s\S]*?bottom:calc\(66px/);
+ assert.match(practice,/id="practiceLauncher"/);
+ assert.match(practice,/\.page-practice \.toolbar>\.practice-launcher\{[^}]*position:static/);
  assert.doesNotMatch(practice,/筛选后|每页最多|pagination-caption/);
  assert.match(practice,/\.page-practice \.sec-head \.tag \{[\s\S]*?white-space:nowrap/);
 });
