@@ -19,22 +19,22 @@
 <p class="contrib-notice">无需注册账号。提交内容会公开保存，并在必要核对与整理后收录。请勿填写姓名、学号或联系方式。 <span class="elpa-en-summary" lang="en">No account needed. Submissions are public and may be included after review. Do not include names, student IDs or contact details.</span></p>
 <p id="submissionDraftStatus" class="contrib-caption" role="status">草稿仅在当前标签页暂存，刷新或返回此页可继续填写；尚未提交。 <span class="elpa-en-summary" lang="en">Drafts stay in this tab for refresh or return visits. Nothing has been submitted.</span></p>
 <div class="contrib-tabs" role="group" aria-label="投稿类别">
-<button id="tabQuestion" class="contrib-tab" type="button" aria-pressed="true">贡献考题 · Question</button>
-<button id="tabAdvice" class="contrib-tab" type="button" aria-pressed="false">分享经验 · Advice</button>
+<button id="tabQuestion" class="contrib-tab" type="button" aria-pressed="true" data-i18n-en="Contribute Questions">贡献考题</button>
+<button id="tabAdvice" class="contrib-tab" type="button" aria-pressed="false" data-i18n-en="Share Tips">分享经验</button>
 </div>
 <div id="questionFields" class="contrib-section">
   <h2 id="exam-context">01 · 考试校区与类型 <span lang="en">Campus &amp; Assessment</span></h2>
   <div class="contrib-row">
     <div class="contrib-field"><label for="submissionCampus">考试校区 * </label>
       <select id="submissionCampus" required>
-        <option value="" selected disabled>选择校区 / Select campus</option>
+        <option value="" selected disabled data-i18n-en="Select Campus">选择校区</option>
         <option value="nansha">GZ</option>
         <option value="clear-water-bay">HK</option>
       </select>
     </div>
     <div class="contrib-field"><label for="submissionTrack">考试类型 * </label>
       <select id="submissionTrack" required>
-        <option value="regular">常规 ELPA · Regular</option>
+        <option value="regular" data-i18n-en="Regular ELPA">常规 ELPA</option>
         <option value="fast-track">ELPA Fast Track</option>
       </select>
     </div>
@@ -46,11 +46,11 @@
     </div>
     <div class="contrib-field"><label for="submissionSlot">学期及场次 * </label>
       <select id="submissionSlot" required>
-        <option value="" selected disabled>选择场次 / Select session</option>
-        <option value="Fall:start">Fall · 开学 / Beginning</option><option value="Fall:mid">Fall · 学期中 / Mid-semester</option>
-        <option value="Fall:end">Fall · 学期末 / End</option>
-        <option value="Spring:start">Spring · 开学 / Beginning</option><option value="Spring:mid">Spring · 学期中 / Mid-semester</option>
-        <option value="Spring:end">Spring · 学期末 / End</option>
+        <option value="" selected disabled data-i18n-en="Select Session">选择场次</option>
+        <option value="Fall:start" data-i18n-en="Fall · Beginning">秋季 · 开学</option><option value="Fall:mid" data-i18n-en="Fall · Mid-semester">秋季 · 学期中</option>
+        <option value="Fall:end" data-i18n-en="Fall · End">秋季 · 学期末</option>
+        <option value="Spring:start" data-i18n-en="Spring · Beginning">春季 · 开学</option><option value="Spring:mid" data-i18n-en="Spring · Mid-semester">春季 · 学期中</option>
+        <option value="Spring:end" data-i18n-en="Spring · End">春季 · 学期末</option>
       </select>
     </div>
   </div>
@@ -94,8 +94,8 @@
   <hr class="contrib-line">
   <h2>05 · 反馈来源 <span lang="en">Source</span></h2>
   <div class="contrib-field"><label for="submissionSource">来源类型 * </label>
-    <select id="submissionSource" required><option value="firsthand">本人亲历 · Firsthand</option>
-    <option value="secondhand">同学转述 · Secondhand</option></select>
+    <select id="submissionSource" required><option value="firsthand" data-i18n-en="Firsthand">本人亲历</option>
+    <option value="secondhand" data-i18n-en="Reported by a Classmate">同学转述</option></select>
   </div>
 </div>
 <div id="adviceFields" class="contrib-section" hidden>
@@ -103,15 +103,15 @@
   <div class="contrib-row">
     <div class="contrib-field"><label for="adviceTrack">考试方式（选填） </label>
       <select id="adviceTrack">
-        <option value="regular">常规 ELPA · Regular</option>
+        <option value="regular" data-i18n-en="Regular ELPA">常规 ELPA</option>
         <option value="fast-track">ELPA Fast Track</option>
       </select>
     </div>
     <div class="contrib-field"><label for="advicePhase">经验阶段 * </label>
       <select id="advicePhase" required>
-        <option value="before">考前准备 · Before the Exam</option>
-        <option value="during">考试现场 · During the Exam</option>
-        <option value="after">考后反馈 · After the Exam</option>
+        <option value="before" data-i18n-en="Before the Exam">考前准备</option>
+        <option value="during" data-i18n-en="During the Exam">考试现场</option>
+        <option value="after" data-i18n-en="After the Exam">考后反馈</option>
       </select>
     </div>
   </div>
