@@ -11,8 +11,7 @@ from pathlib import Path
 FIELDS = {
     "questions": (
         ("banks", "BANKS"),
-        ("pastQuestionIds", "PAST_QUESTION_IDS"),
-        ("legacyQuestionAliases", "LEGACY_QUESTION_ALIASES"),
+        ("historicalQuestionIds", "HISTORICAL_QUESTION_IDS"),
     ),
     "appearances": (("data", "ELPA_APPEARANCES"),),
     "advice": (("data", "ELPA_ADVICE"),),
@@ -24,7 +23,7 @@ def load_dataset(root: Path, name: str):
     value = json.loads((root / f"{name}.json").read_text(encoding="utf-8"))
     if name == "questions":
         if not isinstance(value, dict) or set(value) != {
-            "banks", "pastQuestionIds", "legacyQuestionAliases"
+            "banks", "historicalQuestionIds"
         }:
             raise ValueError("questions.json: incomplete or unexpected data fields")
         return value
@@ -43,20 +42,15 @@ def verify_references(datasets):
         for bank in banks.values()
     ):
         raise ValueError("questions.json: invalid banks")
-    ids = [f"{key}-{item['num']}" for key, bank in banks.items()
+    ids = [f"{key}-{item['num']:04d}" for key, bank in banks.items()
            for item in bank["items"]]
     if len(set(ids)) != len(ids):
         raise ValueError("questions.json: duplicate IDs")
     known = set(ids)
-    if not isinstance(questions["pastQuestionIds"], list) or not all(
-        id_ in known for id_ in questions["pastQuestionIds"]
+    if not isinstance(questions["historicalQuestionIds"], list) or not all(
+        id_ in known for id_ in questions["historicalQuestionIds"]
     ):
         raise ValueError("questions.json: missing historical IDs")
-    aliases = questions["legacyQuestionAliases"]
-    if not isinstance(aliases, dict) or not all(
-        old in known and new in known for old, new in aliases.items()
-    ):
-        raise ValueError("questions.json: broken historical aliases")
     if not all(id_ in known for id_ in datasets["appearances"]["data"]):
         raise ValueError("appearances.json: unknown question ID")
 
