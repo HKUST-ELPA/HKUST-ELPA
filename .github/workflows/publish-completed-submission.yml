@@ -75,16 +75,9 @@ jobs:
           REVIEW_TEAM: ${{ steps.route.outputs.team }}
           REVIEW_CAMPUS: ${{ steps.route.outputs.campus }}
           REVIEW_TRACK: ${{ steps.route.outputs.track }}
-          ELPA_APP_PRIVATE_KEY: ${{ secrets.PUBLISH_APP_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           gh issue edit "$ISSUE_NUMBER" --add-label "submission:pending,campus:${REVIEW_CAMPUS},track:${REVIEW_TRACK}"
-          if gh api "repos/${GH_REPO}/issues/${ISSUE_NUMBER}/comments" --paginate --jq '.[].body' | grep -Fq '<!-- elpa-review-notification-v1 -->'; then
-            echo "Review notification already sent; skipping duplicate"
-            exit 0
-          fi
-          node scripts/render-review-notification.cjs "$GITHUB_EVENT_PATH" /tmp/elpa-review-notification.md
-          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/elpa-review-notification.md
       - name: Authorize completed review
         if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' }}
         id: authorization
