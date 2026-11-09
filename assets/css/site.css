@@ -1,4 +1,4 @@
-:root { --site-navy:#155baf; --site-blue:#155baf; --site-gold:#f4c65a; --site-ink:#172940; --site-muted:#64748b; --site-line:#dbe5f0; --site-bg:#f5f8fc; }
+:root { --site-navy:var(--accent); --site-blue:var(--accent); --site-gold:#f4c65a; --site-ink:var(--text); --site-muted:var(--muted); --site-line:var(--line); --site-bg:var(--bg); }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; scroll-padding-top:90px; }
 body { margin:0; }
