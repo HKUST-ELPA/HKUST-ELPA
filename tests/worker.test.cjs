@@ -47,7 +47,7 @@ test('v3 question with advice uses scoped App token and one issue',async()=>{
  const embedded=JSON.parse(Buffer.from(issue.body.match(/elpa-submission-v3:([\w-]+)/)[1],'base64url'));
  assert.equal(embedded.campus,'hk');assert.equal(embedded.track,'fast-track');
  assert.equal(embedded.version,3);assert.equal(Object.hasOwn(embedded,'turnstileToken'),false);
- const envelope=issue.body.match(/elpa-submission-v3:([\\w-]+):([\\w-]+)/);
+ const envelope=issue.body.match(/elpa-submission-v3:([\w-]+):([\w-]+)/);
  assert.ok(envelope,'Signed payload is present');
  assert.equal(verify('sha256',Buffer.from('HKUST-ELPA:submission:v3:'+envelope[1]),
    createPublicKey(pem),Buffer.from(envelope[2],'base64url')),true);
