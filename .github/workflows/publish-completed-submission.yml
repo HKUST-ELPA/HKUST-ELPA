@@ -42,8 +42,10 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Validate submission domain and resolve team
+      - name: Validate signed submission domain and resolve team
         id: route
+        env:
+          ELPA_APP_PRIVATE_KEY: ${{ secrets.PUBLISH_APP_PRIVATE_KEY }}
         run: node scripts/review-routing.cjs
       - name: Ensure review labels
         env:
@@ -114,6 +116,7 @@ jobs:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           APP_SLUG: ${{ steps.app.outputs.app-slug }}
           APP_BOT_ID: ${{ steps.bot.outputs.id }}
+          ELPA_APP_PRIVATE_KEY: ${{ secrets.PUBLISH_APP_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           git config user.name "${APP_SLUG}[bot]"
