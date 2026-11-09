@@ -154,7 +154,6 @@ async function formatSubmission(record,env){
     '> 公开匿名投稿；考生回忆非学校官方原题。',
     '',
     '**审核 Team：** @HKUST-ELPA/'+record.campus+'-'+record.track+'-reviewers',
-    '> 请在本 Issue 核对投稿；通过请 Close as completed，不收录请 Close as not planned。仅对应 Team 成员或组织 Owner 可批准发布。',
     '', '**考试校区：** '+(record.campus==='gz'?'广州校区':'香港校区'),
     '**考试类型：** '+(record.track==='regular'?'常规 ELPA':'ELPA Fast Track'),
     '**考试学期：** '+record.term,
