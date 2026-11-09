@@ -12,7 +12,7 @@ function run(record,options={}){
   const signature=sign('sha256',Buffer.from('HKUST-ELPA:submission:v3:'+encoded),key).toString('base64url');
   const marker='<!-- elpa-submission-v3:'+encoded+':'+(options.signature||signature)+' -->';
   const eventFile=path.join(dir,'event.json'),outputFile=path.join(dir,'output');
-  const body=options.body||marker;
+  const body=options.body??marker;
   fs.writeFileSync(eventFile,JSON.stringify({issue:{number:99,title:'[ELPA 投稿]',body}}));
   const result=spawnSync(process.execPath,[path.join(root,'scripts/review-routing.cjs')],{
     env:{...process.env,GITHUB_EVENT_PATH:eventFile,GITHUB_OUTPUT:outputFile,ELPA_APP_PRIVATE_KEY:key},encoding:'utf8'});
