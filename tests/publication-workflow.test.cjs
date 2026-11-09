@@ -49,6 +49,7 @@ test('one Issue is the only reviewer notification surface',()=>{
  assert.match(worker,/record\.campus\+'-'\+record\.track\+'-reviewers'/);
  assert.match(worker,/Close as completed/);
  assert.match(workflow,/gh issue edit "\$ISSUE_NUMBER" --add-label/);
- assert.doesNotMatch(workflow,/gh issue comment "\$ISSUE_NUMBER"/);
+ const routeStep=workflow.split("      - name: Route new submission to its team")[1].split("      - name: Authorize completed review")[0];
+ assert.doesNotMatch(routeStep,/gh issue comment/);
  assert.doesNotMatch(workflow,/render-review-notification/);
 });
