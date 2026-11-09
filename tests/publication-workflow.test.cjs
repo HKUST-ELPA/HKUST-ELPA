@@ -47,7 +47,7 @@ test('one Issue is the only reviewer notification surface',()=>{
  const worker=fs.readFileSync(path.join(root,'worker/src/index.js'),'utf8');
  assert.match(worker,/\*\*审核 Team：\*\* @HKUST-ELPA\//);
  assert.match(worker,/record\.campus\+'-'\+record\.track\+'-reviewers'/);
- assert.match(worker,/Close as completed/);
+ assert.doesNotMatch(worker,/请在本 Issue 核对投稿/);
  assert.match(workflow,/gh issue edit "\$ISSUE_NUMBER" --add-label/);
  const routeStep=workflow.split("      - name: Route new submission to its team")[1].split("      - name: Authorize completed review")[0];
  assert.doesNotMatch(routeStep,/gh issue comment/);
