@@ -20,13 +20,13 @@ function validateSite(){
     assert.ok(nav,'Missing navigation: '+name);
     for(const route of pageNames.filter(page=>page!=='submit'))
       assert.ok(nav.includes('href="./'+route+'.html"'),'Missing route '+route+' in '+name);
-    assert.equal((html.match(/class="footer-github"/g)||[]).length,1,'One GitHub entry: '+name);
     assert.ok(nav.includes('href="./submit.html"'),'Submission entry missing: '+name);
     assert.ok(html.includes('href="./assets/css/site.css?v='),'Shared CSS missing: '+name);
     assert.ok(html.includes('href="./assets/css/shell.css?v='),'Shared shell CSS missing: '+name);
     assert.ok(html.includes('href="./assets/icons/hkust-elpa.svg"'),'Favicon missing: '+name);
     const currentFooter=html.match(/<footer class="elpa-footer"[\s\S]*?<\/footer>/)?.[0];
     assert.ok(currentFooter,'Missing footer: '+name);
+    assert.equal((currentFooter.match(/class="footer-github"/g)||[]).length,1,'One footer GitHub entry: '+name);
     if(footer)assert.equal(currentFooter,footer,'Shared footer drift: '+name);
     footer=currentFooter;
     const script=['sources.html','community.html'].includes(name)?null:'./assets/js/'+path.basename(name,'.html')+'.js';

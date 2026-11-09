@@ -217,8 +217,11 @@ test('footer is concise, community-oriented and identical across six pages',()=>
  });
  for(const f of footers){
    assert.equal(f,footers[0],'Footer must match across all pages');
-   for(const label of ['Founded by','FuTseYi','Infrastructure provided and maintained by the founder.'])
+   for(const label of ['Founded by','FuTseYi (Shine)'])
      assert.ok(f.includes(label),'Footer missing '+label);
+   assert.match(f,/class="footer-bottom-credit" href="\.\/community\.html"/);
+   assert.match(f,/class="footer-github"[^>]*>[\s\S]*?<svg viewBox="0 0 16 16"/);
+   assert.doesNotMatch(f,/Infrastructure provided and maintained by the founder\./);
    assert.match(f,/href="\.\/submit\.html">投稿分享<\/a>/);
    assert.match(f,/class="footer-github"/);
    assert.doesNotMatch(f,/Not affiliated with or endorsed by HKUST|资料来源与声明|Created &amp; Maintained by/);

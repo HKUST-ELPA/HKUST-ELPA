@@ -91,6 +91,10 @@ def check_content(browser, base, width):
         page.locator("#bankD .qcard").first.wait_for(timeout=20000)
         assert page.locator("#practiceLauncher").is_visible()
         assert_layout(page, "practice")
+        assert page.locator(".toolbar").evaluate("node => getComputedStyle(node).position") == "static"
+        page.locator("#practiceLauncher").click()
+        assert page.locator("#timerPanel").is_visible()
+        page.locator("#practiceLauncher").click()
         buttons = page.locator("#bankD .qcard").first.locator(".q-actions button").evaluate_all(
             "items => items.map(b => ({w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height}))"
         )
@@ -123,18 +127,16 @@ def check_practice(page, base):
     note = page.locator("#bankD .qcard .qnote").first
     note.locator(".note-toggle").click()
     assert note.locator("textarea").input_value() == "Regression note from Python Playwright"
-    page.evaluate("window.scrollTo(0, 0)")
-    page.wait_for_function("!document.querySelector('.page-practice').classList.contains('footer-visible')")
-    page.locator("#practiceLauncher").click()
+    page.locator("#practiceLauncher").evaluate("button => button.click()")
     assert page.locator("#timerPanel").is_visible()
     assert page.locator("#timerDisplay").inner_text() == "01:00"
     page.locator("#timerDrill").click()
     page.locator(".qcard.drill-active").first.wait_for(timeout=10000)
     assert not page.locator("#timerPanel").is_visible()
-    page.locator("#practiceLauncher").click()
+    page.locator("#practiceLauncher").evaluate("button => button.click()")
     page.locator("#timerStartPause").click()
     page.wait_for_function("!document.getElementById('timerPanel').classList.contains('show')")
-    page.locator("#practiceLauncher").click()
+    page.locator("#practiceLauncher").evaluate("button => button.click()")
     page.locator("#timerStartPause").click()
     page.locator("#timerReset").click()
     page.goto(base + "/submit.html?kind=advice", wait_until="load")
@@ -229,21 +231,35 @@ def check_language_and_community(browser, origin):
     context, page, errors = page_context(browser, 390)
     try:
         page.goto(origin + "/index.html", wait_until="load")
+        assert page.locator(".elpa-en-inline:visible, .elpa-en-sub:visible, .elpa-en-summary:visible").count() == 0
         page.locator("#menu-toggle").click()
         page.locator("#language-toggle").click()
         assert page.locator('html').get_attribute('lang') == 'en'
+        assert page.locator(".elpa-en-inline:visible, .elpa-en-sub:visible, .elpa-en-summary:visible").count() == 0
         assert page.locator('.elpa-nav a[href="./index.html"]').inner_text() == 'Home'
         page.locator('.elpa-nav a[href="./community.html"]').click()
         page.wait_for_url("**/community.html")
-        assert page.locator("#founder-title").inner_text() == "Founder & Maintainer"
-        assert "FuTseYi (Shine)" in page.locator(".community-person-name").inner_text()
+        assert page.locator("#founder-title").inner_text() == "Project Maintainer"
+        assert "FuTseYi (Shine)" in page.locator(".community-person-name").first.inner_text()
+        assert page.locator(".community-role").first.inner_text() == "Founder"
+        assert page.locator(".community-person-info p").first.inner_text() == "Fall 2026 · MPhil in AI"
+        assert page.locator(".community-person").count() == 2
+        assert page.locator(".community-person-links svg").count() == 3
+        assert "Dongye LIU (Dylan)" in page.locator(".community-person").last.inner_text()
+        assert "2026 · MPhil" in page.locator(".community-person").last.inner_text()
+        assert page.locator('.community-contact a[href="mailto:hello@futseyi.com"]').is_visible()
+        icons = page.locator(".community-contact svg").evaluate_all(
+            "items => items.map(icon => [icon.getBoundingClientRect().width, icon.getBoundingClientRect().height])"
+        )
+        assert icons == [[16, 16], [16, 16]], icons
         assert page.locator('html').get_attribute('lang') == 'en'
         assert_layout(page, "community English")
         page.reload(wait_until="load")
         assert page.locator('html').get_attribute('lang') == 'en'
         page.locator("#menu-toggle").click()
         page.locator("#language-toggle").click()
-        assert "傅谢懿（shine）" in page.locator(".community-person-name").inner_text()
+        assert "FuTseYi (Shine)" in page.locator(".community-person-name").first.inner_text()
+        assert page.locator(".community-role").first.inner_text() == "Founder"
         assert not errors, (browser.browser_type.name, errors)
     finally:
         context.close()

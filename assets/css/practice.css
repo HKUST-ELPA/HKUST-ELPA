@@ -871,6 +871,7 @@
 .page-practice.footer-visible .practice-launcher{opacity:0;pointer-events:none}
 .page-practice .toolbar{z-index:44}
 @media(max-width:900px){.page-practice .toolbar{top:84px}}
+.page-practice .toolbar{position:static;top:auto}
 .page-practice .search-dialog .search-field{width:0;flex:1 1 0;min-width:0}
 .page-practice .search-dialog .search-submit{width:auto;flex:none}
 .page-practice .search-dialog .search-close{flex:none}
