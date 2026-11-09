@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
+const {webcrypto,generateKeyPairSync,verify}=require('node:crypto');
 const {test}=require('node:test');
 
 const source=fs.readFileSync(path.resolve(__dirname,'../worker/src/index.js'),'utf8');
@@ -11,14 +12,14 @@ const baseBody={
   subquestions:'a. Why does it matter?\nb. Give an example.',source:'firsthand',
   turnstileToken:'mock-valid-token'
 };
-function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'},rateLimit={success:true},appTokenOK=true}={}){
+function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'},rateLimit={success:true},appTokenOK=true,realCrypto=false}={}){
   const calls=[];
   const tokenCalls=[];
   const sandbox={
     module:{exports:{}},
     Request, Response, URL, URLSearchParams, TextEncoder, TextDecoder, Uint8Array,
     AbortSignal, console,
-    crypto:{subtle:{importKey:async()=>({}),sign:async()=>new Uint8Array([1,2,3])}},
+    crypto:realCrypto?webcrypto:{subtle:{importKey:async()=>({}),sign:async()=>new Uint8Array([1,2,3])}},
     atob:(s)=>Buffer.from(s,'base64').toString('binary'),
     btoa:(s)=>Buffer.from(s,'binary').toString('base64'),
     fetch:async(url,init)=>{
@@ -75,6 +76,20 @@ test('GitHub Issue creation uses scoped App installation token rather than a per
  assert.equal(request.repositories[0],'HKUST-ELPA-Site-Source');
  assert.equal(request.permissions.issues,'write');
  assert.equal(x.calls[1].init.headers.Authorization,'Bearer MOCK-GITHUB-APP-INSTALLATION-TOKEN');
+});
+test('GitHub generated PKCS#1 and PKCS#8 keys produce verifiable JWT signatures',async()=>{
+ const pair=generateKeyPairSync('rsa',{modulusLength:2048});
+ for(const format of ['pkcs1','pkcs8']){
+  const privateKey=pair.privateKey.export({type:format,format:'pem'}).toString();
+  const x=makeWorker({realCrypto:true});
+  x.env.GITHUB_APP_PRIVATE_KEY=privateKey;
+  const response=await x.handler.fetch(x.request(baseBody),x.env);
+  assert.equal(response.status,201,await response.text());
+  const jwt=x.tokenCalls[0].init.headers.Authorization.split(' ')[1];
+  const [header,claims,signature]=jwt.split('.');
+  assert.equal(JSON.parse(Buffer.from(claims,'base64url')).iss,'98765');
+  assert.equal(verify('RSA-SHA256',Buffer.from(header+'.'+claims),pair.publicKey,Buffer.from(signature,'base64url')),true);
+ }
 });
 test('GitHub App token errors cannot create a submission Issue',async()=>{
  const x=makeWorker({appTokenOK:false});
