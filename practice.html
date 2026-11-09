@@ -63,6 +63,9 @@
       <option value="doing" data-i18n-en="In Progress">练习中</option><option value="done" data-i18n-en="Mastered">已掌握</option>
     </select>
     <span class="stat-pill">显示 <b id="matchCount">0</b> / <b id="totalCount">0</b> 条</span>
+  <button id="practiceLauncher" class="practice-launcher" type="button" aria-controls="timerPanel" aria-expanded="false" aria-label="打开练习工具">
+    <span aria-hidden="true">⏱</span> <span id="practiceLauncherText">练习 <span class="elpa-en-inline" lang="en">Practice</span></span>
+  </button>
     <div hidden id="legacyDataControls">
     <button class="save-top" id="saveTopBtn" title="手动保存；未关联文件夹时学习记录仍自动保存在本浏览器">💾 保存</button>
     <button class="toolbar-action" id="backupBtn" type="button" title="下载独立的 JSON 备份文件">⬇ 备份</button>
@@ -145,9 +148,7 @@
     </div>
     <button class="timer-btn timer-draw" id="timerDrill" type="button">🎲 随机抽题 <span class="elpa-en-inline" lang="en">Random question</span></button>
   </section>
-  <button id="practiceLauncher" class="practice-launcher" type="button" aria-controls="timerPanel" aria-expanded="false" aria-label="打开练习工具">
-    <span aria-hidden="true">⏱</span> <span id="practiceLauncherText">练习 <span class="elpa-en-inline" lang="en">Practice</span></span>
-  </button>
+
 
   <!-- Progress -->
   <div class="progress-card">
