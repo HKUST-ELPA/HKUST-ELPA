@@ -39,7 +39,7 @@ function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',ac
     SUBMISSION_MODE:'public',
     GITHUB_APP_ID:'98765',
     GITHUB_APP_INSTALLATION_ID:'12345',
-    GITHUB_APP_PRIVATE_KEY:'-----BEGIN PRIVATE KEY-----\\nAQID\\n-----END PRIVATE KEY-----',
+    GITHUB_APP_PRIVATE_KEY:'-----BEGIN RSA PRIVATE KEY-----\\nAQID\\n-----END RSA PRIVATE KEY-----',
     TURNSTILE_SECRET:'FAKE-NOT-A-SECRET',
     SUBMISSION_LIMITER:{limit:async()=>rateLimit}
   };
