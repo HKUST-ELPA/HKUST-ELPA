@@ -10,17 +10,17 @@ function section(source,start,end){
  const a=source.indexOf(start),b=source.indexOf(end,a);
  assert.ok(a>=0&&b>a,'missing section '+start);return source.slice(a,b);
 }
-test('GZ/HK are display-only; old campus route values stay stable',()=>{
- assert.match(practice,/data-campus="nansha"[^>]*>GZ<\/button>/);
- assert.match(practice,/data-campus="clear-water-bay"[^>]*>HK<\/button>/);
- assert.match(submit,/<option value="nansha">GZ<\/option>/);
- assert.match(submit,/<option value="clear-water-bay">HK<\/option>/);
+test('GZ/HK are canonical campus route values',()=>{
+ assert.match(practice,/data-campus="gz"[^>]*>GZ<\/button>/);
+ assert.match(practice,/data-campus="hk"[^>]*>HK<\/button>/);
+ assert.match(submit,/<option value="gz">GZ<\/option>/);
+ assert.match(submit,/<option value="hk">HK<\/option>/);
 });
 test('all current IDs survive JSON backup normalization and recovery',()=>{
  const code=section(practice,'function normalizePayload(data) {','function snapshot()');
  const clean=new Function('validRecord',code+';return normalizePayload')(
    v=>v!==null&&typeof v==='object'&&!Array.isArray(v));
- for(const id of ['A-1','D-4','F-1','H-1000111','T-1000112']){
+ for(const id of ['GZ-R-0001','GZ-R-0043','GZ-F-0001','HK-R-0001','HK-F-0001']){
    const got=clean({statuses:{[id]:'done'},notes:{['qn-'+id]:'kept',[id+'-1']:'follow-up'}});
    assert.equal(got.statuses[id],'done',id);
    assert.equal(got.notes['qn-'+id],'kept',id);
@@ -31,30 +31,30 @@ test('all current IDs survive JSON backup normalization and recovery',()=>{
 test('feedback count includes reviewed submissions and ties retain original order',()=>{
  const code=section(practice,'function feedbackCount(id){','function toggleTranslation(id,button){');
  const fixtures={
-   'F-1':{num:1,records:1},'F-2':{num:2,records:2},
-   'D-1':{num:1,term:'2026 Fall'},'A-1':{num:1},
-   'D-1000301':{num:1000301,term:'2027 Fall'}
+   'GZ-F-0001':{num:1,records:1},'GZ-F-0002':{num:2,records:2},
+   'GZ-R-0040':{num:1,term:'2026 Fall'},'GZ-R-0001':{num:1},
+   'GZ-R-0040000301':{num:1000301,term:'2027 Fall'}
  };
- const arrivals={'F-1':[{issueNumber:9},{issueNumber:9},{issueNumber:10}],
-   'F-2':[], 'D-1':[{issueNumber:11},{issueNumber:12,intent:'supplement'}],
-   'D-1000301':[
+ const arrivals={'GZ-F-0001':[{issueNumber:9},{issueNumber:9},{issueNumber:10}],
+   'GZ-F-0002':[], 'GZ-R-0040':[{issueNumber:11},{issueNumber:12,intent:'supplement'}],
+   'GZ-R-0040000301':[
      {issueNumber:301,intent:'encounter',subs:[{en:'What matters?',cn:''}]},
      {issueNumber:302,intent:'supplement',alternatives:[{en:'Could you explain this project?',cn:'你能解释这个项目吗？'}],subs:[{en:'What changed?',cn:''}]}
    ]};
  const funcs=new Function('questionById','appearancesFor',code+
    ';return {feedbackCount,feedbackRanked,questionFollowups,questionAlternatives}')(
    id=>fixtures[id],id=>arrivals[id]||[]);
- assert.equal(funcs.feedbackCount('F-1'),3);
- assert.equal(funcs.feedbackCount('D-1'),2);
- assert.equal(funcs.feedbackCount('A-1'),1);
- assert.equal(funcs.feedbackCount('D-1000301'),1,'imported issue counted exactly once');
- assert.deepEqual(funcs.questionFollowups('D-1000301',{subs:[{en:'Original prompt?',cn:''}]}),[
+ assert.equal(funcs.feedbackCount('GZ-F-0001'),3);
+ assert.equal(funcs.feedbackCount('GZ-R-0040'),2);
+ assert.equal(funcs.feedbackCount('GZ-R-0001'),1);
+ assert.equal(funcs.feedbackCount('GZ-R-0040000301'),1,'imported issue counted exactly once');
+ assert.deepEqual(funcs.questionFollowups('GZ-R-0040000301',{subs:[{en:'Original prompt?',cn:''}]}),[
    {en:'Original prompt?',cn:''},{en:'What matters?',cn:''},{en:'What changed?',cn:''}
  ]);
- assert.deepEqual(funcs.questionAlternatives('D-1000301',{en:'Original question'}),[
+ assert.deepEqual(funcs.questionAlternatives('GZ-R-0040000301',{en:'Original question'}),[
    {en:'Could you explain this project?',cn:'你能解释这个项目吗？'}
  ]);
- assert.deepEqual(funcs.feedbackRanked(['F-2','A-1','F-1','D-1']),['F-1','F-2','D-1','A-1']);
+ assert.deepEqual(funcs.feedbackRanked(['GZ-F-0002','GZ-R-0001','GZ-F-0001','GZ-R-0040']),['GZ-F-0001','GZ-F-0002','GZ-R-0040','GZ-R-0001']);
 });
 test('practice cards expose reviewed encounter action and uniform alignment',()=>{
  assert.match(practice,/过往考过 \$\{feedback\} 次/);
@@ -82,7 +82,7 @@ test('practice cards expose reviewed encounter action and uniform alignment',()=
 
 });
 test('Chinese and English matching runs locally, does not require network',()=>{
- const code=section(submit,'const normMatch=s=>','function availableQuestions(){');
+ const code=section(submit,'const normMatch=s=>','function selectedDomain(){');
  const score=new Function(code+';return matchScore')();
  const item={en:'How would you guide undergraduate students to use AI ethically?',
    cn:'作为助教，如何指导本科生合乎伦理地使用 AI？'};
@@ -116,7 +116,7 @@ function newTimerFixture(){
  const card={dataset:{filterMatch:'1'},classList:cls(),scrolled:0,
    scrollIntoView(){this.scrolled++;}};
  const el=id=>{
-   if(id==='q-A-1')return card;
+   if(id==='q-GZ-R-0001')return card;
    if(!elements.has(id))elements.set(id,{
      classList:cls(),textContent:'',value:id==='timerMin'?'2':'0',hidden:false,
      disabled:false,attributes:{},setAttribute(k,v){this.attributes[k]=v;},
@@ -134,7 +134,7 @@ function newTimerFixture(){
     'applyFilters','setTip','PAGE_SIZE',code+
     ';return {tickTimer,drawPractice,read:()=>({timerRunning,timerMode,timerRemain,timerPhase,timerElapsed}),openTimerPanel};');
  const api=timerFactory(document,window,fakeDate,()=>7,()=>{},()=>{},
-    ()=>['A-1'],{fall:1,past:1},()=>[card],()=>{},txt=>{notice=txt;},8);
+    ()=>['GZ-R-0001'],{fall:1,past:1},()=>[card],()=>{},txt=>{notice=txt;},8);
  const click=id=>{const fn=listeners.get(id+':click');assert.ok(fn,'missing click '+id);fn();};
  return {api,el,click,card,advance:ms=>{clock+=ms;},notice:()=>notice,
    leave:()=>listeners.get('window:elpa:practice-leave')?.()};
@@ -339,7 +339,7 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.doesNotMatch(practice,/id="termFilter"|id="examStageFilter"|session-badges|session-chip/);
  const appearances=JSON.parse(fs.readFileSync(path.join(__dirname,'../question-bank/appearances.json'),'utf8'));
  const questions=JSON.parse(fs.readFileSync(path.join(__dirname,'../question-bank/questions.json'),'utf8'));
- const sessionData={ids:questions.pastQuestionIds,data:appearances};
+ const sessionData={ids:questions.historicalQuestionIds,data:appearances};
  assert.equal(sessionData.ids.length,25);
  // Legacy questions must not acquire invented year/stage evidence.
  // Future issue-linked reports may still add reviewed appearances to these IDs.
@@ -353,7 +353,7 @@ test('homepage explains the full learning workflow without a repeated oversized 
      assert.ok(Number.isSafeInteger(entry.issueNumber)&&entry.issueNumber>0,id);
  assert.ok(questions.banks.F.items.some(item=>item.num===1&&item.subs.length===0));
  assert.equal(fastSessionData.ids.length,12);
- assert.ok(!fastSessionData.ids.includes('F-13'));
+ assert.ok(!fastSessionData.ids.includes('GZ-F-00013'));
  assert.doesNotMatch(practice,/fastIntroSection|fastIntroDetails|ELPA_FAST_TRACK_INTRO|补充准备 · 完整自我介绍任务/);
  assert.match(practice,/titleStatus\.textContent=total\?'第 '\+page\+' \/ '\+pages\+' 页 · 总 '\+total\+' 题':'0 题'/);
  assert.match(practice,/function activeLatestSessionLabel\(\)[\s\S]*?session\.term\+' · '\+ELPA_TAXONOMY\.examStages\[session\.stage\]\.zh/);
@@ -387,9 +387,9 @@ test('latest bank advances by complete term and stage while older sessions remai
  // Undated Fast Track recollections must remain immediately practiceable.
  const undated=new Function('activePracticeIds','appearancesFor','elpaLatestTermForIds','elpaReportedTerms','ELPA_TAXONOMY',
    code+';return {activeLatestSessionLabel,activeCurrentIds,activeArchivedIds};')(
-     ()=>['F-1','F-2'],()=>[],()=>'',()=>[],{examStages:{}});
+     ()=>['GZ-F-0001','GZ-F-0002'],()=>[],()=>'',()=>[],{examStages:{}});
  assert.equal(undated.activeLatestSessionLabel(),'场次待核实');
- assert.deepEqual(undated.activeCurrentIds(),['F-1','F-2']);
+ assert.deepEqual(undated.activeCurrentIds(),['GZ-F-0001','GZ-F-0002']);
  assert.deepEqual(undated.activeArchivedIds(),[]);
  assert.match(practice,/sessions\.set\(entry\.term\+'\|'\+entry\.examStage/);
  assert.match(practice,/sessionFilter\.append\(new Option\(session\.label,value\)\)/);
@@ -422,7 +422,7 @@ test('guide switch preserves accessible state and works without a second page',(
 test('Fast Track documentation links to the selectable practice route',()=>{
  const fastDoc=fs.readFileSync(path.join(__dirname,'../question-bank/fast-track.md'),'utf8');
  const indexDoc=fs.readFileSync(path.join(__dirname,'../question-bank/README.md'),'utf8');
- assert.ok(fastDoc.includes('../practice.html?campus=nansha&track=fast-track'));
+ assert.ok(fastDoc.includes('../practice.html?campus=gz&track=fast-track'));
  assert.ok(!fastDoc.includes('../practice.html#fast-track'));
  assert.ok(indexDoc.includes('| [Fast Track · 南沙校区](./fast-track.md) |'));
 });
