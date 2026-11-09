@@ -3,6 +3,8 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
+const {generateKeyPairSync,sign}=require('node:crypto');
+const key=generateKeyPairSync('rsa',{modulusLength:2048}).privateKey.export({type:'pkcs8',format:'pem'});
 const root=path.resolve(__dirname,'..');
 const importer=path.join(root,'scripts/import-completed-submission.cjs');
 function fixture(){
@@ -15,11 +17,12 @@ function fixture(){
  const read=name=>JSON.parse(fs.readFileSync(path.join(dir,'question-bank',name),'utf8'));
  const run=(data,number=301,title='[ELPA 投稿] [GZ/R] Reviewed')=>{
    const marker=Buffer.from(JSON.stringify(data)).toString('base64url');
-   const issue={number,title,body:'<!-- elpa-submission-v3:'+marker+' -->'};
+   const signature=sign('sha256',Buffer.from('HKUST-ELPA:submission:v3:'+marker),key).toString('base64url');
+   const issue={number,title,body:'<!-- elpa-submission-v3:'+marker+':'+signature+' -->'};
    const file=path.join(dir,'event.json'),output=path.join(dir,'output.txt');
    fs.writeFileSync(file,JSON.stringify({issue}));fs.writeFileSync(output,'');
    const result=spawnSync(process.execPath,[importer],{cwd:dir,encoding:'utf8',
-     env:{...process.env,GITHUB_EVENT_PATH:file,GITHUB_OUTPUT:output}});
+     env:{...process.env,GITHUB_EVENT_PATH:file,GITHUB_OUTPUT:output,ELPA_APP_PRIVATE_KEY:key}});
    return {...result,outputs:fs.readFileSync(output,'utf8')};
  };
  return {read,run,close:()=>fs.rmSync(dir,{recursive:true,force:true}),
