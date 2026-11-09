@@ -631,7 +631,7 @@
   .search-box .icon {font-size:22px;line-height:1;left:15px;pointer-events:none;}
   .search-box .search-clear {right:10px;top:50%;transform:translateY(-50%);width:26px;height:26px;z-index:2;display:none;align-items:center;justify-content:center;position:absolute;border:0;background:#e8edf4;color:#52677d;border-radius:7px;cursor:pointer;font-size:18px;}
   .search-box .search-clear.show {display:flex;}
-  .search-box .search-submit {position:static;flex:0 0 auto;min-height:44px;border:0;border-radius:10px;background:#003e74;color:#fff;min-width:77px;padding:0 15px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;}
+  .search-box .search-submit {position:static;flex:0 0 auto;min-height:44px;border:0;border-radius:10px;background:#155baf;color:#fff;min-width:77px;padding:0 15px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;}
   .search-box .search-submit:hover {background:#135e9b;}
   .search-box .search-submit:focus-visible {outline:3px solid #e3b34b;outline-offset:2px;}
   .search-feedback {flex:1 0 100%;font-size:13px;color:#245579;background:#ecf5fe;padding:9px 12px;border-radius:9px;line-height:1.6;border:1px solid #cbdfee;margin:0;}
@@ -656,7 +656,7 @@
   .elpa-choice-label{min-width:68px;font-size:13px;font-weight:700;color:#52677d}
   .elpa-choice-buttons{display:inline-flex;gap:3px;max-width:100%;padding:4px;border-radius:12px;background:#f0f4f9;border:1px solid #dce5ef}
   .elpa-choice-buttons button{min-height:38px;padding:8px 17px;white-space:nowrap;border:0;border-radius:9px;background:transparent;color:#445b73;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
-  .elpa-choice-buttons button[aria-pressed="true"]{background:#003e74;color:#fff;box-shadow:0 2px 8px rgba(0,48,91,.14)}
+  .elpa-choice-buttons button[aria-pressed="true"]{background:#155baf;color:#fff;box-shadow:0 2px 8px rgba(0,48,91,.14)}
   .elpa-choice-buttons button:focus-visible{outline:3px solid #e3b34b;outline-offset:2px}
   .elpa-choice-note{font-size:12px;color:#60758b;line-height:1.7;margin:12px 0 0}
   .page-practice section[hidden]{display:none!important}
@@ -743,14 +743,14 @@
     display:inline-grid!important;place-items:center;right:16px;
     bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:112;
     width:38px;height:38px;border:1px solid #cbd9e7;border-radius:999px;
-    color:#003e74;background:#fff;box-shadow:0 7px 20px rgba(0,40,85,.16);
+    color:#155baf;background:#fff;box-shadow:0 7px 20px rgba(0,40,85,.16);
     font-size:17px;font-weight:700
   }
   .page-practice .practice-launcher{
     position:fixed;right:16px;bottom:calc(66px + env(safe-area-inset-bottom,0px));
     z-index:112;display:inline-flex;align-items:center;justify-content:center;gap:7px;
     border:0;border-radius:999px;padding:0 16px;min-height:46px;
-    color:white;background:#003e74;box-shadow:0 8px 25px rgba(0,40,85,.22);
+    color:white;background:#155baf;box-shadow:0 8px 25px rgba(0,40,85,.22);
     font:inherit;font-size:13px;font-weight:700;cursor:pointer;
     font-variant-numeric:tabular-nums;touch-action:manipulation
   }
@@ -867,7 +867,7 @@
 @media(prefers-color-scheme:dark){:root:not([data-theme]) .page-practice .search-open,:root:not([data-theme]) .page-practice .search-dialog{color:var(--text);background:var(--surface)}}
 .page-practice .search-result strong{display:block;font-weight:650}.page-practice .search-result small{display:block;margin-top:4px;color:var(--muted);font-size:12px;line-height:1.5}
 /* Keep the exercise dock out of the footer navigation. */
-.page-practice .elpa-footer{padding-bottom:100px}
+.page-practice .footer-bottom{padding-right:60px}
 .page-practice.footer-visible .practice-launcher{opacity:0;pointer-events:none}
 .page-practice .toolbar{z-index:44}
 @media(max-width:900px){.page-practice .toolbar{top:84px}}
@@ -880,3 +880,5 @@
 [data-theme=dark] .page-practice .qcard,[data-theme=dark] .page-practice .toolbar,[data-theme=dark] .page-practice .toc,[data-theme=dark] .page-practice .progress-card,[data-theme=dark] .page-practice .elpa-choices,[data-theme=dark] .page-practice .records-menu-panel{background:var(--surface);color:var(--text);border-color:var(--line)}
 [data-theme=dark] .page-practice .source-notice{background:var(--soft);color:var(--text);border-color:var(--line)}
 [data-theme=dark] .page-practice .search-open,[data-theme=dark] .page-practice .search-dialog,[data-theme=dark] .page-practice .search-dialog input{background:var(--surface);color:var(--text);border-color:var(--line)}
+
+
