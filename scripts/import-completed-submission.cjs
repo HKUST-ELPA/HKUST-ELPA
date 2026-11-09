@@ -12,7 +12,7 @@ const valid=(s,min,max)=>typeof s==='string'&&s.trim().length>=min&&s.trim().len
 const norm=s=>String(s||'').normalize('NFKC').toLowerCase().replace(/[\p{P}\p{S}\s]/gu,'');
 const quote=s=>String(s).split(/\r?\n/).map(l=>'> '+l.replace(/</g,'&lt;')).join('\n');
 const output=(status,recorded)=>{console.log('Import status:',status);if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'result='+status+'\nrecorded='+recorded+'\n')};
-if(!Number.isSafeInteger(number)||number<1||!/^[[]ELPA 投稿[]]/.test(issue.title||''))throw Error('Not an ELPA submission');
+if(!Number.isSafeInteger(number)||number<1||!/^\[ELPA 投稿\]/.test(issue.title||''))throw Error('Not an ELPA submission');
 if(/\bTEST ONLY\b/i.test(issue.title))throw Error('Synthetic Issue may never enter reviewed data');
 const matches=[...(issue.body||'').matchAll(/^<!-- elpa-submission-v3:([A-Za-z0-9_-]+) -->\s*$/gm)];
 if(matches.length!==1)throw Error('Exactly one v3 payload marker is required');
