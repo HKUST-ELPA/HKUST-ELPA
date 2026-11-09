@@ -44,7 +44,9 @@ for(const [code,labels] of Object.entries(taxonomy?.adviceTags||{})){
   const label=document.createElement('label');label.className='contrib-tag';
   const input=document.createElement('input');
   input.type='checkbox';input.value=code;input.name='adviceTag';
-  label.append(input);addText(label,'span',localeText(labels.zh,labels.en));
+  label.append(input);
+  const caption=addText(label,'span',localeText(labels.zh,labels.en));
+  caption.dataset.i18nEn=labels.en;
   list.append(label);
 }
 function setKind(next){
