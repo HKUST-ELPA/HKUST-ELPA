@@ -21,9 +21,9 @@ This Cloudflare Worker receives anonymous website contributions and creates a pu
 }
 ```
 
-`campus` must be `gz` or `hk`; `track` must be `regular` or `fast-track`. The optional `advice` object contains `phase`, `tags`, `title`, and `body`. Optional `linkedQuestionId` uses the same `GZ-R-0001`-style domain as the submission, with `intent: encounter/supplement` and optional `alternatives`. The Worker stores a readable Issue body plus one `elpa-submission-v3` machine-readable marker. It never includes the Turnstile token in the Issue.
+`campus` must be `gz` or `hk`; `track` must be `regular` or `fast-track`. The optional `advice` object contains `phase`, `tags`, `title`, and `body`. Optional `linkedQuestionId` uses the same `GZ-R-0001`-style domain as the submission, with `intent: encounter/supplement` and optional `alternatives`. The Worker stores a readable Issue body plus one GitHub App-signed `elpa-submission-v3` machine-readable marker. It never includes the Turnstile token in the Issue.
 
-No independent advice-only submission protocol or v1/v2 compatibility is supported. To share experience, submit a question with optional advice in the same Issue. Campus and track always apply to both.
+Review Actions use the same App private key to verify the signature before routing or importing. Editable Issue labels and descriptions cannot change the authenticated review domain.\n\nNo independent advice-only submission protocol or v1/v2 compatibility is supported. To share experience, submit a question with optional advice in the same Issue. Campus and track always apply to both.
 
 Successful response: HTTP 201 with `{"ok":true,"issueUrl":"..."}`.
 
