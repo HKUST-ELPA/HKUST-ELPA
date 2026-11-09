@@ -14,11 +14,11 @@ Each Team has **Triage** access to Source, not code write access or Published ac
 ## Submission lifecycle
 
 1. A student submits a question, optionally with preparation advice. Both share a required campus and assessment type.
-2. The Cloudflare Worker verifies Turnstile and rate limiting, creates one Issue with a single structured `elpa-submission-v3` payload, and labels it `submission:pending`.
-3. An `issues: opened` workflow derives `campus` and `track` from that payload, adds `campus:*` and `track:*` labels, and mentions the designated Team.
+2. The Cloudflare Worker verifies Turnstile and rate limiting, creates one Issue with a single GitHub App-signed `elpa-submission-v3` payload, and labels it `submission:pending`.
+3. An `issues: opened` workflow derives `campus` and `track` from the verified signed payload, adds `campus:*` and `track:*` labels, and mentions the designated Team.
 4. A reviewer checks the original content, accuracy, privacy, duplicates and references.
 5. **Close as completed** requests publication; **Close as not planned** rejects. Reopening restores pending status but does not undo published data.
-6. On completed closure, the workflow verifies the authenticated event sender against the corresponding Team Membership API or organization Owner membership. It fails closed when authorization cannot be established. Unauthorized approvals are reopened.
+6. On completed closure, the workflow verifies the App-created Issue, its signed payload, and the authenticated event sender against the corresponding Team Membership API or organization Owner membership. It fails closed when authorization cannot be established. Unauthorized approvals are reopened.
 7. The importer validates the v3 schema, updates only allowlisted JSON/Markdown files and reuses an existing canonical question ID if the wording matches within the same domain; otherwise it allocates the next domain-local ID.
 8. Source validations run before a GitHub App commit. Source publishes to Published; GitHub Pages and Vercel deploy Published `main`.
 
