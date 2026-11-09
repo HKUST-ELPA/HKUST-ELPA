@@ -196,7 +196,7 @@ def check_navigation(browser, origin):
                     assert page.evaluate("""() => document.querySelector('.elpa-nav') === window.__persistentShell
                         && document.querySelector('.elpa-footer') === window.__persistentFooter""")
                     page.go_back()
-                    page.wait_for_url("**/guide.html")
+                    page.wait_for_url("**/guide.html*")
                     assert page.locator("#regularGuide").is_visible()
                     assert page.evaluate("document.querySelector('.elpa-nav') === window.__persistentShell")
                     page.reload(wait_until="load")
