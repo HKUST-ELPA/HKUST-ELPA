@@ -6,8 +6,8 @@ import shutil
 import subprocess
 import sys
 
-PAGES = ("index", "guide", "practice", "sources", "submit")
-SOURCE_FILES = ("index.html", "practice.html", "submit.html")
+PAGES = ("index", "guide", "practice", "sources", "submit", "community")
+SOURCE_FILES = ("index.html", "practice.html", "submit.html", "community.html")
 SOURCE_DIRS = ("question-bank", "data")
 CONTENT_PAGES = {
     "guide": ("考试与备考指南｜HKUST-ELPA",

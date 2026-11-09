@@ -26,7 +26,9 @@ const elpaThemeModes = ['system', 'light', 'dark'];
 function elpaSyncTheme() {
   const mode = document.documentElement.dataset.theme || 'system';
   const next = elpaThemeModes[(elpaThemeModes.indexOf(mode) + 1) % elpaThemeModes.length];
-  const labels = {system:'跟随系统', light:'浅色模式', dark:'深色模式'};
+  const labels = document.documentElement.dataset.lang === 'en'
+    ? {system:'System', light:'Light', dark:'Dark'}
+    : {system:'跟随系统', light:'浅色模式', dark:'深色模式'};
   elpaThemeButton.dataset.mode = mode;
   elpaThemeButton.setAttribute('aria-label', '当前为' + labels[mode] + '，切换到' + labels[next]);
   elpaThemeButton.querySelector('#theme-label').textContent = labels[mode];
@@ -46,6 +48,7 @@ window.addEventListener('storage', event => {
   elpaSyncTheme();
 });
 window.addEventListener('pageshow', elpaSyncTheme);
+window.addEventListener('elpa:language', elpaSyncTheme);
 elpaSyncTheme();
 
 document.querySelector('.elpa-nav').addEventListener('click', event => {
@@ -62,7 +65,7 @@ document.querySelector('.elpa-nav').addEventListener('click', event => {
 
 /* One persistent shell for public reading and practice routes.
    Each route remains a complete, directly accessible static document. */
-const elpaRoutes = new Set(['index.html', 'guide.html', 'practice.html', 'sources.html']);
+const elpaRoutes = new Set(['index.html', 'guide.html', 'practice.html', 'sources.html', 'community.html']);
 const elpaBase = new URL('./', location.href).pathname;
 const elpaRoute = url => {
   const pathname = url.pathname === elpaBase ? elpaBase + 'index.html' : url.pathname;
@@ -155,6 +158,7 @@ async function elpaActivate(page, route, scroll) {
   elpaSetCurrentNav(route);
   for (const src of page.scripts) await elpaLoadScript(src);
   elpaActiveRoute = route;
+  window.dispatchEvent(new Event('elpa:route'));
   requestAnimationFrame(() => scrollTo({top:scroll, behavior:'instant'}));
 }
 
