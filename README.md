@@ -40,7 +40,7 @@ HKUST-ELPA-Site-Source/
 - **Python**：生成五个页面及浏览器题库资源
 - **Cloudflare Worker + Turnstile**：校验投稿并创建 Source Issue
 - **GitHub Issues + Actions**：审核入库、测试和跨仓库发布
-- **GitHub App**：使用仅限 Published 仓库的短期 token 提交静态文件
+- **GitHub App**：同一 App 分别申请 Source 投稿、审核入库和 Published 发布所需的短期安装 token
 
 ## 本地开发
 
@@ -61,26 +61,32 @@ sequenceDiagram
     autonumber
     actor Student as 学生
     participant Worker as Cloudflare Worker
+    participant App as GitHub App
     participant Issue as Source Issue
     actor Maintainer as 维护者
+    participant Review as 审核 Action
     participant Source as Source main
     participant Action as 发布 Action
-    participant App as GitHub App
     participant Published as Published main
     participant Hosts as Pages / Vercel
 
     opt 学生投稿并审核通过
-        Student->>Worker: 提交题目或经验
-        Worker->>Issue: 创建待审核 Issue
+        Student->>Worker: 提交题目或经验（Turnstile 验证）
+        Worker->>App: 申请 Source Issues 写入 token
+        App-->>Worker: 短期安装 token
+        Worker->>Issue: 以 App Bot 创建待审核 Issue
         Maintainer->>Issue: Close as completed
-        Issue->>Source: 审核工作流写入题库
+        Issue->>Review: 触发审核工作流
+        Review->>App: 申请 Source Contents / Issues 写入 token
+        App-->>Review: 短期安装 token
+        Review->>Source: 验证后以 App Bot 写入题库
     end
     opt 日常代码或内容更新
         Maintainer->>Source: Push / merge
     end
     Source->>Action: main 更新或审核入库
     Note over Action: 测试并生成唯一 _site/
-    Action->>App: 申请 Published 短期写入 token
+    Action->>App: 申请 Published Contents 写入 token
     App-->>Action: Installation token
     opt 静态文件实际变化
         Action->>Published: App Bot 提交构建结果
