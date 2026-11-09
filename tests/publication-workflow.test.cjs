@@ -9,7 +9,7 @@ test('new and closed Issues route to matching Team using canonical structured pa
  assert.match(workflow,/node scripts\/review-routing\.cjs/);
  for(const group of ['campus:gz','campus:hk','track:regular','track:fast-track'])
   assert.ok(workflow.includes(group));
- assert.match(workflow,/node scripts\/render-review-notification\.cjs/);
+ assert.doesNotMatch(workflow,/render-review-notification/);
  assert.match(routing,/verify-submission\.cjs/);
  assert.match(fs.readFileSync(path.join(root,'scripts/verify-submission.cjs'),'utf8'),/elpa-submission-v3/);
  assert.doesNotMatch(routing,/issue\.labels/);
