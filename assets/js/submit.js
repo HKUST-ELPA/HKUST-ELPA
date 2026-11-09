@@ -202,6 +202,7 @@ function loadQuestionLink(){
   const campus=params.get('campus'),track=params.get('track'),id=params.get('question');
   if(['nansha','clear-water-bay'].includes(campus))get('submissionCampus').value=campus;
   if(['regular','fast-track'].includes(track))get('submissionTrack').value=track;
+  if(params.get('experience')==='1'||params.get('kind')==='advice')get('includeAdvice').checked=true;
   const q=id&&findQuestion(id);
   if(q){
     linkQuestion(q);
@@ -218,6 +219,7 @@ function loadQuestionLink(){
 }
 
 loadQuestionLink();
+updateExperience();
 function buildData(){
   const withAdvice=get('includeAdvice').checked;
   const tags=[...list.querySelectorAll('input:checked')].map(x=>x.value);
