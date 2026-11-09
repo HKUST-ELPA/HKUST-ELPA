@@ -37,6 +37,17 @@ jobs:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           APP_SLUG: ${{ steps.app.outputs.app-slug }}
         run: echo "id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+      - name: Confirm issue was created by the submission App
+        env:
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          APP_SLUG: ${{ steps.app.outputs.app-slug }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${ISSUE_AUTHOR,,}" != "${APP_SLUG,,}[bot]" ]]; then
+            echo "Issue creator is not the submission App" >&2
+            exit 1
+          fi
       - name: Checkout routing source
         uses: actions/checkout@v4
         with:
