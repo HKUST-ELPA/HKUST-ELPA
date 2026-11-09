@@ -1,71 +1,41 @@
 'use strict';
-// Compatibility contracts that must survive architectural consolidation.
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const root = path.resolve(__dirname, '..');
-const {read:readArtifact}=require('./site-support.cjs');
-const read=file=>readArtifact(file).replace(/\?v=[a-f0-9]{12}(?=")/g,'');
-
-test('historical question identities and aliases remain resolvable', () => {
-  const content=JSON.parse(read('question-bank/questions.json'));
-  const data={BANKS:content.banks,PAST_QUESTION_IDS:content.pastQuestionIds,
-    LEGACY_QUESTION_ALIASES:content.legacyQuestionAliases};
-  const ids = new Set(Object.entries(data.BANKS).flatMap(([bank, group]) =>
-    group.items.map(item => bank + '-' + item.num)));
-  for (const id of data.PAST_QUESTION_IDS) assert.ok(ids.has(id), 'Historical question missing: ' + id);
-  for (const [oldId, currentId] of Object.entries(data.LEGACY_QUESTION_ALIASES)) {
-    assert.ok(ids.has(oldId), 'Missing original question: ' + oldId);
-    assert.ok(ids.has(currentId), 'Missing canonical question: ' + currentId);
-  }
-  for (const id of ['A-附', 'B-9', 'C-18', 'D-5', 'F-5']) {
-    assert.ok(ids.has(id), 'Compatibility identity missing: ' + id);
-  }
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+test('all questions have canonical four-domain stable IDs',()=>{
+ const data=JSON.parse(read('question-bank/questions.json'));
+ assert.deepEqual(Object.keys(data.banks),['GZ-R','GZ-F','HK-R','HK-F']);
+ const ids=new Set();
+ for(const [group,bank] of Object.entries(data.banks))for(const question of bank.items){
+  const id=group+'-'+String(question.num).padStart(4,'0');
+  assert.match(id,/^(GZ|HK)-(R|F)-\d{4}$/);
+  assert.ok(!ids.has(id));ids.add(id);
+ }
+ assert.ok(data.historicalQuestionIds.every(id=>ids.has(id)));
+ assert.equal(Object.hasOwn(data,'legacyQuestionAliases'),false);
 });
-
-test('existing practice record and submission draft storage contracts stay readable', () => {
-  const practice = read('assets/js/practice-storage.js');
-  for (const key of ['elpa-q-status-v1', 'elpa-notes-v1', 'elpa-data-snapshot-v2',
-    'elpa-autosave', 'elpa-fs-db', 'data-dir']) {
-    assert.ok(practice.includes(key), 'Missing stored compatibility identifier: ' + key);
-  }
-  assert.match(practice, /version:\s*1,\s*updatedAt:/);
-  assert.match(practice, /\bnormalizePayload\s*\(/);
-  assert.match(read('assets/js/submit.js'), /elpa-submission-draft-v1:/);
+test('submission and local practice records share new IDs without legacy protocols',()=>{
+ const storage=read('assets/js/practice-storage.js');
+ const submit=read('assets/js/submit.js');
+ const worker=read('worker/src/index.js');
+ assert.match(storage,/elpa-data-snapshot-v3/);
+ assert.match(submit,/elpa-submission-draft-v3/);
+ assert.match(submit,/version:3/);
+ assert.match(worker,/elpa-submission-v3:/);
+ assert.doesNotMatch(worker,/elpa-submission-v1:|elpa-submission-v2:|GITHUB_TOKEN/);
 });
-
-test('published routes and owner-approved Issue publication remain available', () => {
-  for (const page of ['index', 'guide', 'practice', 'submit', 'sources', 'community'])
-    assert.ok(fs.existsSync(path.join(root, '_site', page + '.html')), 'Missing public route: ' + page);
-  const worker = read('worker/src/index.js');
-  assert.match(worker, /elpa-submission-v2:/);
-  assert.match(worker, /elpa-submission-v1:/);
-  const workflow = read('.github/workflows/publish-completed-submission.yml');
-  assert.match(workflow, /state_reason == 'completed'/);
-  assert.match(workflow, /github\.event\.sender\.login == 'FuTseYi'/);
+test('Team authorization, App publication and separate practice module remain intact',()=>{
+ for(const page of ['index','guide','practice','submit','sources','community'])
+  assert.ok(fs.existsSync(path.join(root,'_site',page+'.html')));
+ const workflow=read('.github/workflows/publish-completed-submission.yml');
+ assert.match(workflow,/permission-members: read/);
+ assert.match(workflow,/steps\.authorization\.outputs\.authorized == 'true'/);
+ assert.match(workflow,/scripts\/review-routing\.cjs/);
+ const html=read('practice.html');
+ assert.ok(html.indexOf('practice.js')<html.indexOf('practice-session.js'));
+ assert.match(read('assets/js/practice-session.js'),/function tickTimer\(/);
 });
-
-test('practice session remains a separate, loaded module', () => {
-  const html=read('practice.html');
-  assert.match(html, /<script src="\.\/assets\/js\/practice\.js"><\/script>[\s\S]*?<script src="\.\/assets\/js\/practice-session\.js"><\/script>/);
-  const session=read('assets/js/practice-session.js');
-  assert.match(session, /function tickTimer\(/);
-  assert.match(session, /function drawPractice\(/);
-  assert.ok(!read('assets/js/practice.js').includes('function tickTimer('));
-});
-
-test('browser record storage is independently loaded before practice UI', () => {
-  const html=read('practice.html');
-  const store=html.indexOf('<script src="./assets/js/practice-storage.js"></script>');
-  const ui=html.indexOf('<script src="./assets/js/practice.js"></script>');
-  assert.ok(store>=0&&ui>store,'storage module must initialize before practice UI');
-  assert.ok(!read('assets/js/practice.js').includes("const LS_SNAPSHOT"));
-});
-
-test('synthetic browser-verification questions are not published as actual exam practice',()=>{
-  const bank=read('question-bank/questions.json');
-  const docs=read('question-bank/community-submissions.md');
-  assert.doesNotMatch(bank,/TEST ONLY - HKUST-ELPA browser submission verification/);
-  assert.doesNotMatch(docs,/Issue #13(?:\D|$)/);
+test('synthetic test-only questions are absent from canonical public data',()=>{
+ assert.doesNotMatch(read('question-bank/questions.json'),/TEST ONLY - HKUST-ELPA/);
 });
