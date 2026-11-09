@@ -81,18 +81,18 @@ def render_guide_advice(page, root):
     )
     for key, names, values, initial in (
         ("advicePhaseFilter", taxonomy["advicePhases"],
-         {entry["phase"] for entry in regular}, "全部阶段 / All stages"),
+         {entry["phase"] for entry in regular}, ("全部阶段", "All Stages")),
         ("adviceTagFilter", taxonomy["adviceTags"],
-         {tag for entry in regular for tag in entry.get("tags", [])}, "全部主题 / All topics"),
+         {tag for entry in regular for tag in entry.get("tags", [])}, ("全部主题", "All Topics")),
     ):
-        previous = f'<select id="{key}"><option value="">{initial}</option></select>'
+        previous = f'<select id="{key}"><option value="" data-i18n-en="{initial[1]}">{initial[0]}</option></select>'
         options = "".join(
             '<option value="' + escape(code, quote=True) + '">' + label(names, code) + '</option>'
             for code in names if code in values
         )
         if page.count(previous) != 1:
             raise ValueError("Unexpected guide filter: " + key)
-        page = page.replace(previous, f'<select id="{key}"><option value="">{initial}</option>'
+        page = page.replace(previous, f'<select id="{key}"><option value="" data-i18n-en="{initial[1]}">{initial[0]}</option>'
                             + options + '</select>')
     section = '<section class="elpa-advice-section" id="sec-advice" hidden'
     if page.count(section) != 1:
