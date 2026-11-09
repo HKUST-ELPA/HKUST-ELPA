@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const {read:readArtifact}=require('../scripts/validate-site.cjs');
+const {read:readArtifact}=require('./site-support.cjs');
 const read=file=>readArtifact(file).replace(/\?v=[a-f0-9]{12}(?=")/g,'');
 
 test('all five built pages reuse homepage chrome with one selected navigation link',()=>{

@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
-const {read:readArtifact,readPageSource:readSource}=require('../scripts/validate-site.cjs');
+const {read:readArtifact,readPageSource:readSource}=require('./site-support.cjs');
 const read=file=>readArtifact(file).replace(/\?v=[a-f0-9]{12}(?=")/g,'');
 const readPageSource=file=>readSource(file).replace(/\?v=[a-f0-9]{12}(?=")/g,'');
 const practice=readPageSource('practice.html');
