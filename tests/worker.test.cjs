@@ -11,14 +11,21 @@ const baseBody={
   subquestions:'a. Why does it matter?\nb. Give an example.',source:'firsthand',
   turnstileToken:'mock-valid-token'
 };
-function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'},rateLimit={success:true}}={}){
+function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'},rateLimit={success:true},appTokenOK=true}={}){
   const calls=[];
+  const tokenCalls=[];
   const sandbox={
     module:{exports:{}},
     Request, Response, URL, URLSearchParams, TextEncoder, TextDecoder, Uint8Array,
     AbortSignal, console,
+    crypto:{subtle:{importKey:async()=>({}),sign:async()=>new Uint8Array([1,2,3])}},
+    atob:(s)=>Buffer.from(s,'base64').toString('binary'),
     btoa:(s)=>Buffer.from(s,'binary').toString('base64'),
     fetch:async(url,init)=>{
+      if(String(url).includes('/app/installations/12345/access_tokens')){
+        tokenCalls.push({url:String(url),init});
+        return appTokenOK?Response.json({token:'MOCK-GITHUB-APP-INSTALLATION-TOKEN'}):Response.json({message:'Forbidden'},{status:403});
+      }
       calls.push({url:String(url),init});
       if(String(url).includes('/siteverify'))return Response.json(siteverify);
       if(String(url).includes('/repos/HKUST-ELPA/HKUST-ELPA-Site-Source/issues'))
@@ -30,7 +37,9 @@ function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',ac
   const env={
     SUBMISSIONS_DISABLED:'false',
     SUBMISSION_MODE:'public',
-    GITHUB_TOKEN:'FAKE-NOT-A-CREDENTIAL',
+    GITHUB_APP_ID:'98765',
+    GITHUB_APP_INSTALLATION_ID:'12345',
+    GITHUB_APP_PRIVATE_KEY:'-----BEGIN PRIVATE KEY-----\\nAQID\\n-----END PRIVATE KEY-----',
     TURNSTILE_SECRET:'FAKE-NOT-A-SECRET',
     SUBMISSION_LIMITER:{limit:async()=>rateLimit}
   };
@@ -38,7 +47,7 @@ function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',ac
     method:'POST',headers:{Origin:'https://hkust-elpa.github.io','Content-Type':'application/json',...headers},
     body:JSON.stringify(body)
   });
-  return {handler:sandbox.module.exports,env,calls,request};
+  return {handler:sandbox.module.exports,env,calls,tokenCalls,request};
 }
 test('combined campus-specific question and optional advice create one review issue',async()=>{
  const x=makeWorker();
@@ -56,6 +65,29 @@ test('combined campus-specific question and optional advice create one review is
  assert.match(issue.body,/备考经验 \/ Preparation Advice/);
  assert.match(issue.body,/香港|清水湾/);
  assert.match(issue.body,/备考心得/);
+});
+test('GitHub Issue creation uses scoped App installation token rather than a personal PAT',async()=>{
+ const x=makeWorker();
+ const response=await x.handler.fetch(x.request(baseBody),x.env);
+ assert.equal(response.status,201,await response.text());
+ assert.equal(x.tokenCalls.length,1);
+ const request=JSON.parse(x.tokenCalls[0].init.body);
+ assert.equal(request.repositories[0],'HKUST-ELPA-Site-Source');
+ assert.equal(request.permissions.issues,'write');
+ assert.equal(x.calls[1].init.headers.Authorization,'Bearer MOCK-GITHUB-APP-INSTALLATION-TOKEN');
+});
+test('GitHub App token errors cannot create a submission Issue',async()=>{
+ const x=makeWorker({appTokenOK:false});
+ const response=await x.handler.fetch(x.request(baseBody),x.env);
+ assert.equal(response.status,503);
+ assert.equal(x.tokenCalls.length,1);
+ assert.equal(x.calls.length,1);
+});
+test('missing GitHub App credentials fail closed',async()=>{
+ const x=makeWorker();delete x.env.GITHUB_APP_PRIVATE_KEY;
+ const response=await x.handler.fetch(x.request(baseBody),x.env);
+ assert.equal(response.status,503);
+ assert.equal(x.calls.length,0);
 });
 test('new bilingual question cannot omit Chinese comprehension',async()=>{
  const x=makeWorker();
