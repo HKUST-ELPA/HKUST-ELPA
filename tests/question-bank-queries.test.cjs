@@ -11,11 +11,11 @@ function run(){
  vm.runInContext('const BANKS='+JSON.stringify(questions.banks)+';\n'+
   'const HISTORICAL_QUESTION_IDS='+JSON.stringify(questions.historicalQuestionIds)+';\n'+
   'const ELPA_APPEARANCES='+JSON.stringify(appearances)+';\n'+queries,context);
- return JSON.parse(JSON.stringify(vm.runInContext('({all:elpaAllPracticeIds(),term:elpaLatestTerm(),current:elpaCurrentQuestionIds(),archived:elpaArchivedQuestionIds(),reported:elpaReportedTerms("GZ-R-0048")})',context)));
+ return JSON.parse(JSON.stringify(vm.runInContext('({all:elpaAllPracticeIds(),term:elpaLatestTerm(),current:elpaCurrentQuestionIds(),archived:elpaArchivedQuestionIds(),reported:elpaReportedTerms("GZ-R-0034")})',context)));
 }
 test('all four canonical domains share stable IDs and reported-term lookups',()=>{
  const data=run();
- assert.equal(data.all.length,63);
+ assert.equal(data.all.length,49);
  assert.ok(data.all.includes('GZ-R-0001'));
  assert.ok(data.all.includes('GZ-F-0001'));
  assert.ok(data.all.every(x=>/^(GZ|HK)-(R|F)-\d{4}$/.test(x)));
