@@ -11,8 +11,7 @@ const campusGz=getCampusButton('campusGz'),campusHk=getCampusButton('campusHk');
 function getCampusButton(id){return document.getElementById(id);}
 const followups=document.getElementById('followupList');
 const list=document.getElementById('adviceTags');
-const currentYear=new Date().getFullYear();
-let kind='question',widgetId=null,submitting=false;
+let widgetId=null,submitting=false;
 const ready=Boolean(taxonomy&&config.apiEndpoint&&config.turnstileSiteKey&&
   /^https:\/\//.test(config.apiEndpoint));
 const get=id=>document.getElementById(id);
@@ -40,7 +39,7 @@ campusHk.addEventListener('click',()=>setCampus('clear-water-bay'));
 for(const radio of form.querySelectorAll('input[name="trackPicker"]'))radio.addEventListener('change',()=>{get('submissionTrack').value=radio.value;get('submissionTrack').dispatchEvent(new Event('change',{bubbles:true}));});
 for(const radio of form.querySelectorAll('input[name="sourcePicker"]'))radio.addEventListener('change',()=>{get('submissionSource').value=radio.value;get('submissionSource').dispatchEvent(new Event('change',{bubbles:true}));});
 function syncChoices(){syncCampus();for(const n of ['trackPicker','sourcePicker']){const id=n==='trackPicker'?'submissionTrack':'submissionSource';for(const radio of form.querySelectorAll('input[name="'+n+'"]'))radio.checked=radio.value===get(id).value;}}
-function updateExperience(){const active=get('includeAdvice').checked;get('adviceTitle').required=active;get('adviceBody').required=active;get('advicePhase').required=active;get('adviceFields').classList.toggle('contrib-experience-active',active);invalidatePreview();}
+function updateExperience(){const active=get('includeAdvice').checked;get('adviceTitle').required=active;get('adviceBody').required=active;get('advicePhase').required=active;get('adviceFields').classList.toggle('contrib-experience-active',active);for(const mark of get('adviceFields').querySelectorAll('.contrib-advice-required'))mark.hidden=!active;invalidatePreview();}
 get('includeAdvice').addEventListener('change',updateExperience);
 const ph=taxonomy?.placeholders||{};
 for(const [id,value] of Object.entries({
