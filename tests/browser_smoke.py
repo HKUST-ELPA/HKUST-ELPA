@@ -113,8 +113,8 @@ def check_practice(page, base):
     page.locator("#searchInput").fill("supply chain")
     page.locator("#searchResults .search-result").first.wait_for(timeout=20000)
     page.locator("#searchResults .search-result").first.click()
-    page.wait_for_url("**question=GZ-R-0040")
-    assert page.locator("#q-GZ-R-0040.search-target").is_visible()
+    page.wait_for_url("**question=GZ-R-0026")
+    assert page.locator("#q-GZ-R-0026.search-target").is_visible()
     page.locator("#searchOpen").click()
     page.locator("#searchInput").fill("What was your degree")
     page.locator("#searchResults .search-result-kind").first.wait_for(timeout=20000)
@@ -157,7 +157,7 @@ def check_practice(page, base):
     assert "updated strategy" in page.locator("#previewPanel").inner_text()
     page.reload(wait_until="load")
     assert page.locator("#adviceTitle").input_value() == "Python browser test"
-    page.goto(base + "/submit.html?question=GZ-R-0040&intent=supplement", wait_until="load")
+    page.goto(base + "/submit.html?question=GZ-R-0026&intent=supplement", wait_until="load")
     assert page.locator("#linkedQuestion").is_visible()
     page.locator("#campusGz").click()
     assert page.locator("#linkedQuestion").is_visible()
@@ -323,7 +323,7 @@ def check_extended_behaviors(browser, origin):
                     if re.match(r"^### \d+\. ", line)]
         assert exported == questions, "Markdown export must preserve the displayed question order"
 
-        page.goto(origin + "/submit.html?question=GZ-R-0040&intent=supplement", wait_until="load")
+        page.goto(origin + "/submit.html?question=GZ-R-0026&intent=supplement", wait_until="load")
         page.locator("#campusGz").click()
         page.locator("#submissionSlot").select_option(index=1)
         page.locator("#supplementEn").fill("Draft-only alternative wording")
