@@ -72,6 +72,7 @@ def render_guide_advice(page, root):
                            + '" data-i18n-en="Original post">原始分享</a>')
         cards.append(
             '<article class="elpa-advice-card" data-track="' + escape(track, quote=True)
+            + '" data-campus="' + escape(campus, quote=True)
             + '" data-phase="' + escape(phase, quote=True)
             + '" data-tags="' + escape(",".join(tags), quote=True) + '"'
             + (' hidden' if campus != "gz" or track != "regular" else "") + '>'
