@@ -31,7 +31,7 @@ function addText(parent,tag,text,cls){
   if(cls)el.className=cls;parent.append(el);return el;
 }
 const year=get('submissionYear');
-year.value=String(currentYear);
+year.value='';
 year.addEventListener('input',()=>{year.value=year.value.replace(/[^0-9]/g,'').slice(0,4);});
 function syncCampus(){const gz=trimmed('submissionCampus')==='nansha';campusGz.setAttribute('aria-pressed',String(gz));campusHk.setAttribute('aria-pressed',String(!gz));}
 function setCampus(value){get('submissionCampus').value=value;get('submissionCampus').dispatchEvent(new Event('change',{bubbles:true}));syncCampus();}
@@ -322,7 +322,7 @@ form.addEventListener('submit',async event=>{
     get('supplementEn').value='';get('supplementCn').value='';syncContributionIntent();
     get('mainEnField').classList.remove('linked-hidden');
     get('mainCnField').classList.remove('linked-hidden');
-    year.value=String(currentYear);
+    year.value='';
     get('submissionSlot').value='';
     get('previewPanel').hidden=true;
     get('includeAdvice').checked=false;updateExperience();syncChoices();
