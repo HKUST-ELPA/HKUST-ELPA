@@ -208,6 +208,7 @@ async function githubInstallationToken(env) {
     headers:{
       Authorization:'Bearer '+jwt,
       Accept:'application/vnd.github+json',
+      'Content-Type':'application/json',
       'X-GitHub-Api-Version':'2022-11-28',
       'User-Agent':'HKUST-ELPA-Submission'
     },
@@ -330,6 +331,7 @@ export default {
         headers:{
           'Authorization':'Bearer '+token,
           'Accept':'application/vnd.github+json',
+          'Content-Type':'application/json',
           'X-GitHub-Api-Version':'2022-11-28',
           'User-Agent':'HKUST-ELPA-Submission'
         },
