@@ -31,5 +31,16 @@
       "track": "regular",
       "intent": "encounter"
     }
+  ],
+  "D-1000087": [
+    {
+      "issueNumber": 87,
+      "term": "2026 Fall",
+      "examStage": "start",
+      "source": "firsthand",
+      "campus": "nansha",
+      "track": "regular",
+      "intent": "encounter"
+    }
   ]
 }

@@ -47,5 +47,17 @@
     ],
     "title": "test",
     "body": "testtesttesttesttest"
+  },
+  {
+    "id": "ADV-87",
+    "issueNumber": 87,
+    "campus": "nansha",
+    "track": "regular",
+    "phase": "before",
+    "tags": [
+      "exam-process"
+    ],
+    "title": "testtesttesttesttest",
+    "body": "testtesttesttesttesttest"
   }
 ]
