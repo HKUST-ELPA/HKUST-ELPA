@@ -9,7 +9,7 @@ test('new and closed Issues route to matching Team using canonical structured pa
  assert.match(workflow,/node scripts\/review-routing\.cjs/);
  for(const group of ['campus:gz','campus:hk','track:regular','track:fast-track'])
   assert.ok(workflow.includes(group));
- assert.match(workflow,/@HKUST-ELPA\/\$\{REVIEW_TEAM\}/);
+ assert.match(workflow,/node scripts\/render-review-notification\.cjs/);
  assert.match(routing,/verify-submission\.cjs/);
  assert.match(fs.readFileSync(path.join(root,'scripts/verify-submission.cjs'),'utf8'),/elpa-submission-v3/);
  assert.doesNotMatch(routing,/issue\.labels/);
@@ -42,4 +42,18 @@ test('Published remains separate and GitHub App preserves build automation',()=>
  assert.match(deploy,/actions\/create-github-app-token@v2/);
  assert.match(deploy,/HKUST-ELPA.github.io/);
  assert.match(deploy,/git push origin HEAD:main/);
+});
+test('structured notifications use verified v3 domain, include reviewer instructions and avoid duplicate emails',()=>{
+ const {render}=require('../scripts/render-review-notification.cjs');
+ const payload={version:3,kind:'question',campus:'gz',track:'regular',term:'2026 Fall',examStage:'start',source:'firsthand',main:{en:'What is your research?',cn:'你的研究是什么？'},subs:[{en:'Follow-up',cn:'追问'}],advice:{title:'Preparation tips',body:'Practice daily'}};
+ const msg=render(payload,{team:'gz-regular-reviewers',issueUrl:'https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/93'});
+ for(const part of ['@HKUST-ELPA/gz-regular-reviewers','广州校区','常规 ELPA','2026 Fall','What is your research?','你的研究是什么？','Follow-up','Preparation tips','Practice daily','Close as completed','Close as not planned','elpa-review-notification-v1'])
+   assert.ok(msg.includes(part),part);
+ assert.match(workflow,/gh issue comment "\\$ISSUE_NUMBER" --body-file/);
+ assert.match(workflow,/grep -Fq '<!-- elpa-review-notification-v1 -->'/);
+ assert.match(workflow,/ELPA_APP_PRIVATE_KEY/);
+ assert.doesNotMatch(msg,/Review queue:/);
+ const malicious=render({...payload,main:{en:'@all <script> bad | table',cn:'ok'}},{team:'gz-regular-reviewers',issueUrl:'https://github.com/example/test/issues/1'});
+ assert.ok(malicious.includes('＠all &lt;script&gt;'));
+ assert.ok(!malicious.includes('@all <script>'));
 });
