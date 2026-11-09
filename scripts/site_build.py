@@ -45,7 +45,7 @@ def render_guide_advice(page, root):
 
     def label(group, key):
         names = group[key]
-        return escape(names["zh"] + " · " + names["en"])
+        return '<span data-i18n-en="' + escape(names["en"], quote=True) + '">' + escape(names["zh"]) + '</span>'
 
     cards = []
     for entry in entries:
@@ -63,7 +63,7 @@ def render_guide_advice(page, root):
         if type(issue) is int and issue > 0:
             source_html = ('<a class="elpa-advice-source" target="_blank" rel="noopener noreferrer" '
                            'href="https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/' + str(issue)
-                           + '">原始分享 / Original post</a>')
+                           + '" data-i18n-en="Original post">原始分享</a>')
         cards.append(
             '<article class="elpa-advice-card" data-track="' + escape(track, quote=True)
             + '" data-phase="' + escape(phase, quote=True)
