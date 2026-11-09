@@ -45,7 +45,9 @@ test('Published remains separate and GitHub App preserves build automation',()=>
 });
 test('one Issue is the only reviewer notification surface',()=>{
  const worker=fs.readFileSync(path.join(root,'worker/src/index.js'),'utf8');
- assert.match(worker,/\*\*审核 Team：\*\* @HKUST-ELPA\//);
+ assert.match(worker,/\*\*已分配至：\*\* @HKUST-ELPA\//);
+ assert.doesNotMatch(worker,/公开匿名投稿；考生回忆非学校官方原题/);
+ assert.match(worker,/未分享/);
  assert.match(worker,/record\.campus\+'-'\+record\.track\+'-reviewers'/);
  assert.doesNotMatch(worker,/请在本 Issue 核对投稿/);
  assert.match(workflow,/gh issue edit "\$ISSUE_NUMBER" --add-label/);
