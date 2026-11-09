@@ -36,7 +36,7 @@ test('existing practice record and submission draft storage contracts stay reada
 });
 
 test('published routes and owner-approved Issue publication remain available', () => {
-  for (const page of ['index', 'guide', 'practice', 'submit', 'sources'])
+  for (const page of ['index', 'guide', 'practice', 'submit', 'sources', 'community'])
     assert.ok(fs.existsSync(path.join(root, '_site', page + '.html')), 'Missing public route: ' + page);
   const worker = read('worker/src/index.js');
   assert.match(worker, /elpa-submission-v2:/);

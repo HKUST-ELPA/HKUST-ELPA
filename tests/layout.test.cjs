@@ -7,9 +7,9 @@ const root=path.resolve(__dirname,'..');
 const {read:readArtifact}=require('./site-support.cjs');
 const read=file=>readArtifact(file).replace(/\?v=[a-f0-9]{12}(?=")/g,'');
 
-test('all five built pages reuse homepage chrome with one selected navigation link',()=>{
+test('all six built pages reuse homepage chrome with one selected navigation link',()=>{
   const footer=read('index.html').match(/<footer class="elpa-footer"[\s\S]*?<\/footer>/)[0];
-  for(const page of ['index','guide','practice','submit','sources']){
+  for(const page of ['index','guide','practice','submit','sources','community']){
     const html=read(page+'.html');
     const nav=html.match(/<nav class="elpa-nav"[\s\S]*?<\/nav>/)[0];
     assert.equal((nav.match(/aria-current="page"/g)||[]).length,1);
@@ -30,10 +30,10 @@ test('practice palette aliases reuse the global design tokens',()=>{
   }
 });
 
-test('three source entrypoints generate five complete published pages',()=>{
+test('four source entrypoints generate six complete published pages',()=>{
   assert.deepEqual(fs.readdirSync(root).filter(name=>name.endsWith('.html')).sort(),
-    ['index.html','practice.html','submit.html']);
-  for(const page of ['practice','submit']){
+    ['community.html','index.html','practice.html','submit.html']);
+  for(const page of ['practice','submit','community']){
     const source=fs.readFileSync(path.join(root,page+'.html'),'utf8');
     assert.ok(source.includes('<!-- shared-nav -->'));
     assert.ok(source.includes('<!-- shared-footer -->'));

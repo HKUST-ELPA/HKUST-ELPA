@@ -208,8 +208,8 @@ test('pause and resume preserve seconds, custom countdown and stopwatch work',()
  assert.equal(f.el('timerDisplay').textContent,'00:04');
 });
 
-test('footer is concise, community-oriented and identical across five pages',()=>{
- const pages=['index.html','guide.html','practice.html','sources.html','submit.html'];
+test('footer is concise, community-oriented and identical across six pages',()=>{
+ const pages=['index.html','guide.html','practice.html','sources.html','submit.html','community.html'];
  const footers=pages.map(p=>{
    const html=read(p),matches=html.match(/<footer class="elpa-footer"[\s\S]*?<\/footer>/g);
    assert.equal(matches?.length,1,p+' should have one footer');
@@ -230,7 +230,7 @@ test('footer is concise, community-oriented and identical across five pages',()=
 });
 
 test('all pages share one compact banner and the practice brand uses the site palette',()=>{
- const pages=['index.html','guide.html','practice.html','sources.html','submit.html'];
+ const pages=['index.html','guide.html','practice.html','sources.html','submit.html','community.html'];
  for(const page of pages){
    const html=read(page);
    assert.match(html,/class="[^"]*elpa-subhero/);
@@ -296,7 +296,7 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.match(home,/点击页面右下角的「练习」，再选「随机抽题」/);
  assert.match(home,/换手机或电脑，怎么接着练？/);
  assert.match(home,/「恢复」会替换当前设备已有的记录/);
- assert.doesNotMatch(home,/模拟口语|Markdown|JSON|elpa_data\.json/);
+ assert.doesNotMatch(read('index.html'),/模拟口语|Markdown|JSON|elpa_data\.json/);
  assert.equal((home.match(/class="elpa-home-instructions"/g)||[]).length,2);
  assert.equal((home.match(/class="elpa-home-instructions-num"/g)||[]).length,6);
  assert.equal((home.match(/class="elpa-home-backup-guide"/g)||[]).length,1);

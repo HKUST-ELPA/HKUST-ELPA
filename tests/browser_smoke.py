@@ -123,6 +123,8 @@ def check_practice(page, base):
     note = page.locator("#bankD .qcard .qnote").first
     note.locator(".note-toggle").click()
     assert note.locator("textarea").input_value() == "Regression note from Python Playwright"
+    page.evaluate("window.scrollTo(0, 0)")
+    page.wait_for_function("!document.querySelector('.page-practice').classList.contains('footer-visible')")
     page.locator("#practiceLauncher").click()
     assert page.locator("#timerPanel").is_visible()
     assert page.locator("#timerDisplay").inner_text() == "01:00"
@@ -200,6 +202,11 @@ def check_navigation(browser, origin):
                             page.wait_for_timeout(100)
                             after = page.locator(".elpa-footer").evaluate("node => node.getBoundingClientRect().top")
                             assert abs(after - before) < 8, (name, "footer shifted after initial render", before, after)
+                        page.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})")
+                        page.wait_for_function("window.scrollY + innerHeight >= document.documentElement.scrollHeight - 2")
+                        lines = page.evaluate("""() => ({sidebar:document.querySelector('.sidebar-bottom').getBoundingClientRect().top,
+                            footer:document.querySelector('.footer-bottom').getBoundingClientRect().top})""")
+                        assert abs(lines["sidebar"] - lines["footer"]) < 12, lines
                 finally:
                     context.close()
 
@@ -214,6 +221,30 @@ def check_without_scripts(browser, origin):
         page.goto(origin + "/guide.html", wait_until="load")
         assert page.locator("#guideAdviceList article").count() == 3
         assert page.locator("#sec-advice").is_visible()
+    finally:
+        context.close()
+
+
+def check_language_and_community(browser, origin):
+    context, page, errors = page_context(browser, 390)
+    try:
+        page.goto(origin + "/index.html", wait_until="load")
+        page.locator("#menu-toggle").click()
+        page.locator("#language-toggle").click()
+        assert page.locator('html').get_attribute('lang') == 'en'
+        assert page.locator('.elpa-nav a[href="./index.html"]').inner_text() == 'Home'
+        page.locator('.elpa-nav a[href="./community.html"]').click()
+        page.wait_for_url("**/community.html")
+        assert page.locator("#founder-title").inner_text() == "Founder & Maintainer"
+        assert "FuTseYi (Shine)" in page.locator(".community-person-name").inner_text()
+        assert page.locator('html').get_attribute('lang') == 'en'
+        assert_layout(page, "community English")
+        page.reload(wait_until="load")
+        assert page.locator('html').get_attribute('lang') == 'en'
+        page.locator("#menu-toggle").click()
+        page.locator("#language-toggle").click()
+        assert "傅谢懿（shine）" in page.locator(".community-person-name").inner_text()
+        assert not errors, (browser.browser_type.name, errors)
     finally:
         context.close()
 
@@ -305,6 +336,7 @@ def main():
                         check_content(browser, origin, width)
                     check_navigation(browser, origin)
                     check_without_scripts(browser, origin)
+                    check_language_and_community(browser, origin)
                     check_extended_behaviors(browser, origin)
                 finally:
                     browser.close()

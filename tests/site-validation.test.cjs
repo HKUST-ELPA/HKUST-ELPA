@@ -4,7 +4,7 @@ const {test}=require('node:test');
 const fs=require('node:fs'),path=require('node:path');
 const {execFileSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
-const pageNames=['index','guide','practice','sources','submit'];
+const pageNames=['index','guide','practice','sources','submit','community'];
 const site=path.join(root,'_site');
 const {read}=require('./site-support.cjs');
 function validateSite(){
@@ -29,7 +29,7 @@ function validateSite(){
     assert.ok(currentFooter,'Missing footer: '+name);
     if(footer)assert.equal(currentFooter,footer,'Shared footer drift: '+name);
     footer=currentFooter;
-    const script=name==='sources.html'?null:'./assets/js/'+path.basename(name,'.html')+'.js';
+    const script=['sources.html','community.html'].includes(name)?null:'./assets/js/'+path.basename(name,'.html')+'.js';
     if(script)assert.ok(html.includes('src="'+script+'?v='),'Page script missing: '+name);
   }
   for(const [name,html] of pages){
