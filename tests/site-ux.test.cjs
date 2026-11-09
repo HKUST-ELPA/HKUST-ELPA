@@ -228,6 +228,7 @@ test('footer is concise, community-oriented and identical across six pages',()=>
  }
  assert.match(read('sources.html'),/本站为学生整理的备考资源，并非学校官方题库/);
  assert.match(read('assets/css/shell.css'),/\.footer-grid\{/);
+ assert.match(read('assets/css/shell.css'),/-webkit-tap-highlight-color:transparent/);
  assert.match(read('assets/css/site.css'),/\.question-feedback a::after/);
  assert.equal((read('practice.html').match(/id="exportBtn"/g)||[]).length,1);
 });

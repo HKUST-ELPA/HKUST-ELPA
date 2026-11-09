@@ -1,5 +1,6 @@
 /* UEM's fixed sidebar, mobile overlay, theme and footer adapted to ELPA routes. */
 :root{color-scheme:light;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-synthesis:none;--bg:#f7f9fc;--surface:#fff;--text:#15263e;--muted:#60728b;--line:#e0e8f2;--accent:#155baf;--soft:#e9f2fd;--sidebar:256px;--banner-tint:linear-gradient(110deg,rgba(246,250,255,.12),rgba(246,250,255,.08))}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 [data-theme=dark]{color-scheme:dark;--bg:#0b1424;--surface:#111e32;--text:#edf4ff;--muted:#a6b8cf;--line:#283b55;--accent:#7bb6ff;--soft:#172d4c;--banner-tint:linear-gradient(110deg,rgba(4,17,38,.24),rgba(4,17,38,.16));--site-navy:#7bb6ff;--site-blue:#7bb6ff;--site-ink:#edf4ff;--site-muted:#a6b8cf;--site-line:#283b55;--site-bg:#0b1424}
 html{scroll-padding-top:24px}body.elpa-body{background:var(--bg);color:var(--text)}
 .skip-link{position:absolute;z-index:101;top:-80px;left:12px;padding:8px 14px;background:var(--surface);color:var(--accent)}.skip-link:focus{top:12px}
