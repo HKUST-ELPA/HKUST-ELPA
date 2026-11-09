@@ -53,6 +53,12 @@ def render_guide_advice(page, root):
         phase = entry["phase"]
         tags = entry.get("tags", [])
         chips = []
+        campus = entry.get("campus")
+        if campus in taxonomy["campuses"]:
+            chips.append('<span data-i18n-en="' + escape(
+                "Guangzhou Campus" if campus == "nansha" else "Hong Kong Campus",
+                quote=True) + '">' +
+                ("广州校区" if campus == "nansha" else "香港校区") + '</span>')
         if phase in taxonomy["advicePhases"]:
             chips.append(label(taxonomy["advicePhases"], phase))
         chips.extend(label(taxonomy["adviceTags"], tag)
