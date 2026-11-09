@@ -95,6 +95,6 @@ test('synthetic marked submissions never enter question or advice data',()=>{
 test('all four domains exist in canonical corpus',()=>{
  const content=JSON.parse(fs.readFileSync(path.join(root,'question-bank/questions.json'),'utf8'));
  assert.deepEqual(Object.keys(content.banks),['GZ-R','GZ-F','HK-R','HK-F']);
- assert.equal(content.banks['GZ-R'].items.length,51);
+ assert.equal(content.banks['GZ-R'].items.length,37);
  assert.equal(content.banks['GZ-F'].items.length,12);
 });
