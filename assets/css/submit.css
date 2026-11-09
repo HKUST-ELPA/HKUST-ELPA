@@ -3,7 +3,7 @@
 .contrib-form{display:grid;gap:24px}
 .contrib-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f0f4f9;padding:5px;border-radius:12px}
 .contrib-tab{border:0;border-radius:8px;background:transparent;color:#4a617a;cursor:pointer;font:inherit;font-size:15px;font-weight:700;padding:12px 6px;min-height:44px}
-.contrib-tab[aria-pressed="true"]{background:#fff;color:#003e74;box-shadow:0 2px 9px rgba(0,48,91,.1)}
+.contrib-tab[aria-pressed="true"]{background:#fff;color:#155baf;box-shadow:0 2px 9px rgba(0,48,91,.1)}
 .contrib-section{display:grid;gap:15px}
 .contrib-section[hidden]{display:none}
 .contrib-section h2{font-size:1.04rem;margin:0;color:#173d66}
@@ -13,14 +13,14 @@
 .contrib-field label,.contrib-field legend{font-size:.9rem;color:#213b56;font-weight:700}
 .contrib-field :is(input,textarea,select){width:100%;min-width:0;padding:11px 12px;border-radius:9px;border:1px solid #c5d1de;background:white;color:#1c354f;font:inherit;font-size:15px;line-height:1.55}
 .contrib-field textarea{resize:vertical;min-height:80px}
-.contrib-field :is(input,textarea,select):focus{outline:2px solid #94c4f2;outline-offset:1px;border-color:#1763a3}
+.contrib-field :is(input,textarea,select):focus{outline:2px solid #94c4f2;outline-offset:1px;border-color:#155baf}
 .contrib-field :is(input,textarea)::placeholder{color:#7e8a99;opacity:1}
 .contrib-caption{color:#65758a;font-size:.84rem}
 .contrib-line{border:0;border-top:1px solid #e2eaf3;margin:0}
 .contrib-notice{margin:0;padding:12px 14px;background:#f0f5fa;color:#38516a;border-radius:10px;line-height:1.65;font-size:.85rem}
 .contrib-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .contrib-button{font:inherit;cursor:pointer;border:1px solid #b8cce0;border-radius:10px;padding:10px 15px;background:#fff;color:#164c7a;font-weight:700;min-height:44px}
-.contrib-button.primary{background:#003e74;color:#fff;border-color:#003e74}
+.contrib-button.primary{background:#155baf;color:#fff;border-color:#155baf}
 .contrib-button:hover:not(:disabled){background:#ecf4fb}
 .contrib-button.primary:hover:not(:disabled){background:#12548c}
 .contrib-button:disabled{opacity:.5;cursor:not-allowed}
@@ -33,8 +33,8 @@
 .contrib-mini.remove{color:#a22b32}
 .contrib-tags{display:flex;flex-wrap:wrap;gap:8px}
 .contrib-tag{display:inline-flex;gap:6px;align-items:center;border:1px solid #ccd8e5;border-radius:999px;padding:8px 11px;font-size:.85rem;cursor:pointer;user-select:none;background:#fff}
-.contrib-tag:has(input:checked){background:#eaf3fc;color:#003e74;border-color:#88b6de}
-.contrib-tag input{accent-color:#003e74}
+.contrib-tag:has(input:checked){background:#eaf3fc;color:#155baf;border-color:#88b6de}
+.contrib-tag input{accent-color:#155baf}
 .contrib-fieldset{border:0;padding:0;display:grid;gap:10px;margin:0}
 .contrib-message{min-height:1.5em;margin:0;font-size:.9rem}
 .contrib-message[data-state="error"]{color:#a32626}
@@ -70,5 +70,6 @@
 .contrib-intent{margin-top:12px;gap:7px}
 .contrib-intent legend{font-weight:700;font-size:13px;color:#244861;margin-bottom:7px}
 .contrib-intent label{display:flex;align-items:center;gap:8px;min-height:36px;font-size:13px;cursor:pointer}
-.contrib-intent input{accent-color:#003e74}
+.contrib-intent input{accent-color:#155baf}
 .contrib-intent small{color:#64748b;font-size:12px;line-height:1.5}
+

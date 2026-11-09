@@ -1,0 +1,109 @@
+/* UEM's fixed sidebar, mobile overlay, theme and footer adapted to ELPA routes. */
+:root{color-scheme:light;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-synthesis:none;--bg:#f7f9fc;--surface:#fff;--text:#15263e;--muted:#60728b;--line:#e0e8f2;--accent:#155baf;--soft:#e9f2fd;--sidebar:256px;--banner-tint:linear-gradient(110deg,rgba(246,250,255,.12),rgba(246,250,255,.08))}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+[data-theme=dark]{color-scheme:dark;--bg:#0b1424;--surface:#111e32;--text:#edf4ff;--muted:#a6b8cf;--line:#283b55;--accent:#7bb6ff;--soft:#172d4c;--banner-tint:linear-gradient(110deg,rgba(4,17,38,.24),rgba(4,17,38,.16));--site-navy:#7bb6ff;--site-blue:#7bb6ff;--site-ink:#edf4ff;--site-muted:#a6b8cf;--site-line:#283b55;--site-bg:#0b1424}
+html{scroll-padding-top:24px}body.elpa-body{background:var(--bg);color:var(--text)}
+.skip-link{position:absolute;z-index:101;top:-80px;left:12px;padding:8px 14px;background:var(--surface);color:var(--accent)}.skip-link:focus{top:12px}
+.shell{display:flex;min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;z-index:45;width:var(--sidebar);height:100vh;padding:32px 20px 4px;display:flex;flex-direction:column;border-right:1px solid var(--line);background:var(--surface);overflow-y:auto}
+.sidebar .brand{display:flex;align-items:center;gap:12px;min-height:52px;margin-bottom:48px;color:var(--text);text-decoration:none;font-size:17px;font-weight:750}.brand-logo{width:52px;height:52px;object-fit:contain}
+.sidebar .elpa-nav{display:grid;gap:5px;position:static;background:none;border:0;box-shadow:none;backdrop-filter:none}.sidebar .elpa-nav a{display:block;padding:11px 13px;border:0;border-radius:10px;color:var(--text);font-size:14px;font-weight:500;text-decoration:none;transition:background .2s}.sidebar .elpa-nav a:hover,.sidebar .elpa-nav a[aria-current=page]{background:var(--soft);color:var(--accent)}.sidebar .elpa-nav a[aria-current=page]{font-weight:650}.sidebar .elpa-nav a.nav-contribute{position:relative;margin-top:16px;display:flex;align-items:center;justify-content:space-between}.sidebar .elpa-nav a.nav-contribute:before{content:"";position:absolute;top:-11px;left:0;right:0;border-top:1px solid var(--line)}.link-arrow:after{content:"↗"}
+.sidebar-bottom{display:flex;justify-content:center;margin-top:auto;padding-top:8px;border-top:1px solid var(--line)}.sidebar-theme{display:flex;align-items:center;gap:12px;width:max-content;padding:12px 13px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted);font-size:14px;cursor:pointer}.sidebar-theme:hover{background:var(--soft);color:var(--text)}.sidebar-theme svg{display:block;width:19px;height:19px}.sidebar-theme [data-theme-icon]{display:none}.sidebar-theme[data-mode=system] [data-theme-icon=system],.sidebar-theme[data-mode=light] [data-theme-icon=light],.sidebar-theme[data-mode=dark] [data-theme-icon=dark]{display:block}
+.page{min-width:0;flex:1;margin-left:var(--sidebar);display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:var(--text)}.page .topbar{display:none}.page #main{flex:1;width:100%;min-width:0}.campus-banner{flex:none;height:clamp(270px,30vw,440px);background-color:var(--soft);background-image:linear-gradient(to bottom,transparent 70%,var(--bg) 100%),var(--banner-tint),url('../images/two-campuses.jpg');background-size:cover;background-repeat:no-repeat;background-position:center,center,center 43%}
+.page .elpa-main,.page .wrap,.page .contrib-wrap{max-width:1200px}.page .elpa-subhero{background:var(--bg);color:var(--text)}.page .elpa-subhero-inner{max-width:1200px}.page .elpa-subhero h1,.page .elpa-heading{font-family:Georgia,'Songti SC',serif;font-weight:500;color:var(--text)}
+.elpa-footer{flex:none;background:linear-gradient(to bottom,var(--bg),var(--surface) 80px);color:var(--text);padding:48px clamp(22px,5vw,76px) 22px;text-align:left;font-size:14px}.footer-inner{width:100%;margin:0 auto}.footer-grid{display:grid;grid-template-columns:minmax(0,1fr) max-content;justify-content:space-between;align-items:center;gap:clamp(24px,5vw,72px)}.footer-grid>div:last-child{justify-self:end;text-align:right}.footer-brand-link{display:inline-flex;align-items:center;gap:12px;color:var(--text);text-decoration:none}.footer-logo{width:52px;height:52px;object-fit:contain}.footer-brand-name{font-family:'Songti SC',serif;font-size:17px;font-style:italic;font-weight:700}.footer-brand p{max-width:420px;color:var(--muted);line-height:1.9;margin:16px 0 0}.footer-title{font-size:12px;letter-spacing:.14em;color:var(--muted);margin:0 0 13px}.footer-links{display:grid;justify-items:end;gap:9px}.elpa-footer a{color:var(--text);text-decoration:none}.elpa-footer a:hover{color:var(--accent)}.footer-bottom{display:flex;justify-content:space-between;gap:20px;margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+[data-theme=dark] .page .elpa-subhero,[data-theme=dark] .page .elpa-home-feature,[data-theme=dark] .page .elpa-home-more-card,[data-theme=dark] .page .elpa-guide-panel,[data-theme=dark] .page .elpa-resource,[data-theme=dark] .page .contrib-card,[data-theme=dark] .page .card{background:var(--surface);color:var(--text);border-color:var(--line)}[data-theme=dark] .page input,[data-theme=dark] .page select,[data-theme=dark] .page textarea{background:var(--surface);color:var(--text);border-color:var(--line)}
+@media(max-width:900px){:root{--mobile-header-height:72px}.shell{display:block}.page{width:100%;margin-left:0}.page .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;height:var(--mobile-header-height);padding:0 clamp(18px,4vw,28px);background:var(--surface)}.mobile-brand{display:flex;align-items:center;gap:9px;color:var(--text);text-decoration:none;font-weight:750}.mobile-brand img{width:44px;height:44px}.menu-button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:none;color:var(--text);cursor:pointer}.menu-lines{display:grid;gap:5px;width:20px}.menu-lines span{display:block;width:100%;height:2px;border-radius:2px;background:currentColor;transition:transform .2s,opacity .2s}.menu-button[aria-expanded=true] .menu-lines span:first-child{transform:translateY(7px) rotate(45deg)}.menu-button[aria-expanded=true] .menu-lines span:nth-child(2){opacity:0}.menu-button[aria-expanded=true] .menu-lines span:last-child{transform:translateY(-7px) rotate(-45deg)}.sidebar{position:fixed;z-index:45;top:calc(var(--mobile-header-height) + 10px);bottom:auto;left:clamp(14px,4vw,28px);right:clamp(14px,4vw,28px);width:auto;height:auto;max-height:calc(100dvh - var(--mobile-header-height) - 22px);padding:14px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 50px rgba(4,16,38,.18);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-8px);transition:opacity .2s,transform .2s,visibility 0s linear .2s}.shell.menu-open .sidebar{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);transition:opacity .2s,transform .2s,visibility 0s}.shell.nav-reset .sidebar,.shell.nav-reset .menu-lines span{transition:none}.sidebar .brand{display:none}.sidebar .elpa-nav a{padding:10px 13px}.sidebar-bottom{justify-content:flex-start;margin-top:12px;padding-top:16px}.campus-banner{height:clamp(220px,48vw,320px);background-image:linear-gradient(to bottom,var(--surface),transparent 80px),linear-gradient(to bottom,transparent 70%,var(--bg) 100%),var(--banner-tint),url('../images/two-campuses.jpg');background-position:center,center,center,center 43%}}
+@media(max-width:720px){.footer-grid{grid-template-columns:1fr;gap:28px}.footer-grid>div:last-child{justify-self:start;text-align:left}.footer-links{justify-items:start}}
+@media(max-width:580px){.elpa-footer{padding:38px 22px 24px}.footer-bottom{flex-direction:column;gap:12px;margin-top:28px}.campus-banner{height:clamp(180px,50vw,280px)}}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){color-scheme:dark;--bg:#0b1424;--surface:#111e32;--text:#edf4ff;--muted:#a6b8cf;--line:#283b55;--accent:#7bb6ff;--soft:#172d4c;--site-navy:#7bb6ff;--site-blue:#7bb6ff;--site-ink:#edf4ff;--site-muted:#a6b8cf;--site-line:#283b55;--site-bg:#0b1424}}
+@media(prefers-reduced-motion:reduce){.sidebar,.menu-lines span,.sidebar .elpa-nav a{transition:none!important}}
+@media(max-width:900px){html:not(.js) .sidebar{position:static;display:block;max-height:none;transform:none;opacity:1;visibility:visible;pointer-events:auto;width:auto;margin:0 14px 14px}html:not(.js) .menu-button{display:none}html:not(.js) .sidebar .brand{display:none}}
+
+.sidebar .brand{margin-bottom:38px;min-height:68px}.sidebar .brand-logo{width:100%;height:70px;object-fit:cover;object-position:center}
+.mobile-brand .mobile-brand-logo{width:154px;height:54px;object-fit:cover;object-position:center}
+.footer-brand-link .footer-logo{width:164px;height:62px;object-fit:cover;object-position:center}
+@media(max-width:580px){.mobile-brand .mobile-brand-logo{width:136px;height:50px}}
+/* Readable ELPA text on UEM's light and dark reading surfaces. */
+.page .elpa-subhero{min-height:220px;padding:30px 24px;background:var(--bg);color:var(--text)}
+.elpa-home .page .elpa-subhero{background:var(--bg)}
+.page .elpa-subhero p{color:var(--muted);font-size:15px}
+.page .elpa-subhero h1 em{color:var(--accent)}
+.page .elpa-guide-intro a{color:var(--accent);text-decoration-color:currentColor}
+.page .elpa-guide-intro a:hover{color:var(--site-blue)}
+.page .elpa-eyebrow{color:var(--text);border-color:var(--line);background:var(--soft)}
+.page .elpa-home-lead,.page .elpa-desc,.page .elpa-resource p,.page .elpa-advice-content{color:var(--muted)}
+@media(max-width:650px){.page .elpa-subhero{min-height:180px;padding:26px 20px}.page .elpa-subhero p{font-size:14px}}
+/* The supplied square logo includes a low HKUST line; show the complete artwork. */
+.sidebar .brand{min-height:96px;margin-bottom:28px}.sidebar .brand-logo{height:96px}
+.mobile-brand .mobile-brand-logo{height:68px}
+.footer-brand-link .footer-logo{height:76px}
+@media(max-width:580px){.mobile-brand .mobile-brand-logo{height:64px}}
+/* One right-pointing arrow and movement shared with UEM. */
+.link-arrow{display:inline-block;vertical-align:middle;flex:0 0 auto;width:7px;height:7px;margin-left:6px;border-top:1.5px solid currentColor;border-right:1.5px solid currentColor;transform:rotate(45deg);transition:transform .16s ease}
+.link-arrow::after{content:none}
+a:is(:hover,:focus-visible) .link-arrow{transform:translateX(3px) rotate(45deg)}
+@media(prefers-reduced-motion:reduce){.link-arrow{transition:none}a:is(:hover,:focus-visible) .link-arrow{transform:rotate(45deg)}}
+/* Dark mode keeps the supplied navy wordmark legible and uses the same surfaces. */
+[data-theme=dark] .sidebar .elpa-nav a:hover,[data-theme=dark] .sidebar .elpa-nav a[aria-current=page]{background:var(--soft);color:var(--accent)}
+[data-theme=dark] .elpa-home-start .elpa-cta-secondary{background:var(--surface);border-color:var(--accent);color:var(--accent)!important}
+[data-theme=dark] .elpa-home-start .elpa-cta-secondary:hover{background:var(--soft)}
+[data-theme=dark] .elpa-home-journey,[data-theme=dark] .elpa-home-demo,[data-theme=dark] .elpa-guide-panel,[data-theme=dark] .elpa-advice-card,[data-theme=dark] .elpa-resource{background:var(--surface);border-color:var(--line);color:var(--text)}
+[data-theme=dark] .elpa-home-journey strong,[data-theme=dark] .elpa-home-feature-copy h3,[data-theme=dark] .elpa-home-more-card h3,[data-theme=dark] .elpa-advice-card h3{color:var(--text)}
+/* Guide highlight and reading contrast in dark mode. */
+[data-theme=dark] .elpa-guide-switch{background:var(--soft);border-color:var(--line)}
+[data-theme=dark] .elpa-guide-switch button{color:var(--muted)}
+[data-theme=dark] .elpa-guide-switch button.active{background:var(--surface);color:var(--accent);box-shadow:none}
+[data-theme=dark] .elpa-guide-panel{background:var(--surface);border-color:var(--line);color:var(--text)}
+[data-theme=dark] .elpa-guide-overview h3,[data-theme=dark] .elpa-guide-steps strong,[data-theme=dark] .elpa-guide-steps-detailed h4{color:var(--text)}
+[data-theme=dark] .elpa-guide-overview p,[data-theme=dark] .elpa-guide-steps p,[data-theme=dark] .elpa-guide-steps-detailed p{color:var(--muted)}
+[data-theme=dark] .elpa-guide-steps-detailed li,[data-theme=dark] .elpa-guide-steps-detailed li:last-child{background:var(--soft);border-color:var(--line);border-left-color:var(--accent)}
+[data-theme=dark] .elpa-guide-steps-detailed h4 span{background:var(--surface);color:var(--accent)}
+[data-theme=dark] .elpa-guide-steps-detailed p strong{color:var(--text)}
+[data-theme=dark] .elpa-guide-steps li::before{background:var(--accent);color:#0b1424}
+[data-theme=dark] .elpa-guide-faq h4{color:var(--text)}
+[data-theme=dark] .elpa-guide-faq details{background:var(--soft);border-color:var(--line);color:var(--text)}
+[data-theme=dark] .elpa-guide-practice{background:var(--accent);color:#0b1424!important}
+
+
+/* UEM community page structure, using the shared ELPA shell and theme tokens. */
+.community-content{width:min(100% - 48px,820px);margin:0 auto 76px}
+.community-section{padding:28px 0;border-top:1px solid var(--line)}
+.community-section h2{margin:0 0 10px;font-size:20px;font-weight:600;letter-spacing:-.02em}
+.community-section>p{color:var(--muted);font-size:14px;line-height:1.8;margin:0 0 18px}
+.community-people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px;margin-bottom:18px}
+.community-person{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;padding:22px 0;border-bottom:1px solid var(--line)}
+.community-person-name{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:0;color:var(--text);font-size:16px;font-weight:650}
+.community-role{font-size:12px;font-weight:500;color:var(--muted)}
+.community-person-info p{color:var(--muted);font-size:13px;margin:4px 0}
+.community-person-links{display:flex;gap:12px;flex:none}
+.community-person-links a{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;color:var(--muted);text-decoration:none}
+.community-person-links a:hover,.community-person-links a:focus-visible{color:var(--accent)}
+.community-person-links svg{width:18px;height:18px}
+.community-section p a{color:var(--accent);text-decoration:none;font-size:14px}
+.community-section p a:hover{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:580px){.community-content{width:min(100% - 40px,820px);margin:0 auto 42px}.community-people{grid-template-columns:1fr}.community-person{align-items:flex-start;flex-direction:column;gap:12px}}
+.sidebar-bottom{align-items:center;gap:6px}
+.language-toggle{min-width:44px;min-height:44px;padding:8px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.language-toggle:hover,.language-toggle:focus-visible{background:var(--soft);color:var(--accent)}
+.footer-bottom-credit{display:flex;align-items:center;flex-wrap:wrap;gap:6px 20px}
+.elpa-footer .footer-bottom-credit{color:var(--muted)}
+.elpa-footer .footer-bottom-credit:hover{color:var(--accent)}
+.footer-github{display:inline-flex;align-items:center;gap:7px}
+.footer-github svg{width:16px;height:16px;flex:none}
+.elpa-en-sub,.elpa-en-inline,.elpa-en-summary{display:none!important}
+html:not(.js) .language-toggle{display:none}
+.campus-banner{position:relative;isolation:isolate;overflow:hidden;background:url('../images/two-campuses.jpg') center 43%/cover no-repeat}
+.campus-banner::before{content:"";position:absolute;inset:-18px;background:url('../images/two-campuses.jpg') center 43%/cover no-repeat;filter:blur(14px);-webkit-mask-image:radial-gradient(ellipse 78% 82% at center,transparent 48%,#000 100%);mask-image:radial-gradient(ellipse 78% 82% at center,transparent 48%,#000 100%)}
+.campus-banner::after{content:"";position:absolute;inset:0;background-image:linear-gradient(to bottom,transparent 70%,var(--bg) 100%),var(--banner-tint)}
+@media(max-width:900px){.campus-banner::after{background-image:linear-gradient(to bottom,var(--surface),transparent 80px),linear-gradient(to bottom,transparent 70%,var(--bg) 100%),var(--banner-tint)}}
+.sidebar .elpa-nav a.nav-contribute{min-height:0;padding:11px 13px;border:0;background:transparent;box-shadow:none;color:var(--text)!important;font-size:14px;font-weight:500;transform:none}
+.sidebar .elpa-nav a.nav-contribute:hover,.sidebar .elpa-nav a.nav-contribute[aria-current=page]{background:var(--soft);box-shadow:none;color:var(--accent)!important;transform:none}
+.sidebar .elpa-nav a.nav-contribute[aria-current=page]{font-weight:650}
+.sidebar .elpa-nav a:has(.link-arrow){display:flex;align-items:center;justify-content:space-between}
+.community-contact{display:flex;gap:14px 24px;align-items:center;flex-wrap:wrap}
+.community-contact a{display:inline-flex;align-items:center;gap:7px;color:var(--accent);font-size:14px;text-decoration:none}
+.community-contact svg{width:16px;height:16px;flex:none}
+.community-contact a:hover{text-decoration:underline;text-underline-offset:3px}
+.elpa-cta{position:relative;padding-right:38px}
+.elpa-cta::after{position:absolute;right:18px;top:50%;margin:0;transform:translateY(-50%) rotate(45deg)}
+.elpa-cta:is(:hover,:focus-visible)::after{transform:translate(3px,-50%) rotate(45deg)}

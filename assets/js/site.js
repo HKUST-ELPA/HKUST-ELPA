@@ -1,9 +1,79 @@
+const elpaShell = document.querySelector('.shell');
+const elpaSidebar = document.querySelector('#sidebar');
+const elpaMenuButton = document.querySelector('#menu-toggle');
+const elpaMobile = matchMedia('(max-width: 900px)');
+function elpaSetMenu(open, restoreFocus = false) {
+  open = Boolean(open && elpaMobile.matches);
+  elpaShell.classList.toggle('menu-open', open);
+  elpaSidebar.inert = elpaMobile.matches && !open;
+  elpaMenuButton.setAttribute('aria-expanded', String(open));
+  elpaMenuButton.setAttribute('aria-label', open ? '关闭导航' : '打开导航');
+  if (restoreFocus) elpaMenuButton.focus();
+}
+function elpaResetMenu() {
+  elpaShell.classList.add('nav-reset');
+  elpaSetMenu(false);
+}
+function elpaFinishMenuReset() {
+  requestAnimationFrame(() => elpaShell.classList.remove('nav-reset'));
+}
+elpaMenuButton.addEventListener('click', () => {
+  elpaShell.classList.remove('nav-reset');
+  elpaSetMenu(!elpaShell.classList.contains('menu-open'));
+});
+document.addEventListener('click', event => {
+  if (elpaShell.classList.contains('menu-open') && !elpaSidebar.contains(event.target) && !elpaMenuButton.contains(event.target)) elpaSetMenu(false);
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && elpaShell.classList.contains('menu-open')) elpaSetMenu(false, true);
+});
+elpaMobile.addEventListener('change', () => elpaSetMenu(false));
+window.addEventListener('pagehide', elpaResetMenu);
+window.addEventListener('pageshow', () => { elpaResetMenu(); elpaFinishMenuReset(); });
+elpaSetMenu(false);
+
+const elpaThemeButton = document.querySelector('#theme-toggle');
+const elpaThemeModes = ['system', 'light', 'dark'];
+function elpaSyncTheme() {
+  const mode = document.documentElement.dataset.theme || 'system';
+  const next = elpaThemeModes[(elpaThemeModes.indexOf(mode) + 1) % elpaThemeModes.length];
+  const labels = document.documentElement.dataset.lang === 'en'
+    ? {system:'System', light:'Light', dark:'Dark'}
+    : {system:'跟随系统', light:'浅色模式', dark:'深色模式'};
+  elpaThemeButton.dataset.mode = mode;
+  elpaThemeButton.setAttribute('aria-label', document.documentElement.dataset.lang === 'en'
+    ? 'Current: ' + labels[mode] + '. Switch to ' + labels[next]
+    : '当前为' + labels[mode] + '，切换到' + labels[next]);
+  elpaThemeButton.title = labels[mode] + ' · ' + (document.documentElement.dataset.lang === 'en' ? 'Switch to ' : '点击切换到') + labels[next];
+  elpaThemeButton.querySelector('#theme-label').textContent = labels[mode];
+}
+elpaThemeButton.addEventListener('click', () => {
+  const mode = document.documentElement.dataset.theme || 'system';
+  const next = elpaThemeModes[(elpaThemeModes.indexOf(mode) + 1) % elpaThemeModes.length];
+  if (next === 'system') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = next;
+  try { localStorage.setItem('elpa-theme', next); } catch {}
+  elpaSyncTheme();
+});
+window.addEventListener('storage', event => {
+  if (event.key !== 'elpa-theme') return;
+  if (event.newValue === 'light' || event.newValue === 'dark') document.documentElement.dataset.theme = event.newValue;
+  else delete document.documentElement.dataset.theme;
+  elpaSyncTheme();
+});
+window.addEventListener('pageshow', elpaSyncTheme);
+window.addEventListener('elpa:language', elpaSyncTheme);
+elpaSyncTheme();
+
 document.querySelector('.elpa-nav').addEventListener('click', event => {
   const link = event.target.closest('a[href]');
   if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
+  if (link.origin !== location.origin) return;
+  elpaResetMenu();
   const route = path => path.replace(/\/index\.html$/, '/');
-  if (link.origin !== location.origin || route(link.pathname) !== route(location.pathname) || link.search !== location.search || link.hash) return;
+  if (route(link.pathname) !== route(location.pathname) || link.search !== location.search || link.hash) return;
   event.preventDefault();
+  elpaFinishMenuReset();
   if (location.hash) history.replaceState(history.state, '', link.pathname + link.search);
   window.scrollTo({top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
 });
@@ -11,7 +81,7 @@ document.querySelector('.elpa-nav').addEventListener('click', event => {
 
 /* One persistent shell for public reading and practice routes.
    Each route remains a complete, directly accessible static document. */
-const elpaRoutes = new Set(['index.html', 'guide.html', 'practice.html', 'sources.html']);
+const elpaRoutes = new Set(['index.html', 'guide.html', 'practice.html', 'sources.html', 'community.html']);
 const elpaBase = new URL('./', location.href).pathname;
 const elpaRoute = url => {
   const pathname = url.pathname === elpaBase ? elpaBase + 'index.html' : url.pathname;
@@ -104,6 +174,8 @@ async function elpaActivate(page, route, scroll) {
   elpaSetCurrentNav(route);
   for (const src of page.scripts) await elpaLoadScript(src);
   elpaActiveRoute = route;
+  window.dispatchEvent(new Event('elpa:route'));
+  elpaFinishMenuReset();
   requestAnimationFrame(() => scrollTo({top:scroll, behavior:'instant'}));
 }
 

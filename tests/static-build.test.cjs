@@ -9,7 +9,7 @@ const {spawnSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const python=process.platform==='win32'?'py':'python3';
 const pythonArgs=process.platform==='win32'?['-3']:[];
-const pages=['index','guide','practice','sources','submit'];
+const pages=['index','guide','practice','sources','submit','community'];
 
 test('portable site build publishes all pages and generates scripts from JSON',()=>{
   const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'elpa-static-build-'));

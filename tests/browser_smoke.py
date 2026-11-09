@@ -56,6 +56,12 @@ def assert_layout(page, label):
     assert page.locator(".elpa-footer").count() == 1, label
 
 
+def click_nav(page, name):
+    if page.viewport_size["width"] <= 900:
+        page.locator("#menu-toggle").click()
+    page.locator(f'.elpa-nav a[href="./{name}.html"]').click()
+
+
 def check_content(browser, base, width):
     context, page, errors = page_context(browser, width)
     try:
@@ -69,7 +75,7 @@ def check_content(browser, base, width):
         assert page.locator("#official-sources").is_visible()
         assert_layout(page, "sources")
         page.evaluate("window.__sameDocument = true")
-        page.locator('.elpa-nav-links a[href="./sources.html"]').click()
+        click_nav(page, "sources")
         assert page.evaluate("window.__sameDocument"), "Revisiting current route should not reload"
         page.goto(base + "/guide.html", wait_until="load")
         assert page.locator("#regularGuide").is_visible()
@@ -85,6 +91,10 @@ def check_content(browser, base, width):
         page.locator("#bankD .qcard").first.wait_for(timeout=20000)
         assert page.locator("#practiceLauncher").is_visible()
         assert_layout(page, "practice")
+        assert page.locator(".toolbar").evaluate("node => getComputedStyle(node).position") == "static"
+        page.locator("#practiceLauncher").click()
+        assert page.locator("#timerPanel").is_visible()
+        page.locator("#practiceLauncher").click()
         buttons = page.locator("#bankD .qcard").first.locator(".q-actions button").evaluate_all(
             "items => items.map(b => ({w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height}))"
         )
@@ -98,6 +108,17 @@ def check_content(browser, base, width):
 
 
 def check_practice(page, base):
+    page.locator("#searchOpen").click()
+    page.locator("#searchInput").fill("supply chain")
+    page.locator("#searchResults .search-result").first.wait_for(timeout=20000)
+    page.locator("#searchResults .search-result").first.click()
+    page.wait_for_url("**question=D-1")
+    assert page.locator("#q-D-1.search-target").is_visible()
+    page.locator("#searchOpen").click()
+    page.locator("#searchInput").fill("What was your degree")
+    page.locator("#searchResults .search-result-kind").first.wait_for(timeout=20000)
+    assert "小问" in page.locator("#searchResults .search-result-kind").first.inner_text()
+    page.locator("#searchClose").click()
     note = page.locator("#bankD .qcard .qnote").first
     note.locator(".note-toggle").click()
     note.locator("textarea").fill("Regression note from Python Playwright")
@@ -106,16 +127,16 @@ def check_practice(page, base):
     note = page.locator("#bankD .qcard .qnote").first
     note.locator(".note-toggle").click()
     assert note.locator("textarea").input_value() == "Regression note from Python Playwright"
-    page.locator("#practiceLauncher").click()
+    page.locator("#practiceLauncher").evaluate("button => button.click()")
     assert page.locator("#timerPanel").is_visible()
     assert page.locator("#timerDisplay").inner_text() == "01:00"
     page.locator("#timerDrill").click()
     page.locator(".qcard.drill-active").first.wait_for(timeout=10000)
     assert not page.locator("#timerPanel").is_visible()
-    page.locator("#practiceLauncher").click()
+    page.locator("#practiceLauncher").evaluate("button => button.click()")
     page.locator("#timerStartPause").click()
     page.wait_for_function("!document.getElementById('timerPanel').classList.contains('show')")
-    page.locator("#practiceLauncher").click()
+    page.locator("#practiceLauncher").evaluate("button => button.click()")
     page.locator("#timerStartPause").click()
     page.locator("#timerReset").click()
     page.goto(base + "/submit.html?kind=advice", wait_until="load")
@@ -150,10 +171,10 @@ def check_navigation(browser, origin):
                     page.reload(wait_until="load")
                     page.evaluate("window.__sameDocument = true")
                     for _ in range(3):
-                        page.locator('.elpa-nav-links a[href="./sources.html"]').click()
+                        click_nav(page, "sources")
                         assert page.evaluate("window.__sameDocument")
                     for name in ("guide", "sources", "practice", "sources", "index", "sources"):
-                        page.locator(f'.elpa-nav-links a[href="./{name}.html"]').click()
+                        click_nav(page, name)
                         page.wait_for_url("**/" + name + ".html")
                         assert_layout(page, "navigation")
                         assert page.evaluate(
@@ -163,7 +184,7 @@ def check_navigation(browser, origin):
                     page.goto(base + "/guide.html", wait_until="load")
                     page.evaluate("window.__persistentShell = document.querySelector('.elpa-nav')")
                     page.evaluate("window.__persistentFooter = document.querySelector('.elpa-footer')")
-                    page.locator('.elpa-nav-links a[href="./practice.html"]').click()
+                    click_nav(page, "practice")
                     page.wait_for_url("**/practice.html")
                     page.locator("#bankD .qcard").first.wait_for(timeout=20000)
                     assert page.evaluate("""() => document.querySelector('.elpa-nav') === window.__persistentShell
@@ -183,6 +204,11 @@ def check_navigation(browser, origin):
                             page.wait_for_timeout(100)
                             after = page.locator(".elpa-footer").evaluate("node => node.getBoundingClientRect().top")
                             assert abs(after - before) < 8, (name, "footer shifted after initial render", before, after)
+                        page.evaluate("window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'})")
+                        page.wait_for_function("window.scrollY + innerHeight >= document.documentElement.scrollHeight - 2")
+                        lines = page.evaluate("""() => ({sidebar:document.querySelector('.sidebar-bottom').getBoundingClientRect().top,
+                            footer:document.querySelector('.footer-bottom').getBoundingClientRect().top})""")
+                        assert abs(lines["sidebar"] - lines["footer"]) < 12, lines
                 finally:
                     context.close()
 
@@ -191,12 +217,50 @@ def check_without_scripts(browser, origin):
     context, page, _ = page_context(browser, 390, scripts=False)
     try:
         page.goto(origin + "/index.html", wait_until="load")
-        page.locator('.elpa-nav-links a[href="./sources.html"]').click()
+        page.goto(origin + "/sources.html", wait_until="load")
         page.wait_for_url("**/sources.html")
         assert page.locator("#official-sources").is_visible()
         page.goto(origin + "/guide.html", wait_until="load")
         assert page.locator("#guideAdviceList article").count() == 3
         assert page.locator("#sec-advice").is_visible()
+    finally:
+        context.close()
+
+
+def check_language_and_community(browser, origin):
+    context, page, errors = page_context(browser, 390)
+    try:
+        page.goto(origin + "/index.html", wait_until="load")
+        assert page.locator(".elpa-en-inline:visible, .elpa-en-sub:visible, .elpa-en-summary:visible").count() == 0
+        page.locator("#menu-toggle").click()
+        page.locator("#language-toggle").click()
+        assert page.locator('html').get_attribute('lang') == 'en'
+        assert page.locator(".elpa-en-inline:visible, .elpa-en-sub:visible, .elpa-en-summary:visible").count() == 0
+        assert page.locator('.elpa-nav a[href="./index.html"]').inner_text() == 'Home'
+        page.locator('.elpa-nav a[href="./community.html"]').click()
+        page.wait_for_url("**/community.html")
+        assert page.locator("#founder-title").inner_text() == "Project Maintainer"
+        assert "FuTseYi (Shine)" in page.locator(".community-person-name").first.inner_text()
+        assert page.locator(".community-role").first.inner_text() == "Founder"
+        assert page.locator(".community-person-info p").first.inner_text() == "Fall 2026 · MPhil in AI"
+        assert page.locator(".community-person").count() == 2
+        assert page.locator(".community-person-links svg").count() == 3
+        assert "Dongye LIU (Dylan)" in page.locator(".community-person").last.inner_text()
+        assert "2026 · MPhil" in page.locator(".community-person").last.inner_text()
+        assert page.locator('.community-contact a[href="mailto:hello@futseyi.com"]').is_visible()
+        icons = page.locator(".community-contact svg").evaluate_all(
+            "items => items.map(icon => [icon.getBoundingClientRect().width, icon.getBoundingClientRect().height])"
+        )
+        assert icons == [[16, 16], [16, 16]], icons
+        assert page.locator('html').get_attribute('lang') == 'en'
+        assert_layout(page, "community English")
+        page.reload(wait_until="load")
+        assert page.locator('html').get_attribute('lang') == 'en'
+        page.locator("#menu-toggle").click()
+        page.locator("#language-toggle").click()
+        assert "FuTseYi (Shine)" in page.locator(".community-person-name").first.inner_text()
+        assert page.locator(".community-role").first.inner_text() == "Founder"
+        assert not errors, (browser.browser_type.name, errors)
     finally:
         context.close()
 
@@ -225,17 +289,20 @@ def check_extended_behaviors(browser, origin):
         page.locator('[data-campus="nansha"]').click()
         assert not page.locator("#categoryEmpty").is_visible()
         assert page.locator("#timerDrill").is_enabled()
+        page.locator("#searchOpen").click()
         page.locator("#searchInput").fill("no-matching-question-for-draw")
-        assert page.locator("#emptyState").is_visible()
-        assert page.locator("#timerDrill").is_disabled()
+        page.get_by_text("没有找到匹配题目").wait_for()
         page.locator("#searchClear").click()
+        page.locator("#searchClose").click()
         assert page.locator("#timerDrill").is_enabled()
 
         page.goto(origin + "/practice.html?track=fast-track", wait_until="load")
         page.locator("#bankD .qcard").first.wait_for()
         questions = page.locator("#bankD .q-title > .en,#bankPast .q-title > .en").all_text_contents()
         assert questions
+        page.locator("#searchOpen").click()
         page.locator("#searchInput").fill("no-matching-question-for-export")
+        page.locator("#searchClose").click()
         page.locator("#recordsMenuBtn").click()
         with page.expect_download() as download:
             page.locator("#recordsExportBtn").click()
@@ -285,6 +352,7 @@ def main():
                         check_content(browser, origin, width)
                     check_navigation(browser, origin)
                     check_without_scripts(browser, origin)
+                    check_language_and_community(browser, origin)
                     check_extended_behaviors(browser, origin)
                 finally:
                     browser.close()

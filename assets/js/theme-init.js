@@ -1,0 +1,1 @@
+(() => {document.documentElement.classList.add('js');try {if(localStorage.getItem('elpa-lang')==='en'){document.documentElement.dataset.lang='en';document.documentElement.lang='en';}} catch {}try {const mode=localStorage.getItem('elpa-theme');if(mode==='light'||mode==='dark')document.documentElement.dataset.theme=mode;} catch {}})();

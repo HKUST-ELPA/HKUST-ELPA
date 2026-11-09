@@ -10,7 +10,7 @@ HKUST-ELPA is a student-maintained static ELPA preparation website built with HT
 
 - `index.html` owns the homepage, shared navigation/footer, and authored guide/sources content in `<template data-page>` blocks.
 - `practice.html` owns question browsing, practice and local learning records. `submit.html` owns the submission interface.
-- `preview.py` builds and verifies the complete portable static site in `_site/`. It publishes the five routes: `index.html`, `guide.html`, `practice.html`, `sources.html`, `submit.html`.
+- `preview.py` builds and verifies the complete portable static site in `_site/`. It publishes six routes: `index.html`, `guide.html`, `practice.html`, `sources.html`, `submit.html`, `community.html`.
 - `assets/` holds front-end CSS, JavaScript and media; `data/` holds the public submission configuration and initial record template.
 - `question-bank/` is the canonical source for questions, appearances, reviewed advice, taxonomy and provenance. Python generates browser-ready resources.
 - `worker/` validates untrusted submissions and creates public Issues. Owner-approved Issue closures trigger the importer in `scripts/`, which updates canonical question data.

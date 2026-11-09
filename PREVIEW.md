@@ -3,6 +3,7 @@
 ## 本地预览和验证
 
 需要 Python 3.10+；测试 JavaScript 时还需要 Node.js 22+。以下命令均在 Source 根目录运行，按任务选择：
+首次运行先安装构建依赖：`python -m pip install -r requirements.txt`。Pagefind 索引会随静态站点一起生成。
 
 **日常预览**：启动本地网站；修改源码后刷新浏览器，结束时按 Ctrl+C。
 

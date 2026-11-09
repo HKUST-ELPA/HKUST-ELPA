@@ -562,7 +562,7 @@ function renderPager(kind,total,pages){
 }
 function applyFilters(reset=false){
   if(reset){bankPages.past=1;bankPages.fall=1;}
-  const kw=searchInput.value.trim().toLowerCase(),filter=statusFilter.value;
+  const kw='',filter=statusFilter.value;
   const [selectedTerm='',selectedStage='']=sessionFilter.value.split('|');
   renderTOC();
   document.getElementById('searchClear').classList.toggle('show',!!searchInput.value);
@@ -591,53 +591,95 @@ function applyFilters(reset=false){
   document.getElementById('emptyState').style.display=total||!allPracticeIds().length?'none':'block';
   document.getElementById('emptyKeyword').textContent=kw||statusFilter.options[statusFilter.selectedIndex].text;
 }
-searchInput.addEventListener('input',()=>applyFilters(true));
 statusFilter.addEventListener('change',()=>applyFilters(true));
 sessionFilter.addEventListener('change',()=>applyFilters(true));
 
-/* Live filtering remains unchanged; an explicit search moves to results. */
+/* Pagefind indexes reviewed questions at build time; session and campus stay ELPA filters. */
 const searchForm=document.getElementById('searchForm');
 const searchFeedback=document.getElementById('searchFeedback');
-function clearSearchHighlight(){
-  document.querySelectorAll('.qcard.search-target').forEach(card=>card.classList.remove('search-target'));
+const searchDialog=document.getElementById('searchDialog');
+const searchResults=document.getElementById('searchResults');
+const practiceFooter=document.querySelector('.elpa-footer');
+if(practiceFooter) new IntersectionObserver(entries=>{
+  document.body.classList.toggle('footer-visible',entries[0].isIntersecting);
+}).observe(practiceFooter);
+let pagefindEngine;
+let searchRequest=0;
+const loadPagefind=()=>pagefindEngine??=import(new URL('./pagefind/pagefind.js',location.href).href);
+const openSearch=()=>{
+  if(!searchDialog.open)searchDialog.showModal();
+  searchInput.focus();
+  void renderSearchResults();
+};
+document.getElementById('searchOpen').addEventListener('click',openSearch);
+document.getElementById('searchClose').addEventListener('click',()=>searchDialog.close());
+document.addEventListener('keydown',event=>{
+  if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){
+    event.preventDefault();openSearch();
+  }
+});
+function searchFilters(){
+  const filters={campus:activeCampus,track:activeTrack};
+  const [term='',stage='']=sessionFilter.value.split('|');
+  if(term)filters[stage?'session':'term']=stage?term+'|'+stage:term;
+  return filters;
+}
+async function renderSearchResults(){
+  const request=++searchRequest;
+  const keyword=searchInput.value.trim();
+  searchResults.replaceChildren();
+  if(!keyword){searchResults.textContent='输入题目或关键词，查找已收录的考题。';return;}
+  searchResults.textContent='正在搜索…';
+  try{
+    const pagefind=await loadPagefind();
+    const found=await pagefind.debouncedSearch(keyword,{filters:searchFilters()});
+    if(request!==searchRequest||!searchDialog.open)return;
+    const data=await Promise.all((found?.results||[]).slice(0,12).map(item=>item.data()));
+    if(request!==searchRequest||!searchDialog.open)return;
+    searchResults.replaceChildren();
+    const summary=document.createElement('p');
+    summary.className='search-summary';
+    summary.textContent=data.length?'找到 '+found.results.length+' 条匹配内容':'没有找到匹配题目';
+    searchResults.append(summary);
+    for(const item of data){
+      const resultPath=new URL(item.url,location.href).pathname;
+      const record=/([A-Z]-\d+)-(main|sub|alt)-\d+\.html$/.exec(resultPath);
+      const id=record?.[1];
+      if(!id)continue;
+      const button=document.createElement('button');
+      button.type='button';button.className='search-result';
+      const label=document.createElement('span');
+      label.className='search-result-kind';
+      label.textContent=({main:'主问题',sub:'小问',alt:'相似问法'}[record[2]]||'题目');
+      button.append(label);
+      const title=document.createElement('strong');
+      title.textContent=item.meta?.title?.replace('｜HKUST-ELPA','')||id;
+      button.append(title);
+      if(item.plain_excerpt){const excerpt=document.createElement('small');excerpt.textContent=item.plain_excerpt;button.append(excerpt);}
+      button.addEventListener('click',()=>{
+        const url=new URL('./practice.html',location.href);
+        url.searchParams.set('campus',id[0]==='H'||id[0]==='T'?'clear-water-bay':'nansha');
+        url.searchParams.set('track',id[0]==='F'||id[0]==='T'?'fast-track':'regular');
+        url.searchParams.set('question',id);
+        location.assign(url.href);
+      });
+      searchResults.append(button);
+    }
+  }catch(error){
+    if(request===searchRequest){searchResults.textContent='搜索暂不可用，请刷新页面后重试。';console.error('Pagefind search failed',error);}
+  }
 }
 searchInput.addEventListener('input',()=>{
+  document.getElementById('searchClear').classList.toggle('show',!!searchInput.value);
   searchFeedback.hidden=true;
-  clearSearchHighlight();
+  void renderSearchResults();
 });
 searchForm.addEventListener('submit',event=>{
   event.preventDefault();
-  const keyword=searchInput.value.trim();
-  if(!keyword){
-    searchFeedback.textContent='输入关键词后即可搜索。';
-    searchFeedback.hidden=false;
-    searchInput.focus();
-    return;
-  }
-  applyFilters(true);
-  clearSearchHighlight();
-  const total=Number(document.getElementById('matchCount').textContent)||0;
-  if(!total){
-    searchFeedback.textContent='未找到匹配“'+keyword+'”的题目，请尝试其他关键词。';
-    searchFeedback.hidden=false;
-    searchInput.blur();
-    searchFeedback.scrollIntoView({behavior:'smooth',block:'center'});
-    return;
-  }
-  searchFeedback.textContent='找到 '+total+' 道匹配题目，已定位至第一条。';
-  searchFeedback.hidden=false;
-  const first=matchingCards('fall')[0]||matchingCards('past')[0];
-  if(!first)return;
-  first.classList.add('search-target');
-  first.setAttribute('tabindex','-1');
-  searchInput.blur();
-  requestAnimationFrame(()=>{
-    const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    first.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});
-    first.focus({preventScroll:true});
-  });
+  const first=searchResults.querySelector('.search-result');
+  if(first)first.click();
+  else{searchFeedback.textContent='没有找到匹配题目。';searchFeedback.hidden=false;}
 });
-
 
 /* ============ 快捷键：文本编辑 + 保存 + 帮助 ============ */
 function toggleHelp() {
@@ -881,6 +923,20 @@ document.querySelectorAll('[data-track]').forEach(b=>b.addEventListener('click',
   initStorage();
   populateExamFilters();
   renderAll();
+  const requested=route.get('question');
+  if(requested && /^[A-Z]-\d+$/.test(requested)){
+    const card=document.getElementById('q-'+requested);
+    if(card){
+      const kind=card.closest('#bankD')?'fall':'past';
+      const position=matchingCards(kind).indexOf(card);
+      if(position>=0){
+        bankPages[kind]=Math.floor(position/PAGE_SIZE)+1;
+        applyFilters();
+        card.classList.add('search-target');
+        requestAnimationFrame(()=>card.scrollIntoView({behavior:'instant',block:'start'}));
+      }
+    }
+  }
   if (location.hash) {
     const target = document.getElementById(location.hash.slice(1));
     if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: 'instant', block: 'start' }));
