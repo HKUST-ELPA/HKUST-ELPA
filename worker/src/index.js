@@ -67,15 +67,20 @@ function appBase64Url(bytes){
   for(const byte of bytes)text+=String.fromCharCode(byte);
   return btoa(text).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
 }
-async function appInstallationToken(env){
-  if(!/^\d+$/.test(env.GITHUB_APP_ID||'') ||
-     !/^\d+$/.test(env.GITHUB_APP_INSTALLATION_ID||'') ||
-     !env.GITHUB_APP_PRIVATE_KEY)throw new Error('GitHub App is not configured');
+async function appSigningKey(env){
+  if(!env.GITHUB_APP_PRIVATE_KEY)throw new Error('GitHub App private key missing');
   const pem=env.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g,'\n');
   const encoded=pem.match(/-----BEGIN (?:RSA )?PRIVATE KEY-----([\s\S]+?)-----END (?:RSA )?PRIVATE KEY-----/);
   if(!encoded)throw new Error('Invalid GitHub App private key');
   const raw=Uint8Array.from(atob(encoded[1].replace(/\s/g,'')),ch=>ch.charCodeAt(0));
   const key=await crypto.subtle.importKey('pkcs8',raw,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
+  return key;
+}
+async function appInstallationToken(env){
+  if(!/^\d+$/.test(env.GITHUB_APP_ID||'') ||
+     !/^\d+$/.test(env.GITHUB_APP_INSTALLATION_ID||''))
+    throw new Error('GitHub App is not configured');
+  const key=await appSigningKey(env);
   const now=Math.floor(Date.now()/1000);
   const header=appBase64Url(new TextEncoder().encode(JSON.stringify({alg:'RS256',typ:'JWT'})));
   const payload=appBase64Url(new TextEncoder().encode(JSON.stringify({
@@ -143,7 +148,7 @@ function cleanSubmission(body){
   };
 }
 const mdQuote=t=>String(t).split('\n').map(s=>'> '+s.replace(/</g,'&lt;')).join('\n');
-function formatSubmission(record){
+async function formatSubmission(record,env){
   const lines=[
     '## ELPA 考题投稿（待审核）','',
     '> 公开匿名投稿；考生回忆非学校官方原题。',
@@ -170,7 +175,11 @@ function formatSubmission(record){
   if(record.advice)lines.push('','### 备考经验 / Preparation Advice',
     '**阶段：** '+record.advice.phase,'**主题标签：** '+record.advice.tags.join(', '),
     '**标题：** '+record.advice.title,'',mdQuote(record.advice.body));
-  lines.push('','<!-- elpa-submission-v3:'+encodeBase64Url(JSON.stringify(record))+' -->');
+  const encoded=encodeBase64Url(JSON.stringify(record));
+  const key=await appSigningKey(env);
+  const signature=appBase64Url(new Uint8Array(await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5',key,new TextEncoder().encode('HKUST-ELPA:submission:v3:'+encoded))));
+  lines.push('','<!-- elpa-submission-v3:'+encoded+':'+signature+' -->');
   return {title:'[ELPA 投稿] ['+record.campus.toUpperCase()+'/'+(record.track==='regular'?'R':'F')+'] ['+record.term+'/'+record.examStage+'] '+
     record.main.en.replace(/\s+/g,' ').slice(0,65),body:lines.join('\n')};
 }
@@ -231,9 +240,9 @@ export default {
     }
     if (!verified || verified.success!==true || verified.hostname!==new URL(origin).hostname || verified.action!=='elpa_submit')
       return reject('人机验证失败或已过期，请重试。',403);
-    const {title,body:issueBody}=formatSubmission(cleanSubmission(body));
     let github;
     try {
+      const {title,body:issueBody}=await formatSubmission(cleanSubmission(body),env);
       const installationToken=await appInstallationToken(env);
       const response=await fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/issues',{
         method:'POST',
