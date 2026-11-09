@@ -15,7 +15,7 @@ It does **not** edit website files or publish a question. Maintainer review rema
    - `npx wrangler secret put TURNSTILE_SECRET`
    - `npx wrangler secret put GITHUB_APP_ID` (GitHub App numeric ID)
    - `npx wrangler secret put GITHUB_APP_INSTALLATION_ID` (numeric installation ID for HKUST-ELPA)
-   - `npx wrangler secret put GITHUB_APP_PRIVATE_KEY` (PEM-encoded PKCS#8 RSA private key)
+   - `npx wrangler secret put GITHUB_APP_PRIVATE_KEY` (PEM-encoded RSA private key, PKCS#1 or PKCS#8)
    The key is used only to sign short-lived GitHub App JWTs. Do not add credentials to git, logs, or browser code. **Complete this secret migration before deploying the new Worker code**; it deliberately fails closed without App credentials.
    Optional kill switch (plaintext Worker environment variable):
    `SUBMISSIONS_DISABLED=true` disables POST submissions; requests are accepted **only** when set explicitly to `false` and all other validations succeed. If the binding is missing, submissions remain disabled.
