@@ -45,6 +45,33 @@ const advice=()=>({version:2,kind:'advice',phase:'before',
  tags:['speaking-strategy','time-management'],title:'考前素材准备',
  body:'尽量准备真实经历，并练习在有限时间内提炼清晰观点。'});
 
+test('combined question and preparation advice share one review and preserve campus/track',()=>{
+ const f=fixture();try{
+  const data={...question('How do you prepare for a speaking assessment?'),
+    campus:'clear-water-bay',track:'fast-track',advice:{phase:'during',
+      tags:['exam-process','speaking-strategy'],title:'现场答题策略',
+      body:'准备一些真实经历，在现场注意组织内容并控制语速。'}};
+  const r=f.run(data,981);
+  assert.equal(r.status,0,r.stderr);
+  assert.match(f.read('questions.json'),/"T-?|"num"/);
+  const entries=JSON.parse(f.read('advice.json'));
+  const item=entries.find(x=>x.id==='ADV-981');
+  assert.ok(item);
+  assert.equal(item.campus,'clear-water-bay');
+  assert.equal(item.track,'fast-track');
+  assert.equal(item.issueNumber,981);
+  assert.match(f.read('community-advice.md'),/Issue\/.+\/981|issues\/981/);
+ }finally{f.close();}
+});
+test('malformed optional advice is rejected before writing question files',()=>{
+ const f=fixture();try{
+  const before=f.read('questions.json');
+  const r=f.run({...question(),advice:{phase:'before',tags:[],title:'bad',body:'short'}},982);
+  assert.notEqual(r.status,0);
+  assert.equal(f.read('questions.json'),before);
+ }finally{f.close();}
+});
+
 test('non-string terms and linked IDs are rejected without changing data',()=>{
  for(const invalid of [{term:['2026 Fall']},{linkedQuestionId:['D-4'],intent:'encounter'}]){
   const f=fixture();try{
