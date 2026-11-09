@@ -70,7 +70,7 @@ test('practice cards expose reviewed encounter action and uniform alignment',()=
  assert.match(practice,/相似问法 \/ Variants \(\$\{alternatives\.length\}\)/);
  assert.match(practice,/function questionAlternatives\(id,item\)/);
  assert.match(submit,/id="exam-context">01 · 考试校区与类型/);
- assert.match(submit,/id="submissionCampus" required>[\s\S]*?<option value="" selected disabled>选择校区 \/ Select campus<\/option>/);
+ assert.match(submit,/id="submissionCampus" required>[\s\S]*?<option value="" selected disabled data-i18n-en="Select Campus">选择校区<\/option>/);
  assert.match(submit,/if\(intent==='encounter'\)requestAnimationFrame\(\(\)=>\{/);
  assert.match(submit,/get\('exam-context'\)\.scrollIntoView\(\{block:'start',behavior:'instant'\}\)/);
  assert.match(submit,/get\('submissionCampus'\)\.focus\(\{preventScroll:true\}\)/);
@@ -245,8 +245,8 @@ test('all pages share one compact banner and the practice brand uses the site pa
 
 test('sources page keeps external references without duplicate question-bank documents',()=>{
  const sources=read('sources.html');
-  assert.match(sources,/id="official-sources">学校官方说明 <span[^>]*lang="en">Official Information<\/span><\/h2>/);
-  assert.match(sources,/id="community-sources">补充链接 <span[^>]*lang="en">Additional Links<\/span><\/h2>/);
+  assert.match(sources,/id="official-sources">学校官方说明\s*<\/h2>/);
+  assert.match(sources,/id="community-sources">补充链接\s*<\/h2>/);
  assert.match(sources,/docs\.qq\.com\/doc\/DT3BxSkJzSGdUamJE/);
  assert.match(sources,/docs\.qq\.com\/doc\/DSHJydEVYSHBtdkZO/);
  assert.doesNotMatch(sources,/站内题库文档|question-bank\/(?:2026-fall|previous-years|fast-track)\.md/);
@@ -259,7 +259,7 @@ test('seed advice uses the same track, phase and topic schema without invented p
  assert.equal(advice.filter(item=>item.id.startsWith('ADVICE-REGULAR-')).length,3);
  assert.equal(advice.filter(item=>item.track==='regular'&&item.phase==='during').length,3);
  for(const item of advice)assert.ok(!/HIST-|provenance|历史考情整理/.test(JSON.stringify(item)));
- assert.match(submit,/<select id="adviceTrack">[\s\S]*?<option value="regular">常规 ELPA · Regular<\/option>[\s\S]*?<option value="fast-track">ELPA Fast Track<\/option>/);
+ assert.match(submit,/<select id="adviceTrack">[\s\S]*?<option value="regular" data-i18n-en="Regular ELPA">常规 ELPA<\/option>[\s\S]*?<option value="fast-track">ELPA Fast Track<\/option>/);
 });
 
 test('guide separates the official Regular and Fast Track paths with one obvious switch',()=>{
@@ -285,8 +285,8 @@ test('guide separates the official Regular and Fast Track paths with one obvious
 test('homepage explains the full learning workflow without a repeated oversized practice CTA',()=>{
  const home=readPageSource('index.html');
  const practice=readPageSource('practice.html');
- assert.match(home,/id="home-overview-title">初次使用 <span[^>]*lang="en">Start here<\/span><\/h2>/);
- assert.match(home,/id="home-features-title">使用指南 <span[^>]*lang="en">Quick guide<\/span><\/h2>/);
+ assert.match(home,/id="home-overview-title">初次使用\s*<\/h2>/);
+ assert.match(home,/id="home-features-title">使用指南\s*<\/h2>/);
  assert.equal((home.match(/class="elpa-home-journey"/g)||[]).length,1);
  assert.equal((home.match(/class="elpa-home-feature"/g)||[]).length,4);
  for(const id of ['home-guide-title','home-bank-title','home-practice-title','home-record-title','home-more-title'])
