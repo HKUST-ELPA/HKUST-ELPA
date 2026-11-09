@@ -279,7 +279,7 @@ def check_extended_behaviors(browser, origin):
         assert page.locator("#guideAdviceList article").count() == len(json.loads((ROOT / "question-bank/advice.json").read_text(encoding="utf-8")))
         assert page.locator("#guideAdviceFilters").is_visible()
         page.locator("#adviceTagFilter").select_option("speaking-strategy")
-        assert page.locator("#guideAdviceList article").count() == 2
+        assert page.locator("#guideAdviceList article").count() == sum("speaking-strategy" in entry.get("tags", []) and entry.get("track", "regular") == "regular" for entry in json.loads((ROOT / "question-bank/advice.json").read_text(encoding="utf-8")))
         page.locator("#adviceTagFilter").select_option("")
         page.locator("#guideFastTab").click()
         assert page.locator("#guideAdviceList article").count() == 0
