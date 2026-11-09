@@ -69,15 +69,17 @@ test('practice cards expose reviewed encounter action and uniform alignment',()=
  assert.match(submit,/填写相似问法或至少添加一条新的提示小问/);
  assert.match(practice,/相似问法 \/ Variants \(\$\{alternatives\.length\}\)/);
  assert.match(practice,/function questionAlternatives\(id,item\)/);
- assert.match(submit,/id="exam-context">01 · 考试校区与类型/);
- assert.match(submit,/id="submissionCampus" required>[\s\S]*?<option value="" selected disabled data-i18n-en="Select Campus">选择校区<\/option>/);
- assert.match(submit,/if\(intent==='encounter'\)requestAnimationFrame\(\(\)=>\{/);
- assert.match(submit,/get\('exam-context'\)\.scrollIntoView\(\{block:'start',behavior:'instant'\}\)/);
- assert.match(submit,/get\('submissionCampus'\)\.focus\(\{preventScroll:true\}\)/);
- assert.match(submit,/for\(const id of \['submissionCampus','submissionTrack'\]\)get\(id\)\.addEventListener\('change'/);
+ assert.match(submit,/id="campusGz"[^>]*aria-pressed="true"/);
+ assert.match(submit,/id="campusHk"[^>]*aria-pressed="false"/);
+ assert.match(submit,/id="exam-context">02 · 考试类型/);
+ assert.match(submit,/name="trackPicker" value="regular" checked/);
+ assert.match(submit,/name="trackPicker" value="fast-track"/);
+ assert.match(submit,/id="submissionYear" type="text" inputmode="numeric" pattern="20\[0-9\]\{2\}"/);
+ assert.match(submit,/name="sourcePicker" value="firsthand"/);
+ assert.match(submit,/id="includeAdvice" type="checkbox"/);
  assert.match(submit,/if\(linkedId&&!findQuestion\(linkedId\)\)clearLink\(\)/);
- assert.match(submit,/id="mainCn"[^>]*maxlength="1000"/);
- assert.doesNotMatch(submit,/id="mainCn"[^>]*required/);
+ assert.match(submit,/id="mainCn"[^>]*required/);
+
 });
 test('Chinese and English matching runs locally, does not require network',()=>{
  const code=section(submit,'const normMatch=s=>','function availableQuestions(){');
@@ -259,7 +261,7 @@ test('seed advice uses the same track, phase and topic schema without invented p
  assert.equal(advice.filter(item=>item.id.startsWith('ADVICE-REGULAR-')).length,3);
  assert.equal(advice.filter(item=>item.track==='regular'&&item.phase==='during').length,3);
  for(const item of advice)assert.ok(!/HIST-|provenance|历史考情整理/.test(JSON.stringify(item)));
- assert.match(submit,/<select id="adviceTrack">[\s\S]*?<option value="regular" data-i18n-en="Regular ELPA">常规 ELPA<\/option>[\s\S]*?<option value="fast-track">ELPA Fast Track<\/option>/);
+ assert.match(submit,/id="includeAdvice" type="checkbox"/);
 });
 
 test('guide separates the official Regular and Fast Track paths with one obvious switch',()=>{

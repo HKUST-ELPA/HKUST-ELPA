@@ -67,6 +67,12 @@ const ELPA_CAMPUSES = new Set(['nansha','clear-water-bay']);
 const ELPA_TRACKS = new Set(['regular','fast-track']);
 const EXAM_STAGES = new Set(['start','mid','end']);
 const ADVICE_PHASES = new Set(['before','during','after']);
+function validOptionalAdvice(advice){
+  return advice && ADVICE_PHASES.has(advice.phase) &&
+    Array.isArray(advice.tags) && advice.tags.length>=1 && advice.tags.length<=4 &&
+    new Set(advice.tags).size===advice.tags.length && advice.tags.every(t=>ADVICE_TAGS.has(t)) &&
+    validText(advice.title,4,120) && validText(advice.body,20,6000);
+}
 function validV2(body) {
   if(!body||body.version!==2||!validText(body.turnstileToken,1,2048)) return false;
   if(body.kind==='question')
@@ -74,7 +80,7 @@ function validV2(body) {
       (body.campus===undefined||ELPA_CAMPUSES.has(body.campus)) &&
       (body.track===undefined||ELPA_TRACKS.has(body.track)) &&
       EXAM_STAGES.has(body.examStage) && body.main &&
-      validText(body.main.en,8,1000) && validText(body.main.cn,0,1000) &&
+      validText(body.main.en,8,1000) && validText(body.main.cn,2,1000) &&
       Array.isArray(body.subs) && body.subs.length<=20 &&
       body.subs.every(s=>s&&validText(s.en,1,400)&&validText(s.cn,0,400)) &&
       (body.alternatives===undefined||(Array.isArray(body.alternatives) && body.alternatives.length<=1 &&
@@ -84,7 +90,8 @@ function validV2(body) {
         (typeof body.linkedQuestionId==='string'&&/^[A-DFHT]-[0-9]+$/.test(body.linkedQuestionId)&&
          ['encounter','supplement'].includes(body.intent))) &&
       (body.intent===undefined||body.linkedQuestionId!==undefined) &&
-      (body.intent!=='supplement'||body.subs.length>0||(body.alternatives&&body.alternatives.length>0));
+      (body.intent!=='supplement'||body.subs.length>0||(body.alternatives&&body.alternatives.length>0)) &&
+      (body.advice===undefined||validOptionalAdvice(body.advice));
   if(body.kind==='advice')
     return (body.track===undefined||ELPA_TRACKS.has(body.track)) &&
       ADVICE_PHASES.has(body.phase) &&
@@ -101,7 +108,8 @@ function cleanV2(body){
     subs:body.subs.map(s=>({en:s.en.trim(),cn:s.cn.trim()})),source:body.source,
     ...(body.alternatives?.length?{alternatives:body.alternatives.map(s=>({en:s.en.trim(),cn:s.cn.trim()}))}:{}),
     ...(body.linkedQuestionId?{linkedQuestionId:body.linkedQuestionId,
-      intent:body.intent}:{} )
+      intent:body.intent}:{} ),
+    ...(body.advice?{advice:{phase:body.advice.phase,tags:[...body.advice.tags],title:body.advice.title.trim(),body:body.advice.body.trim()}}:{})
   };
   return {version:2,kind:'advice',track:body.track||'regular',phase:body.phase,tags:[...body.tags],
     title:body.title.trim(),body:body.body.trim()};
@@ -144,6 +152,9 @@ function formatV2(record){
   for(const [i,sub] of record.subs.entries())lines.push('','**小问 '+(i+1)+' / English**',mdQuote(sub.en),
     '**小问 '+(i+1)+' / 中文**',mdQuote(sub.cn));
   if(!record.subs.length)lines.push('> 未记录');
+  if(record.advice)lines.push('','### 备考经验 / Preparation Advice',
+    '**阶段：** '+record.advice.phase,'**主题标签：** '+record.advice.tags.join(', '),
+    '**标题：** '+record.advice.title,'',mdQuote(record.advice.body));
   lines.push('','<!-- elpa-submission-v2:'+encodeBase64Url(JSON.stringify(record))+' -->');
   return {title:'[ELPA 投稿] ['+record.term+'/'+record.examStage+'/'+record.campus+'/'+record.track+'] '+
     record.main.en.replace(/\s+/g,' ').slice(0,65),body:lines.join('\n')};

@@ -140,6 +140,11 @@ def check_practice(page, base):
     page.locator("#timerStartPause").click()
     page.locator("#timerReset").click()
     page.goto(base + "/submit.html?kind=advice", wait_until="load")
+    page.locator("#submissionYear").fill("2026")
+    page.locator("#submissionSlot").select_option(index=1)
+    page.locator("#mainEn").fill("What is your favorite learning strategy?")
+    page.locator("#mainCn").fill("你最喜欢的学习方法是什么？")
+    page.locator("#includeAdvice").check()
     page.locator("#adviceTags input").first.check()
     page.locator("#adviceTitle").fill("Python browser test")
     page.locator("#adviceBody").fill("An original preparation strategy recorded only for a local preview.")
@@ -153,9 +158,9 @@ def check_practice(page, base):
     assert page.locator("#adviceTitle").input_value() == "Python browser test"
     page.goto(base + "/submit.html?question=D-1&intent=supplement", wait_until="load")
     assert page.locator("#linkedQuestion").is_visible()
-    page.locator("#submissionCampus").select_option("nansha")
+    page.locator("#campusGz").click()
     assert page.locator("#linkedQuestion").is_visible()
-    page.locator("#submissionCampus").select_option("clear-water-bay")
+    page.locator("#campusHk").click()
     assert not page.locator("#linkedQuestion").is_visible()
 
 
@@ -279,7 +284,7 @@ def check_extended_behaviors(browser, origin):
         assert page.locator("#guideAdviceList article").count() == 0
         assert not page.locator("#guideAdviceFilters").is_visible()
         assert page.locator("#guideAdviceEmpty").is_visible()
-        assert "kind=advice&track=fast-track" in page.locator("#guideAdviceShare").get_attribute("href")
+        assert "experience=1&track=fast-track" in page.locator("#guideAdviceShare").get_attribute("href")
 
         page.goto(origin + "/practice.html?campus=clear-water-bay", wait_until="load")
         for track in ("regular", "fast-track"):
@@ -313,21 +318,21 @@ def check_extended_behaviors(browser, origin):
         assert exported == questions, "Markdown export must preserve the displayed question order"
 
         page.goto(origin + "/submit.html?question=D-1&intent=supplement", wait_until="load")
-        page.locator("#submissionCampus").select_option("nansha")
+        page.locator("#campusGz").click()
         page.locator("#submissionSlot").select_option(index=1)
         page.locator("#supplementEn").fill("Draft-only alternative wording")
         page.locator("#addFollowup").click()
         page.locator('#followupList [data-lang="en"]').first.fill("First draft follow-up")
         page.locator("#addFollowup").click()
         page.locator('#followupList [data-lang="en"]').last.fill("Second draft follow-up")
-        page.locator("#tabAdvice").click()
+        page.locator("#includeAdvice").check()
         page.locator("#adviceTags input").first.check()
         page.locator("#adviceTitle").fill("Recoverable advice draft")
         page.locator("#adviceBody").fill("Recoverable advice text from an isolated local browser test.")
         page.reload(wait_until="load")
-        assert page.locator("#tabAdvice").get_attribute("aria-pressed") == "true"
+        assert page.locator("#includeAdvice").is_checked()
         assert page.locator("#adviceTitle").input_value() == "Recoverable advice draft"
-        page.locator("#tabQuestion").click()
+        assert page.locator("#questionFields").is_visible()
         assert page.locator("#supplementEn").input_value() == "Draft-only alternative wording"
         assert page.locator('#followupList [data-lang="en"]').count() == 2
         assert not errors, (browser.browser_type.name, errors)

@@ -40,6 +40,34 @@ function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',ac
   });
   return {handler:sandbox.module.exports,env,calls,request};
 }
+test('combined campus-specific question and optional advice create one review issue',async()=>{
+ const x=makeWorker();
+ const report={version:2,kind:'question',campus:'clear-water-bay',track:'fast-track',
+  term:'2026 Fall',examStage:'mid',
+  main:{en:'What is the best way to prepare for your assessment?',cn:'如何为这场考试做准备？'},
+  subs:[],source:'firsthand',
+  advice:{phase:'before',tags:['exam-process'],title:'备考心得',
+    body:'提前练习真实经历，并为常见问题准备有条理的回答。'},
+  turnstileToken:'valid-test-token'};
+ const r=await x.handler.fetch(x.request(report),x.env);
+ assert.equal(r.status,201,await r.text());
+ assert.equal(x.calls.length,2);
+ const issue=JSON.parse(x.calls[1].init.body);
+ assert.match(issue.body,/备考经验 \/ Preparation Advice/);
+ assert.match(issue.body,/香港|清水湾/);
+ assert.match(issue.body,/备考心得/);
+});
+test('new bilingual question cannot omit Chinese comprehension',async()=>{
+ const x=makeWorker();
+ const report={version:2,kind:'question',campus:'nansha',track:'regular',
+  term:'2026 Fall',examStage:'start',
+  main:{en:'Can you describe your study routine?',cn:''},
+  subs:[],source:'firsthand',turnstileToken:'valid-test-token'};
+ const r=await x.handler.fetch(x.request(report),x.env);
+ assert.equal(r.status,400);
+ assert.equal(x.calls.length,0);
+});
+
 test('disabled switch rejects all submissions before any GitHub request',async()=>{
  const x=makeWorker();x.env.SUBMISSIONS_DISABLED='true';
  const r=await x.handler.fetch(x.request(baseBody),x.env);
@@ -324,11 +352,11 @@ test('v2 body enforces byte-size bound with no external requests',async()=>{
   assert.equal(x.calls.length,0);
 });
 
-test('v2 linked encounter and optional translations reach review queue unchanged',async()=>{
+test('v2 linked encounter and optional follow-up translations reach review queue unchanged',async()=>{
  const x=makeWorker();
  const body={version:2,kind:'question',campus:'nansha',track:'regular',
    term:'2026 Fall',examStage:'start',
-   main:{en:'Explain one of your projects.',cn:''},
+   main:{en:'Explain one of your projects.',cn:'请介绍你的一个项目。'},
    subs:[{en:'What tools did you use?',cn:''}],source:'firsthand',
    linkedQuestionId:'D-4',intent:'encounter',turnstileToken:'mock-valid-token'};
  const result=await x.handler.fetch(x.request(body),x.env);
@@ -341,7 +369,7 @@ test('v2 linked encounter and optional translations reach review queue unchanged
 test('v2 supplement must have an existing ID and either a similar wording or followup',async()=>{
  const base={version:2,kind:'question',campus:'nansha',track:'regular',
    term:'2026 Fall',examStage:'start',
-   main:{en:'Explain one of your projects.',cn:''},
+   main:{en:'Explain one of your projects.',cn:'请介绍你的一个项目。'},
    subs:[],source:'secondhand',linkedQuestionId:'D-4',
    intent:'supplement',turnstileToken:'mock-valid-token'};
  for(const invalid of [base,{...base,linkedQuestionId:'D-4?'},

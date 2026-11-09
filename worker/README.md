@@ -47,12 +47,12 @@ It does **not** edit website files or publish a question. Maintainer review rema
 
 `POST /submit` accepts **v2 submissions** from the current website:
 
-- **Question:** `version: 2`, `kind: "question"`, `term` (e.g. `2026 Fall`),
+- **Question (optionally with experience):** `version: 2`, `kind: "question"`, `term` (e.g. `2026 Fall`),
   `examStage` (`start` / `mid` / `end`), bilingual `main: {en, cn}`,
   optional bilingual `subs: [{en, cn}]`, `source` (`firsthand` / `secondhand`),
   optional `campus` (`nansha` / `clear-water-bay`) and `track` (`regular` / `fast-track`),
-  optional linked-question `intent` and `alternatives`, and `turnstileToken`.
-- **Preparation advice:** `version: 2`, `kind: "advice"`, `phase`
+  optional linked-question `intent` and `alternatives`, optional `advice: {phase, tags, title, body}`, and `turnstileToken`. New submissions require both English main text and Chinese comprehension. An optional advice block inherits campus and track from the question.
+- **Legacy standalone preparation advice (existing Issues remain compatible):** `version: 2`, `kind: "advice"`, `phase`
   (`before` / `during` / `after`), `tags` (1–4 predefined taxonomy tags),
   optional `track` (`regular` / `fast-track`, defaults to `regular`),
   `title`, `body`, and `turnstileToken`.

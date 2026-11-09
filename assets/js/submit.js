@@ -7,11 +7,11 @@ const form=document.getElementById('submissionForm');
 const btn=document.getElementById('submissionButton');
 const message=document.getElementById('submissionMessage');
 const qFields=document.getElementById('questionFields'),aFields=document.getElementById('adviceFields');
-const tabQ=document.getElementById('tabQuestion'),tabA=document.getElementById('tabAdvice');
+const campusGz=getCampusButton('campusGz'),campusHk=getCampusButton('campusHk');
+function getCampusButton(id){return document.getElementById(id);}
 const followups=document.getElementById('followupList');
 const list=document.getElementById('adviceTags');
-const currentYear=new Date().getFullYear();
-let kind='question',widgetId=null,submitting=false;
+let widgetId=null,submitting=false;
 const ready=Boolean(taxonomy&&config.apiEndpoint&&config.turnstileSiteKey&&
   /^https:\/\//.test(config.apiEndpoint));
 const get=id=>document.getElementById(id);
@@ -30,11 +30,17 @@ function addText(parent,tag,text,cls){
   if(cls)el.className=cls;parent.append(el);return el;
 }
 const year=get('submissionYear');
-for(let i=currentYear+2;i>=2022;i--){
-  const option=document.createElement('option');
-  option.value=String(i);option.textContent=String(i);year.append(option);
-}
-year.value=String(currentYear);
+year.value='';
+year.addEventListener('input',()=>{year.value=year.value.replace(/[^0-9]/g,'').slice(0,4);});
+function syncCampus(){const gz=trimmed('submissionCampus')==='nansha';campusGz.setAttribute('aria-pressed',String(gz));campusHk.setAttribute('aria-pressed',String(!gz));}
+function setCampus(value){get('submissionCampus').value=value;get('submissionCampus').dispatchEvent(new Event('change',{bubbles:true}));syncCampus();}
+campusGz.addEventListener('click',()=>setCampus('nansha'));
+campusHk.addEventListener('click',()=>setCampus('clear-water-bay'));
+for(const radio of form.querySelectorAll('input[name="trackPicker"]'))radio.addEventListener('change',()=>{get('submissionTrack').value=radio.value;get('submissionTrack').dispatchEvent(new Event('change',{bubbles:true}));});
+for(const radio of form.querySelectorAll('input[name="sourcePicker"]'))radio.addEventListener('change',()=>{get('submissionSource').value=radio.value;get('submissionSource').dispatchEvent(new Event('change',{bubbles:true}));});
+function syncChoices(){syncCampus();for(const n of ['trackPicker','sourcePicker']){const id=n==='trackPicker'?'submissionTrack':'submissionSource';for(const radio of form.querySelectorAll('input[name="'+n+'"]'))radio.checked=radio.value===get(id).value;}}
+function updateExperience(){const active=get('includeAdvice').checked;get('adviceTitle').required=active;get('adviceBody').required=active;get('advicePhase').required=active;get('adviceFields').classList.toggle('contrib-experience-active',active);for(const mark of get('adviceFields').querySelectorAll('.contrib-advice-required'))mark.hidden=!active;invalidatePreview();}
+get('includeAdvice').addEventListener('change',updateExperience);
 const ph=taxonomy?.placeholders||{};
 for(const [id,value] of Object.entries({
   mainEn:ph.mainEn,mainCn:ph.mainCn,
@@ -50,18 +56,6 @@ for(const [code,labels] of Object.entries(taxonomy?.adviceTags||{})){
   caption.dataset.i18nZh=labels.zh;
   list.append(label);
 }
-function setKind(next){
-  kind=next;
-  qFields.hidden=next!=='question';aFields.hidden=next!=='advice';
-  tabQ.setAttribute('aria-pressed',String(next==='question'));
-  tabA.setAttribute('aria-pressed',String(next==='advice'));
-  for(const item of qFields.querySelectorAll('input,select,textarea'))item.disabled=next!=='question';
-  for(const item of aFields.querySelectorAll('input,select,textarea'))item.disabled=next!=='advice';
-  get('previewPanel').hidden=true;
-  if(next==='question')renderSuggestions();
-}
-tabQ.addEventListener('click',()=>setKind('question'));
-tabA.addEventListener('click',()=>setKind('advice'));
 function refreshFollowups(){
   [...followups.children].forEach((el,i)=>{
     el.querySelector('.follow-title').textContent='小问 '+(i+1);
@@ -158,9 +152,9 @@ function linkQuestion(entry){
   get('mainEn').value=entry.en;
   get('mainCn').value=entry.cn||'';
   get('mainEn').readOnly=true;
-  get('mainCn').readOnly=true;
+  get('mainCn').readOnly=Boolean(entry.cn&&entry.cn.trim().length>=2);
   get('mainEnField').classList.add('linked-hidden');
-  get('mainCnField').classList.add('linked-hidden');
+  get('mainCnField').classList.toggle('linked-hidden',get('mainCn').readOnly);
   get('linkedQuestionTitle').textContent=entry.en+' · '+entry.id;
   get('linkedQuestion').hidden=false;
   get('matchingResults').replaceChildren();
@@ -178,7 +172,6 @@ function syncContributionIntent(){
 for(const radio of form.querySelectorAll('input[name="contributionIntent"]'))
   radio.addEventListener('change',syncContributionIntent);
 function renderSuggestions(){
-  if(kind!=='question'){get('matchingPanel').hidden=true;return;}
   if(linkedId){get('matchingPanel').hidden=false;return;}
   const raw=[trimmed('mainEn'),trimmed('mainCn')].filter(Boolean);
   const matches=availableQuestions().map(entry=>({
@@ -206,9 +199,9 @@ for(const id of ['submissionCampus','submissionTrack'])get(id).addEventListener(
 function loadQuestionLink(){
   const params=new URLSearchParams(location.search);
   const campus=params.get('campus'),track=params.get('track'),id=params.get('question');
-  if(['regular','fast-track'].includes(track))get('adviceTrack').value=track;
   if(['nansha','clear-water-bay'].includes(campus))get('submissionCampus').value=campus;
   if(['regular','fast-track'].includes(track))get('submissionTrack').value=track;
+  if(params.get('experience')==='1'||params.get('kind')==='advice')get('includeAdvice').checked=true;
   const q=id&&findQuestion(id);
   if(q){
     linkQuestion(q);
@@ -221,16 +214,17 @@ function loadQuestionLink(){
       get('submissionCampus').focus({preventScroll:true});
     });
   }else renderSuggestions();
+  syncChoices();
 }
 
 loadQuestionLink();
+updateExperience();
 function buildData(){
-  if(kind==='advice'){
-    const tags=[...list.querySelectorAll('input:checked')].map(x=>x.value);
-    if(tags.length<1||tags.length>4)throw new Error('请选择 1–4 个主题标签。 / Please select 1–4 topics.');
-    return {version:2,kind:'advice',track:trimmed('adviceTrack'),phase:trimmed('advicePhase'),tags,
-      title:trimmed('adviceTitle'),body:trimmed('adviceBody')};
-  }
+  const withAdvice=get('includeAdvice').checked;
+  const tags=[...list.querySelectorAll('input:checked')].map(x=>x.value);
+  if(withAdvice&&(tags.length<1||tags.length>4))throw new Error('请选择 1–4 个主题标签。 / Please select 1–4 topics.');
+  if(!/^20[0-9]{2}$/.test(trimmed('submissionYear')))throw new Error('考试年份必须为四位数字（2000–2099）。');
+  if(trimmed('mainCn').length<2)throw new Error('请填写中文理解（至少 2 个字符）。');
   const slot=trimmed('submissionSlot');
   if(!slot)throw new Error('请选择学期及场次。 / Please select a semester and session.');
   const [semester,examStage]=slot.split(':');
@@ -251,7 +245,8 @@ function buildData(){
     examStage,main:{en:trimmed('mainEn'),cn:trimmed('mainCn')},
     subs,source:trimmed('submissionSource'),
     ...(alternative&&alternative.en?{alternatives:[alternative]}:{}),
-    ...(linkedId?{linkedQuestionId:linkedId,intent}:{} )};
+    ...(linkedId?{linkedQuestionId:linkedId,intent}:{} ),
+    ...(withAdvice?{advice:{phase:trimmed('advicePhase'),tags,title:trimmed('adviceTitle'),body:trimmed('adviceBody')}}:{})};
 }
 function validateForm(){
   if(!form.reportValidity())return null;
@@ -266,29 +261,23 @@ function showPreview(){
   const data=validateForm();if(!data)return;
   const preview=get('previewPanel');preview.replaceChildren();
   addText(preview,'h2',localeText('投稿预览','Submission Preview'));
-  if(data.kind==='question'){
-    addText(preview,'small',(data.linkedQuestionId?'已关联 '+data.linkedQuestionId+' · '+
-      (data.intent==='supplement'?'补充题目内容':'我也考过 / Seen this')+' · ':'')+
-      (data.campus==='nansha'?'GZ':'HK')+' · '+
-      (data.track==='regular'?'常规 ELPA · Regular':'ELPA Fast Track')+' · '+data.term+' · '+taxonomy.examStages[data.examStage].zh+
-      ' · '+taxonomy.sourceTypes[data.source].zh);
-    addText(preview,'strong',data.main.en);
-    addText(preview,'p',data.main.cn);
-    for(const alternative of data.alternatives||[]){
-      addText(preview,'small','相似问法','contrib-preview-line');
-      addText(preview,'p',alternative.en);
-      addText(preview,'p',alternative.cn);
-    }
-    for(const [i,s] of data.subs.entries()){
-      addText(preview,'small','小问 '+(i+1),'contrib-preview-line');
-      addText(preview,'p',s.en);
-      addText(preview,'p',s.cn);
-    }
-  }else{
-    addText(preview,'small',(data.track==='fast-track'?'ELPA Fast Track':'常规 ELPA · Regular')+' · '+taxonomy.advicePhases[data.phase].zh+' · '+
-      data.tags.map(x=>taxonomy.adviceTags[x].zh).join('、'));
-    addText(preview,'strong',data.title);
-    addText(preview,'p',data.body);
+  addText(preview,'small',(data.linkedQuestionId?'已关联 '+data.linkedQuestionId+' · ':'')+
+    (data.campus==='nansha'?'GZ':'HK')+' · '+
+    (data.track==='regular'?'常规 ELPA · Regular':'ELPA Fast Track')+' · '+data.term+' · '+taxonomy.examStages[data.examStage].zh+
+    ' · '+taxonomy.sourceTypes[data.source].zh);
+  addText(preview,'strong',data.main.en);
+  addText(preview,'p',data.main.cn);
+  for(const alternative of data.alternatives||[]){
+    addText(preview,'small','相似问法','contrib-preview-line');
+    addText(preview,'p',alternative.en);addText(preview,'p',alternative.cn);
+  }
+  for(const [i,sub] of data.subs.entries()){
+    addText(preview,'small','小问 '+(i+1),'contrib-preview-line');
+    addText(preview,'p',sub.en);addText(preview,'p',sub.cn);
+  }
+  if(data.advice){
+    addText(preview,'small',localeText('备考经验','Preparation advice')+' · '+taxonomy.advicePhases[data.advice.phase].zh,'contrib-preview-line');
+    addText(preview,'strong',data.advice.title);addText(preview,'p',data.advice.body);
   }
   addText(preview,'small',localeText('内容将公开保存。','This submission will be public.'));
   preview.hidden=false;preview.scrollIntoView({block:'nearest',behavior:'smooth'});
@@ -334,10 +323,10 @@ form.addEventListener('submit',async event=>{
     get('supplementEn').value='';get('supplementCn').value='';syncContributionIntent();
     get('mainEnField').classList.remove('linked-hidden');
     get('mainCnField').classList.remove('linked-hidden');
-    year.value=String(currentYear);
+    year.value='';
     get('submissionSlot').value='';
     get('previewPanel').hidden=true;
-    setKind(kind);
+    get('includeAdvice').checked=false;updateExperience();syncChoices();
     try{sessionStorage.removeItem(draftKey);}catch{}
     draftNotice('投稿成功，本页暂存草稿已清除。 / Submitted. This draft has been cleared.');
     say('分享已提交，待核对与整理。 / Submitted! Contributions are reviewed before inclusion.','success');
@@ -351,11 +340,11 @@ form.addEventListener('submit',async event=>{
     if(widgetId!==null&&window.turnstile)window.turnstile.reset(widgetId);
   }
 });
-setKind(new URLSearchParams(location.search).get('kind')==='advice'?'advice':'question');
+updateExperience();syncChoices();
 /* Keep unfinished work in this tab, separately for each contribution entry. */
 const draftKey='elpa-submission-draft-v1:'+location.search;
 const draftFields=['submissionCampus','submissionTrack','submissionYear','submissionSlot','submissionSource',
-  'mainEn','mainCn','supplementEn','supplementCn','adviceTrack','advicePhase','adviceTitle','adviceBody'];
+  'mainEn','mainCn','supplementEn','supplementCn','advicePhase','adviceTitle','adviceBody'];
 function draftNotice(text){
   const status=get('submissionDraftStatus');
   if(status.textContent!==text)status.textContent=text;
@@ -365,7 +354,7 @@ function saveDraft(){
   const subs=[...followups.children].map(el=>({
     en:el.querySelector('[data-lang="en"]').value,cn:el.querySelector('[data-lang="cn"]').value
   }));
-  const data={fields,subs,kind,linkedId,tags:[...list.querySelectorAll('input:checked')].map(el=>el.value),
+  const data={fields,subs,includeAdvice:get('includeAdvice').checked,linkedId,tags:[...list.querySelectorAll('input:checked')].map(el=>el.value),
     intent:form.querySelector('input[name="contributionIntent"]:checked').value};
   try{
     sessionStorage.setItem(draftKey,JSON.stringify(data));
@@ -385,7 +374,7 @@ function restoreDraft(){
     if(data.linkedId){const entry=findQuestion(data.linkedId);if(entry)linkQuestion(entry);}
     const intent=form.querySelector('input[name="contributionIntent"][value="'+(data.intent==='supplement'?'supplement':'encounter')+'"]');
     intent.checked=true;
-    setKind(data.kind==='advice'?'advice':'question');
+    get('includeAdvice').checked=Boolean(data.includeAdvice);updateExperience();syncChoices();
     syncContributionIntent();
     draftNotice('已恢复当前标签页的草稿，请核对后预览并提交。 / Draft restored. Review and preview it before submitting.');
   }catch{

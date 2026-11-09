@@ -101,6 +101,7 @@ const output=(status, recorded=true)=>{
 const taxonomy=readOptionalJSON(F('question-bank','taxonomy.json'),null);
 if(!taxonomy)throw Error('Missing question-bank taxonomy');
 const allowed=(group,value)=>typeof value==='string'&&Object.hasOwn(taxonomy[group],value);
+function validOptionalAdvice(a){return a && allowed('advicePhases',a.phase) && Array.isArray(a.tags) && a.tags.length>=1 && a.tags.length<=4 && new Set(a.tags).size===a.tags.length && a.tags.every(t=>allowed('adviceTags',t)) && valid(a.title,4,120) && valid(a.body,20,6000);}
 function validate(data){
  if(!data||data.version!==2)return false;
  if(data.kind==='question')
@@ -118,7 +119,8 @@ function validate(data){
        (typeof data.linkedQuestionId==='string'&&/^[A-DFHT]-[0-9]+$/.test(data.linkedQuestionId)&&
         allowed('contributionIntents',data.intent))) &&
      (data.intent===undefined||data.linkedQuestionId!==undefined) &&
-     (data.intent!=='supplement'||data.subs.length>0||(data.alternatives&&data.alternatives.length>0));
+     (data.intent!=='supplement'||data.subs.length>0||(data.alternatives&&data.alternatives.length>0)) &&
+     (data.advice===undefined||validOptionalAdvice(data.advice));
  if(data.kind==='advice')
    return (data.track===undefined||allowed('tracks',data.track)) &&
      allowed('advicePhases',data.phase) &&
@@ -160,6 +162,11 @@ function runV2(event){
    output('added');return;
  }
  const campus=data.campus||'nansha',track=data.track||'regular';
+ // A combined report is approved once and both records carry the same Issue provenance.
+ // Reject malformed advice databases before mutating question files.
+ const combinedAdvice=data.advice?readOptionalJSON(adviceFile,[]):null;
+ if(combinedAdvice!==null&&(!Array.isArray(combinedAdvice)||combinedAdvice.some(x=>x.id==='ADV-'+number)))
+   throw Error('Advice database invalid or duplicate combined submission');
  const bankKey=campus==='nansha'?(track==='regular'?'D':'F'):(track==='regular'?'H':'T');
  const bankData=readJSON(bankFile);
  const banks=bankData.banks;
@@ -216,6 +223,17 @@ function runV2(event){
       quote(text(s.en))+'\n'+quote(text(s.cn))).join('\n\n'):'> 无')+
    '\n\n**提示小问**\n\n'+(data.subs.length?data.subs.map((s,i)=>
       '\n'+(i+1)+'. '+quote(text(s.en))+'\n'+quote(text(s.cn))).join('\n'):'> 无')+'\n');
+ if(data.advice){
+   const a=data.advice;
+   combinedAdvice.push({id:'ADV-'+number,issueNumber:number,campus,track,phase:a.phase,
+     tags:a.tags,title:text(a.title),body:text(a.body)});
+   writeJSON(adviceFile,combinedAdvice);
+   appendDoc(adviceDoc,'# 社区备考经验 · Reviewed Preparation Advice\n\n> 考生分享，不代表学校官方建议。\n',
+     '\n## ADV-'+number+' · '+quote(text(a.title))+'\n\n校区：'+campusLabel+' ｜ 考试类型：'+trackLabel+
+     ' ｜ 阶段：'+a.phase+' ｜ 标签：'+a.tags.join(', ')+
+     ' ｜ [原始投稿](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/'+number+')'+
+     '\n\n'+quote(text(a.body))+'\n');
+ }
  output(matched?'linked':'added');
 };
   return runV2(event);
