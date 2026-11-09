@@ -27,6 +27,8 @@ let adviceTrack='regular';
 
 function selectAdviceTrack(track){
   adviceTrack=track;
+  advicePhaseFilter.options[0].textContent=guideText('全部阶段','All Stages');
+  adviceTagFilter.options[0].textContent=guideText('全部主题','All Topics');
   const entries=adviceCards.filter(card=>card.dataset.track===track);
   const phases=new Set(entries.map(card=>card.dataset.phase));
   const tags=new Set(entries.flatMap(card=>card.dataset.tags.split(',').filter(Boolean)));
