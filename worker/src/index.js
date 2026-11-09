@@ -171,9 +171,31 @@ async function githubInstallationToken(env) {
   if (!/^\d+$/.test(String(env.GITHUB_APP_ID||'')) ||
       !/^\d+$/.test(String(env.GITHUB_APP_INSTALLATION_ID||'')) ||
       typeof env.GITHUB_APP_PRIVATE_KEY !== 'string') throw new Error('GitHub App not configured');
-  const pem = env.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g,'\n').replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g,'');
+  const privateKey = env.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g,'\n');
+  const rsaPkcs1 = privateKey.includes('-----BEGIN RSA PRIVATE KEY-----');
+  if (!rsaPkcs1 && !privateKey.includes('-----BEGIN PRIVATE KEY-----')) throw new Error('Unsupported GitHub App key format');
+  const pem = privateKey.replace(/-----BEGIN (?:RSA )?PRIVATE KEY-----|-----END (?:RSA )?PRIVATE KEY-----|\s/g,'');
   const binary = atob(pem);
-  const pkcs8 = Uint8Array.from(binary, c=>c.charCodeAt(0));
+  const der = Uint8Array.from(binary,c=>c.charCodeAt(0));
+  // GitHub-generated App keys may be PKCS#1. WebCrypto accepts PKCS#8.
+  const length = n => {
+    if(n<128)return Uint8Array.of(n);
+    const parts=[];
+    while(n){parts.unshift(n&255);n=Math.floor(n/256);}
+    return Uint8Array.from([0x80|parts.length,...parts]);
+  };
+  const concat = (...parts) => {
+    const out = new Uint8Array(parts.reduce((total,p)=>total+p.length,0));
+    let offset=0;
+    for(const p of parts){out.set(p,offset);offset+=p.length;}
+    return out;
+  };
+  const wrap = (tag,body) => concat(Uint8Array.of(tag),length(body.length),body);
+  const pkcs8 = rsaPkcs1?wrap(0x30,concat(
+    Uint8Array.of(0x02,0x01,0x00),
+    Uint8Array.of(0x30,0x0d,0x06,0x09,0x2a,0x86,0x48,0x86,0xf7,0x0d,0x01,0x01,0x01,0x05,0x00),
+    wrap(0x04,der)
+  )):der;
   const key = await crypto.subtle.importKey('pkcs8',pkcs8,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
   const now = Math.floor(Date.now()/1000);
   const head = jwtBase64Url(JSON.stringify({alg:'RS256',typ:'JWT'}));
