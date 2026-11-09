@@ -412,7 +412,7 @@ test('Fast Track documentation links to the selectable practice route',()=>{
  const indexDoc=fs.readFileSync(path.join(__dirname,'../question-bank/README.md'),'utf8');
  assert.ok(fastDoc.includes('../practice.html?campus=gz&track=fast-track'));
  assert.ok(!fastDoc.includes('../practice.html#fast-track'));
- assert.ok(indexDoc.includes('| [Fast Track · 广州校区](./fast-track.md) |'));
+ assert.ok(indexDoc.includes('[fast-track.md](./fast-track.md)'));
 });
 
 test('official source links remain separate from community references',()=>{
