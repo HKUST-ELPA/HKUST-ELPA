@@ -326,7 +326,7 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.doesNotMatch(practice,/current\.length\+' 题 · '|past\.length\+' 题 · '/);
  assert.match(practice,/feedbackBankCount'\)\.textContent=current\.length\+' 题'/);
  assert.match(practice,/pastBankCount'\)\.textContent=past\.length\+' 题'/);
- assert.match(practice,/id="sessionFilter"[\s\S]*?<option value="">全部场次<\/option>/);
+ assert.match(practice,/id="sessionFilter"[\s\S]*?<option value="" data-i18n-en="All Sessions">全部场次<\/option>/);
  assert.match(practice,/#sessionFilter\{field-sizing:content\}/);
  assert.match(practice,/\.filter-select \{[^}]*width:auto; max-width:100%/);
  assert.match(practice,/appearance:none; -webkit-appearance:none; padding:7px 28px 7px 12px/);
