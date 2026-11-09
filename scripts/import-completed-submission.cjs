@@ -12,7 +12,6 @@ if(!eventFile)throw Error('GitHub event payload required');
 const event=JSON.parse(fs.readFileSync(eventFile,'utf8'));
 const issue=event.issue||{};
 // Synthetic browser-verification Issues are never eligible for canonical publication.
-// This also prevents rerunning the historical completed Issue #13 from reimporting it.
 if(/\bTEST ONLY\b/i.test(String(issue.title||'')))
   throw Error('Synthetic verification Issue cannot be published');
 /* v2 is additive: v1 data format and stable IDs remain compatible. */
