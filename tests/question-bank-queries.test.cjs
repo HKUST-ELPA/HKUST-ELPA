@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
-const {read:readArtifact}=require('../scripts/validate-site.cjs');
+const {read:readArtifact}=require('./site-support.cjs');
 const read=file=>readArtifact(file).replace(/\?v=[a-f0-9]{12}(?=")/g,'');
 const data=JSON.parse(read('question-bank/questions.json'));
 const appearances=JSON.parse(read('question-bank/appearances.json'));

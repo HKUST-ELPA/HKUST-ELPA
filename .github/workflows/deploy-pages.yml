@@ -32,10 +32,9 @@ jobs:
           python-version: '3.12'
       - name: Test and build source
         run: |
-          node scripts/validate-site.cjs
+          python preview.py --build-only
           node --test
           python -m unittest discover -s tests -t . -p 'test_*.py'
-          python preview.py --build-only
       - name: Add publication metadata
         env:
           SOURCE_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

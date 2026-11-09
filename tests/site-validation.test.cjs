@@ -1,18 +1,12 @@
 'use strict';
 const assert=require('node:assert/strict');
+const {test}=require('node:test');
 const fs=require('node:fs'),path=require('node:path');
 const {execFileSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const pageNames=['index','guide','practice','sources','submit'];
 const site=path.join(root,'_site');
-const read=file=>fs.readFileSync(path.join(file.endsWith('.html')?site:root,file),'utf8');
-
-// Source-level tests inspect page-specific JS/CSS in load order; shared site.css is tested separately.
-function readPageSource(name){
-  const html=read(name);
-  const files=[...html.matchAll(/(?:src|href)="\.\/(assets\/(?:js|css)\/[^"?#]+)(?:\?[^"]*)?"/g)].map(match=>match[1]).filter(file=>file!=='assets/css/site.css');
-  return html+'\n'+files.map(read).join('\n');
-}
+const {read}=require('./site-support.cjs');
 function validateSite(){
   const pages=new Map(pageNames.map(name=>[name+'.html',read(name+'.html')]));
   const ids=new Map();
@@ -111,10 +105,7 @@ function validateSite(){
   assert.ok(jpeg.length>8000&&jpeg[0]===255&&jpeg[1]===216&&jpeg.at(-2)===255&&jpeg.at(-1)===217,'Invalid campus JPEG');
   console.log('Validated 5 pages, local resources, '+questionIds.size+' stable question IDs, '+data.advice.length+' advice entries and legacy aliases');
 }
-if(require.main===module){
-  const python=process.platform==='win32'?'py':'python3';
-  const pythonArgs=process.platform==='win32'?['-3']:[];
-  execFileSync(python,[...pythonArgs,'preview.py','--build-only'],{cwd:root,stdio:'inherit'});
+test('generated site, canonical data, local references and JavaScript syntax',()=>{
   validateSite();
   const files=['data/submission-config.js'];
   for(const dir of ['assets/js','question-bank','scripts','tests']){
@@ -127,5 +118,4 @@ if(require.main===module){
     input:read('worker/src/index.js'),stdio:['pipe','inherit','inherit']
   });
   console.log('JavaScript syntax checks passed');
-}
-module.exports={read,readPageSource,validateSite};
+});

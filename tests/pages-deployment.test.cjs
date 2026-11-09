@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..');
 const workflow=fs.readFileSync(path.join(root,'.github/workflows/deploy-pages.yml'),'utf8');
 
 test('Source builds once and publishes only generated output to Published with a scoped App token',()=>{
-  assert.match(workflow,/node scripts\/validate-site\.cjs/);
+  assert.match(workflow,/python preview\.py --build-only/);
   assert.match(workflow,/node --test/);
   assert.match(workflow,/python -m unittest discover/);
   assert.match(workflow,/python preview\.py --build-only/);

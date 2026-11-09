@@ -7,7 +7,6 @@
 ```sh
 python preview.py
 python preview.py --build-only
-node scripts/validate-site.cjs
 node --test
 python -m unittest discover -s tests -t . -p 'test_*.py'
 ```
