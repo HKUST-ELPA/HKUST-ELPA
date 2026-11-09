@@ -1,6 +1,6 @@
 [
   {
-    "id": "ADVICE-REGULAR-001",
+    "id": "GZ-R-E-0001",
     "track": "regular",
     "phase": "during",
     "tags": [
@@ -12,7 +12,7 @@
     "campus": "gz"
   },
   {
-    "id": "ADVICE-REGULAR-002",
+    "id": "GZ-R-E-0002",
     "track": "regular",
     "phase": "during",
     "tags": [
@@ -25,7 +25,7 @@
     "campus": "gz"
   },
   {
-    "id": "ADVICE-REGULAR-003",
+    "id": "GZ-R-E-0003",
     "track": "regular",
     "phase": "during",
     "tags": [
