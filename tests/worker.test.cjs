@@ -352,11 +352,11 @@ test('v2 body enforces byte-size bound with no external requests',async()=>{
   assert.equal(x.calls.length,0);
 });
 
-test('v2 linked encounter and optional translations reach review queue unchanged',async()=>{
+test('v2 linked encounter and optional follow-up translations reach review queue unchanged',async()=>{
  const x=makeWorker();
  const body={version:2,kind:'question',campus:'nansha',track:'regular',
    term:'2026 Fall',examStage:'start',
-   main:{en:'Explain one of your projects.',cn:''},
+   main:{en:'Explain one of your projects.',cn:'请介绍你的一个项目。'},
    subs:[{en:'What tools did you use?',cn:''}],source:'firsthand',
    linkedQuestionId:'D-4',intent:'encounter',turnstileToken:'mock-valid-token'};
  const result=await x.handler.fetch(x.request(body),x.env);
@@ -369,7 +369,7 @@ test('v2 linked encounter and optional translations reach review queue unchanged
 test('v2 supplement must have an existing ID and either a similar wording or followup',async()=>{
  const base={version:2,kind:'question',campus:'nansha',track:'regular',
    term:'2026 Fall',examStage:'start',
-   main:{en:'Explain one of your projects.',cn:''},
+   main:{en:'Explain one of your projects.',cn:'请介绍你的一个项目。'},
    subs:[],source:'secondhand',linkedQuestionId:'D-4',
    intent:'supplement',turnstileToken:'mock-valid-token'};
  for(const invalid of [base,{...base,linkedQuestionId:'D-4?'},
