@@ -330,7 +330,7 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.match(practice,/#sessionFilter\{field-sizing:content\}/);
  assert.match(practice,/\.filter-select \{[^}]*width:auto; max-width:100%/);
  assert.match(practice,/appearance:none; -webkit-appearance:none; padding:7px 28px 7px 12px/);
- assert.match(practice,/id="statusFilter"[^>]*>[\s\S]*?<option value="all">备考状态 \/ Status<\/option>/);
+ assert.match(practice,/id="statusFilter"[^>]*>[\s\S]*?<option value="all" data-i18n-en="Study Status">备考状态<\/option>/);
  assert.match(practice,/\.progress-head-actions \.stat-pill,#recordsMenuBtn\{[^}]*height:36px;[^}]*white-space:nowrap/);
  assert.match(practice,/#recordsMenuBtn\{[^}]*width:auto;[^}]*padding:0 10px;[^}]*border-radius:999px/);
  assert.match(practice,/entry\.term\+' · '\+stage\.zh/);
