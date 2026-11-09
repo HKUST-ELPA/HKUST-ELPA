@@ -1,9 +1,7 @@
 'use strict';
 const DATA_FILE = 'elpa_data.json';
-/* Local-first study records: old storage keys and JSON payloads remain compatible. */
-const LS_KEY = 'elpa-q-status-v1'; // 兼容旧数据
-const LS_NOTES = 'elpa-notes-v1';  // 兼容旧数据
-const LS_SNAPSHOT = 'elpa-data-snapshot-v2';
+/* Local-first study records are keyed by canonical four-domain question IDs. */
+const LS_SNAPSHOT = 'elpa-data-snapshot-v3';
 const IDB_NAME = 'elpa-fs-db';
 const IDB_STORE = 'handles';
 const IDB_DIR_KEY = 'data-dir';
@@ -26,17 +24,17 @@ function normalizePayload(data) {
   const cleanStatuses = {};
   const cleanNotes = {};
   for (const [key, value] of Object.entries(data.statuses)) {
-    if ((/^[A-DFHT]-\d+$/.test(key) || key === 'A-附') && ['new', 'doing', 'done'].includes(value)) cleanStatuses[key] = value;
+    if (/^(?:GZ|HK)-(?:R|F)-\d{4}$/.test(key) && ['new', 'doing', 'done'].includes(value)) cleanStatuses[key] = value;
   }
   for (const [key, value] of Object.entries(data.notes)) {
-    if ((/^(?:qn-)?[A-DFHT]-\d+(?:-\d+)?$/.test(key) || key === 'qn-A-附') && typeof value === 'string' && value.length <= 200000) {
+    if (/^(?:qn-)?(?:GZ|HK)-(?:R|F)-\d{4}(?:-\d+)?$/.test(key) && typeof value === 'string' && value.length <= 200000) {
       cleanNotes[key] = value;
     }
   }
-  return { version: 1, updatedAt: data.updatedAt || '', statuses: cleanStatuses, notes: cleanNotes };
+  return { version: 3, updatedAt: data.updatedAt || '', statuses: cleanStatuses, notes: cleanNotes };
 }
 function snapshot() {
-  return { version: 1, updatedAt: new Date().toISOString(), statuses: { ...statuses }, notes: { ...notes } };
+  return { version: 3, updatedAt: new Date().toISOString(), statuses: { ...statuses }, notes: { ...notes } };
 }
 function persistBrowser(payload = snapshot()) {
   try {
@@ -50,24 +48,20 @@ function persistBrowser(payload = snapshot()) {
 function restoreBrowser() {
   try {
     const saved = localStorage.getItem(LS_SNAPSHOT);
-    const data = saved ? JSON.parse(saved) : {
-      statuses: JSON.parse(localStorage.getItem(LS_KEY) || '{}'),
-      notes: JSON.parse(localStorage.getItem(LS_NOTES) || '{}'),
-      updatedAt: ''
-    };
+    const data = saved ? JSON.parse(saved) : {statuses:{},notes:{},updatedAt:''};
     const valid = normalizePayload(data);
     statuses = valid.statuses;
     notes = valid.notes;
     return valid;
   } catch (error) {
-    console.warn('旧学习记录读取失败，当前使用空数据：', error);
+    console.warn('学习记录读取失败，当前使用空数据：', error);
     statuses = {};
     notes = {};
     return { updatedAt: '', statuses, notes };
   }
 }
 
-/* ---- 记住文件夹句柄，兼容已有配置 ---- */
+/* ---- 记住文件夹句柄，独立保存文件夹配置 ---- */
 function idbOpen() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(IDB_NAME, 1);
@@ -207,7 +201,7 @@ function markDirty() {
 }
 function initStorage() {
   restoreBrowser();
-  // Existing local progress remains authoritative; legacy folder sync is no longer automatic.
+  // Existing local progress remains authoritative; folder sync is no longer automatic.
   const notice=document.getElementById('storageTip');
   notice.className='storage-banner';
   notice.textContent='';
