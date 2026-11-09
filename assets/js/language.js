@@ -11,6 +11,14 @@
     if (!saved || current !== saved.rendered) saved = {source: current, rendered: current};
     const source = saved.source;
     const key = source.trim();
+    const explicit = node.parentElement?.dataset.i18nEn;
+    if (explicit !== undefined) {
+      const desired = root.dataset.lang === 'en' ? source.replace(key, explicit) : source.replace(key, node.parentElement.dataset.i18nZh ?? key);
+      saved.rendered = desired;
+      originals.set(node, saved);
+      if (current !== desired) node.nodeValue = desired;
+      return;
+    }
     const desired = root.dataset.lang === 'en' && english[key]
       ? source.replace(key, english[key]) : source;
     saved.rendered = desired;
@@ -26,7 +34,7 @@
       if (!saved[name] || current !== saved[name].rendered)
         saved[name] = {source: current, rendered: current};
       const desired = root.dataset.lang === 'en'
-        ? english[saved[name].source] || saved[name].source : saved[name].source;
+        ? element.getAttribute('data-i18n-'+name) || english[saved[name].source] || saved[name].source : saved[name].source;
       saved[name].rendered = desired;
       attributes.set(element, saved);
       if (current !== desired) element.setAttribute(name, desired);

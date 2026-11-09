@@ -12,54 +12,54 @@
 <body class="elpa-body">
 <a class="skip-link" href="#main">跳转到正文</a><div class="shell"><aside class="sidebar" id="sidebar" aria-label="侧边导航"><a class="brand" href="./index.html" aria-label="HKUST-ELPA 首页"><img class="brand-logo" src="./assets/images/hkust-elpa.png" alt="HKUST-ELPA" width="512" height="512"></a><!-- shared-nav --><div class="sidebar-bottom"><button class="language-toggle" id="language-toggle" type="button" aria-label="Switch to English">EN</button><button class="sidebar-theme" id="theme-toggle" type="button" data-mode="system" aria-label="当前为跟随系统，切换到浅色主题"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g data-theme-icon="system"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></g><g data-theme-icon="light"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/></g><g data-theme-icon="dark"><path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/></g></svg><span id="theme-label">跟随系统</span></button></div></aside><div class="page"><header class="topbar" aria-label="移动端导航栏"><a class="mobile-brand" href="./index.html" aria-label="HKUST-ELPA 首页"><img class="mobile-brand-logo" src="./assets/images/hkust-elpa.png" alt="HKUST-ELPA" width="512" height="512"></a><button class="icon-button menu-button" id="menu-toggle" type="button" aria-label="打开导航" aria-controls="sidebar" aria-expanded="false"><span class="menu-lines" aria-hidden="true"><span></span><span></span><span></span></span></button></header><div class="campus-banner" aria-hidden="true"></div>
 <main id="main">
-<div class="elpa-subhero"><div class="elpa-subhero-inner"><span class="elpa-eyebrow">Contribute</span><h1>社区贡献 <span class="elpa-en-sub" lang="en">Contribute</span></h1><p>分享考题或备考经验，补充这份由同学共同维护的 ELPA 资料。</p></div></div>
+<div class="elpa-subhero"><div class="elpa-subhero-inner"><span class="elpa-eyebrow">Contribute</span><h1>社区贡献 </h1><p>分享考题或备考经验，补充这份由同学共同维护的 ELPA 资料。</p></div></div>
 <div class="contrib-main">
 <section class="contrib-panel" aria-label="社区贡献表单">
 <form id="submissionForm" class="contrib-form">
 <p class="contrib-notice">无需注册账号。提交内容会公开保存，并在必要核对与整理后收录。请勿填写姓名、学号或联系方式。 <span class="elpa-en-summary" lang="en">No account needed. Submissions are public and may be included after review. Do not include names, student IDs or contact details.</span></p>
 <p id="submissionDraftStatus" class="contrib-caption" role="status">草稿仅在当前标签页暂存，刷新或返回此页可继续填写；尚未提交。 <span class="elpa-en-summary" lang="en">Drafts stay in this tab for refresh or return visits. Nothing has been submitted.</span></p>
 <div class="contrib-tabs" role="group" aria-label="投稿类别">
-<button id="tabQuestion" class="contrib-tab" type="button" aria-pressed="true">贡献考题 · Question</button>
-<button id="tabAdvice" class="contrib-tab" type="button" aria-pressed="false">分享经验 · Advice</button>
+<button id="tabQuestion" class="contrib-tab" type="button" aria-pressed="true" data-i18n-en="Contribute Questions">贡献考题</button>
+<button id="tabAdvice" class="contrib-tab" type="button" aria-pressed="false" data-i18n-en="Share Tips">分享经验</button>
 </div>
 <div id="questionFields" class="contrib-section">
   <h2 id="exam-context">01 · 考试校区与类型 <span lang="en">Campus &amp; Assessment</span></h2>
   <div class="contrib-row">
-    <div class="contrib-field"><label for="submissionCampus">考试校区 * <span class="elpa-en-inline" lang="en">Campus *</span></label>
+    <div class="contrib-field"><label for="submissionCampus">考试校区 * </label>
       <select id="submissionCampus" required>
-        <option value="" selected disabled>选择校区 / Select campus</option>
+        <option value="" selected disabled data-i18n-en="Select Campus">选择校区</option>
         <option value="nansha">GZ</option>
         <option value="clear-water-bay">HK</option>
       </select>
     </div>
-    <div class="contrib-field"><label for="submissionTrack">考试类型 * <span class="elpa-en-inline" lang="en">Assessment *</span></label>
+    <div class="contrib-field"><label for="submissionTrack">考试类型 * </label>
       <select id="submissionTrack" required>
-        <option value="regular">常规 ELPA · Regular</option>
+        <option value="regular" data-i18n-en="Regular ELPA">常规 ELPA</option>
         <option value="fast-track">ELPA Fast Track</option>
       </select>
     </div>
   </div>
   <h2 id="exam-session" tabindex="-1">02 · 考试场次 <span lang="en">Exam Session</span></h2>
   <div class="contrib-row">
-    <div class="contrib-field"><label for="submissionYear">考试年份 * <span class="elpa-en-inline" lang="en">Year *</span></label>
+    <div class="contrib-field"><label for="submissionYear">考试年份 * </label>
       <select id="submissionYear" required></select>
     </div>
-    <div class="contrib-field"><label for="submissionSlot">学期及场次 * <span class="elpa-en-inline" lang="en">Semester & session *</span></label>
+    <div class="contrib-field"><label for="submissionSlot">学期及场次 * </label>
       <select id="submissionSlot" required>
-        <option value="" selected disabled>选择场次 / Select session</option>
-        <option value="Fall:start">Fall · 开学 / Beginning</option><option value="Fall:mid">Fall · 学期中 / Mid-semester</option>
-        <option value="Fall:end">Fall · 学期末 / End</option>
-        <option value="Spring:start">Spring · 开学 / Beginning</option><option value="Spring:mid">Spring · 学期中 / Mid-semester</option>
-        <option value="Spring:end">Spring · 学期末 / End</option>
+        <option value="" selected disabled data-i18n-en="Select Session">选择场次</option>
+        <option value="Fall:start" data-i18n-en="Fall · Beginning">秋季 · 开学</option><option value="Fall:mid" data-i18n-en="Fall · Mid-semester">秋季 · 学期中</option>
+        <option value="Fall:end" data-i18n-en="Fall · End">秋季 · 学期末</option>
+        <option value="Spring:start" data-i18n-en="Spring · Beginning">春季 · 开学</option><option value="Spring:mid" data-i18n-en="Spring · Mid-semester">春季 · 学期中</option>
+        <option value="Spring:end" data-i18n-en="Spring · End">春季 · 学期末</option>
       </select>
     </div>
   </div>
   <hr class="contrib-line">
   <h2>03 · 主问题 <span lang="en">Main Question</span></h2>
-  <div class="contrib-field" id="mainEnField"><label for="mainEn">英文题目 * <span class="elpa-en-inline" lang="en">Question in English *</span></label>
+  <div class="contrib-field" id="mainEnField"><label for="mainEn">英文题目 * </label>
     <textarea id="mainEn" rows="3" maxlength="1000" minlength="8" required></textarea>
   </div>
-  <div class="contrib-field" id="mainCnField"><label for="mainCn">中文理解（选填） <span class="elpa-en-inline" lang="en">Chinese (optional)</span></label>
+  <div class="contrib-field" id="mainCnField"><label for="mainCn">中文理解（选填） </label>
     <textarea id="mainCn" rows="3" maxlength="1000"></textarea>
   </div>
   <div id="matchingPanel" class="contrib-matches" hidden>
@@ -67,18 +67,18 @@
     <p>选中原题后无需重复输入题干，直接报告自己也考过或补充小问。</p>
     <div id="matchingResults"></div>
     <div id="linkedQuestion" hidden>
-      <div class="contrib-linked-line"><span id="linkedQuestionTitle"></span><button type="button" id="unlinkQuestion">更换题目 <span class="elpa-en-inline" lang="en">Change question</span></button></div>
+      <div class="contrib-linked-line"><span id="linkedQuestionTitle"></span><button type="button" id="unlinkQuestion">更换题目 </button></div>
       <fieldset class="contrib-fieldset contrib-intent" id="contributionIntent" aria-label="反馈类型">
-        <legend>这次想分享什么？ <span class="elpa-en-inline" lang="en">What would you like to share?</span></legend>
-        <label><input type="radio" name="contributionIntent" value="encounter" checked> 我也考过这道题 <span class="elpa-en-inline" lang="en">I was asked this question</span></label>
-        <label><input type="radio" name="contributionIntent" value="supplement"> 仅补充题目或提示小问 <span class="elpa-en-inline" lang="en">Add wording or follow-ups only</span></label>
+        <legend>这次想分享什么？ </legend>
+        <label><input type="radio" name="contributionIntent" value="encounter" checked> 我也考过这道题 </label>
+        <label><input type="radio" name="contributionIntent" value="supplement"> 仅补充题目或提示小问 </label>
         <small>同一次考试经历如果已有同学提交过，请选「仅补充」，不会重复增加考过次数。 <span class="elpa-en-summary" lang="en">If someone has already reported the same exam encounter, choose Add only to avoid counting it twice.</span></small>
       </fieldset>
       <div id="supplementQuestionFields" class="contrib-section" hidden>
-        <div class="contrib-field"><label for="supplementEn">补充的英文题目（选填） <span class="elpa-en-inline" lang="en">Alternative wording in English (optional)</span></label>
+        <div class="contrib-field"><label for="supplementEn">补充的英文题目（选填） </label>
           <textarea id="supplementEn" rows="3" maxlength="1000" placeholder="填写相似问法 / Enter alternative wording"></textarea>
         </div>
-        <div class="contrib-field"><label for="supplementCn">中文理解（选填） <span class="elpa-en-inline" lang="en">Chinese (optional)</span></label>
+        <div class="contrib-field"><label for="supplementCn">中文理解（选填） </label>
           <textarea id="supplementCn" rows="3" maxlength="1000"></textarea>
         </div>
         <p class="contrib-caption">相似问法会与原题放在一起；提示小问会按顺序追加在原有小问后面。</p>
@@ -89,29 +89,29 @@
   <h2>04 · 提示小问 <span lang="en">Follow-ups</span></h2>
   <p>记得的小问才填写，可只提供英文；中文翻译不强制。</p>
   <div id="followupList" class="contrib-section" aria-live="polite"></div>
-  <div class="contrib-actions"><button id="addFollowup" class="contrib-button" type="button">＋ 添加提示小问 <span class="elpa-en-inline" lang="en">Add a follow-up</span></button>
+  <div class="contrib-actions"><button id="addFollowup" class="contrib-button" type="button">＋ 添加提示小问 </button>
     <span id="followupCount" class="contrib-caption">0 / 20</span></div>
   <hr class="contrib-line">
   <h2>05 · 反馈来源 <span lang="en">Source</span></h2>
-  <div class="contrib-field"><label for="submissionSource">来源类型 * <span class="elpa-en-inline" lang="en">Source *</span></label>
-    <select id="submissionSource" required><option value="firsthand">本人亲历 · Firsthand</option>
-    <option value="secondhand">同学转述 · Secondhand</option></select>
+  <div class="contrib-field"><label for="submissionSource">来源类型 * </label>
+    <select id="submissionSource" required><option value="firsthand" data-i18n-en="Firsthand">本人亲历</option>
+    <option value="secondhand" data-i18n-en="Reported by a Classmate">同学转述</option></select>
   </div>
 </div>
 <div id="adviceFields" class="contrib-section" hidden>
   <h2>01 · 备考阶段 <span lang="en">Preparation Stage</span></h2>
   <div class="contrib-row">
-    <div class="contrib-field"><label for="adviceTrack">考试方式（选填） <span class="elpa-en-inline" lang="en">Assessment (optional)</span></label>
+    <div class="contrib-field"><label for="adviceTrack">考试方式（选填） </label>
       <select id="adviceTrack">
-        <option value="regular">常规 ELPA · Regular</option>
+        <option value="regular" data-i18n-en="Regular ELPA">常规 ELPA</option>
         <option value="fast-track">ELPA Fast Track</option>
       </select>
     </div>
-    <div class="contrib-field"><label for="advicePhase">经验阶段 * <span class="elpa-en-inline" lang="en">Stage *</span></label>
+    <div class="contrib-field"><label for="advicePhase">经验阶段 * </label>
       <select id="advicePhase" required>
-        <option value="before">考前准备 · Before the Exam</option>
-        <option value="during">考试现场 · During the Exam</option>
-        <option value="after">考后反馈 · After the Exam</option>
+        <option value="before" data-i18n-en="Before the Exam">考前准备</option>
+        <option value="during" data-i18n-en="During the Exam">考试现场</option>
+        <option value="after" data-i18n-en="After the Exam">考后反馈</option>
       </select>
     </div>
   </div>
@@ -121,20 +121,20 @@
   <div id="adviceTags" class="contrib-tags" role="group" aria-label="备考经验主题标签"></div>
   <hr class="contrib-line">
   <h2>03 · 经验内容 <span lang="en">Your Experience</span></h2>
-  <div class="contrib-field"><label for="adviceTitle">标题 * <span class="elpa-en-inline" lang="en">Title *</span></label>
+  <div class="contrib-field"><label for="adviceTitle">标题 * </label>
     <input id="adviceTitle" type="text" minlength="4" maxlength="120" required>
   </div>
-  <div class="contrib-field"><label for="adviceBody">正文 * <span class="elpa-en-inline" lang="en">Content *</span></label>
+  <div class="contrib-field"><label for="adviceBody">正文 * </label>
     <textarea id="adviceBody" rows="7" minlength="20" maxlength="6000" required></textarea>
   </div>
   <p>可使用中文或英文，无需重复翻译。</p>
 </div>
 <hr class="contrib-line">
-<div class="contrib-actions"><button type="button" class="contrib-button" id="previewButton">预览投稿 <span class="elpa-en-inline" lang="en">Preview</span></button>
-  <a href="./practice.html">返回题库练习 <span class="elpa-en-inline" lang="en">Back to practice</span></a></div>
+<div class="contrib-actions"><button type="button" class="contrib-button" id="previewButton">预览投稿 </button>
+  <a href="./practice.html">返回题库练习 </a></div>
 <section id="previewPanel" class="contrib-preview" aria-label="投稿预览" hidden></section>
 <div id="submissionTurnstile" class="contrib-turnstile" aria-label="人机验证"></div>
-<div class="contrib-actions"><button id="submissionButton" class="contrib-button primary" type="submit" disabled>提交分享 <span class="elpa-en-inline" lang="en">Submit</span></button></div>
+<div class="contrib-actions"><button id="submissionButton" class="contrib-button primary" type="submit" disabled>提交分享 </button></div>
 <p id="submissionMessage" class="contrib-message" role="status" aria-live="polite"></p>
 </form>
 </section>

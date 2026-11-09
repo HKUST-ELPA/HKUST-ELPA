@@ -1,4 +1,5 @@
 /* Single choice; no extra filters, accounts or persistent state. */
+const guideText=(zh,en)=>document.documentElement.dataset.lang==='en'?en:zh;
 const flowRegular=document.getElementById('regularGuide');
 const flowFast=document.getElementById('fastGuide');
 const regularButton=document.getElementById('guideRegularTab');
@@ -26,6 +27,8 @@ let adviceTrack='regular';
 
 function selectAdviceTrack(track){
   adviceTrack=track;
+  advicePhaseFilter.options[0].textContent=guideText('全部阶段','All Stages');
+  adviceTagFilter.options[0].textContent=guideText('全部主题','All Topics');
   const entries=adviceCards.filter(card=>card.dataset.track===track);
   const phases=new Set(entries.map(card=>card.dataset.phase));
   const tags=new Set(entries.flatMap(card=>card.dataset.tags.split(',').filter(Boolean)));
@@ -38,7 +41,7 @@ function selectAdviceTrack(track){
       if(!keys.has(key))continue;
       const option=document.createElement('option');
       option.value=key;
-      option.textContent=label.zh+' · '+label.en;
+      option.textContent=guideText(label.zh,label.en);
       select.append(option);
     }
     select.value='';
@@ -55,8 +58,10 @@ function renderCommunityAdvice(){
   const adviceEmpty=document.getElementById('guideAdviceEmpty');
   adviceEmpty.hidden=visible.length!==0;
   adviceEmpty.textContent=adviceCards.some(card=>card.dataset.track===adviceTrack)
-    ?'暂无经验 / No tips in this category.':'暂未收录 Fast Track 经验。 / No Fast Track tips yet.';
+    ?guideText('此分类暂无经验分享。','No tips in this category yet.'):guideText('暂未收录 Fast Track 经验。','No Fast Track tips available yet.');
 }
 advicePhaseFilter.addEventListener('change',renderCommunityAdvice);
 adviceTagFilter.addEventListener('change',renderCommunityAdvice);
 selectGuideTrack(requestedTrack==='fast-track'||window.location.hash==='#fast-track'?'fast-track':'regular');
+
+window.addEventListener('elpa:language',()=>selectAdviceTrack(adviceTrack));

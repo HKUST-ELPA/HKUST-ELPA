@@ -20,9 +20,17 @@ document.querySelectorAll('.elpa-home-demo-play').forEach(button=>{
     const playing=button.getAttribute('aria-pressed')!=='true';
     image.src=playing?image.dataset.demo:poster;
     button.setAttribute('aria-pressed',String(playing));
-    button.textContent=playing?'停止演示 · Stop demo':'播放演示 · Play demo';
+    button.dataset.playing=String(playing);
+    button.textContent=document.documentElement.dataset.lang==='en'?(playing?'Stop demo':'Play demo'):(playing?'停止演示':'播放演示');
   });
   button.closest('details').addEventListener('toggle',event=>{
     if(!event.currentTarget.open&&button.getAttribute('aria-pressed')==='true')button.click();
+  });
+});
+
+window.addEventListener('elpa:language',()=>{
+  document.querySelectorAll('.elpa-home-demo-play').forEach(button=>{
+    const playing=button.dataset.playing==='true';
+    button.textContent=document.documentElement.dataset.lang==='en'?(playing?'Stop demo':'Play demo'):(playing?'停止演示':'播放演示');
   });
 });

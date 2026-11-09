@@ -45,7 +45,7 @@ def render_guide_advice(page, root):
 
     def label(group, key):
         names = group[key]
-        return escape(names["zh"] + " · " + names["en"])
+        return '<span data-i18n-en="' + escape(names["en"], quote=True) + '">' + escape(names["zh"]) + '</span>'
 
     cards = []
     for entry in entries:
@@ -63,7 +63,7 @@ def render_guide_advice(page, root):
         if type(issue) is int and issue > 0:
             source_html = ('<a class="elpa-advice-source" target="_blank" rel="noopener noreferrer" '
                            'href="https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/' + str(issue)
-                           + '">原始分享 / Original post</a>')
+                           + '" data-i18n-en="Original post">原始分享</a>')
         cards.append(
             '<article class="elpa-advice-card" data-track="' + escape(track, quote=True)
             + '" data-phase="' + escape(phase, quote=True)
@@ -81,18 +81,18 @@ def render_guide_advice(page, root):
     )
     for key, names, values, initial in (
         ("advicePhaseFilter", taxonomy["advicePhases"],
-         {entry["phase"] for entry in regular}, "全部阶段 / All stages"),
+         {entry["phase"] for entry in regular}, ("全部阶段", "All Stages")),
         ("adviceTagFilter", taxonomy["adviceTags"],
-         {tag for entry in regular for tag in entry.get("tags", [])}, "全部主题 / All topics"),
+         {tag for entry in regular for tag in entry.get("tags", [])}, ("全部主题", "All Topics")),
     ):
-        previous = f'<select id="{key}"><option value="">{initial}</option></select>'
+        previous = f'<select id="{key}"><option value="" data-i18n-en="{initial[1]}">{initial[0]}</option></select>'
         options = "".join(
             '<option value="' + escape(code, quote=True) + '">' + label(names, code) + '</option>'
             for code in names if code in values
         )
         if page.count(previous) != 1:
             raise ValueError("Unexpected guide filter: " + key)
-        page = page.replace(previous, f'<select id="{key}"><option value="">{initial}</option>'
+        page = page.replace(previous, f'<select id="{key}"><option value="" data-i18n-en="{initial[1]}">{initial[0]}</option>'
                             + options + '</select>')
     section = '<section class="elpa-advice-section" id="sec-advice" hidden'
     if page.count(section) != 1:

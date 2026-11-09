@@ -1,6 +1,7 @@
 (function(){
 'use strict';
 const config=window.ELPA_SUBMISSION_CONFIG||{};
+const localeText=(zh,en)=>document.documentElement.dataset.lang==='en'?en:zh;
 const taxonomy=typeof ELPA_TAXONOMY!=='undefined'?ELPA_TAXONOMY:null;
 const form=document.getElementById('submissionForm');
 const btn=document.getElementById('submissionButton');
@@ -20,7 +21,7 @@ function invalidatePreview(){
   const preview=get('previewPanel');
   if(preview.hidden)return;
   preview.hidden=true;
-  say('内容已修改，请重新预览。 / Content changed. Please preview again.');
+  say(localeText('内容已修改，请重新预览。','Content changed. Please preview again.'));
 }
 form.addEventListener('input',invalidatePreview);
 form.addEventListener('change',invalidatePreview);
@@ -43,7 +44,10 @@ for(const [code,labels] of Object.entries(taxonomy?.adviceTags||{})){
   const label=document.createElement('label');label.className='contrib-tag';
   const input=document.createElement('input');
   input.type='checkbox';input.value=code;input.name='adviceTag';
-  label.append(input);addText(label,'span',labels.zh+' · '+labels.en);
+  label.append(input);
+  const caption=addText(label,'span',localeText(labels.zh,labels.en));
+  caption.dataset.i18nEn=labels.en;
+  caption.dataset.i18nZh=labels.zh;
   list.append(label);
 }
 function setKind(next){
@@ -74,7 +78,7 @@ function addFollowup(en='',cn=''){
   const header=document.createElement('div');header.className='contrib-follow-header';
   const title=addText(header,'strong','小问','follow-title');
   const actions=document.createElement('div');actions.className='contrib-follow-controls';
-  for(const [cls,symbol,label] of [['move-up','↑','上移 / Move up'],['move-down','↓','下移 / Move down'],['remove','×','删除 / Remove']]){
+  for(const [cls,symbol,label] of [['move-up','↑',localeText('上移','Move up')],['move-down','↓',localeText('下移','Move down')],['remove','×',localeText('删除','Remove')]]){
     const b=document.createElement('button');b.type='button';b.className='contrib-mini '+cls;
     b.textContent=symbol;b.setAttribute('aria-label',label);
     b.addEventListener('click',()=>{
@@ -86,7 +90,7 @@ function addFollowup(en='',cn=''){
   }
   header.append(actions);wrapper.append(header);
   for(const [role,labelText,placeholder,val] of [
-    ['en','英文小问 / English follow-up *',ph.subEn,en],['cn','中文补充 / Chinese (optional)',ph.subCn,cn]]){
+    ['en',localeText('英文小问 *','English follow-up *'),ph.subEn,en],['cn',localeText('中文补充（选填）','Chinese (optional)'),ph.subCn,cn]]){
     const field=document.createElement('div');field.className='contrib-field';
     const id='follow-'+String(Date.now())+'-'+Math.random().toString(36).slice(2)+'-'+role;
     const label=document.createElement('label');label.textContent=labelText;label.htmlFor=id;
@@ -187,7 +191,7 @@ function renderSuggestions(){
     const button=document.createElement('button');button.type='button';button.className='contrib-match';
     const block=document.createElement('span');block.textContent=entry.en;
     const detail=document.createElement('small');detail.textContent=entry.cn;block.append(detail);
-    const action=document.createElement('em');action.textContent='关联 / Select';
+    const action=document.createElement('em');action.textContent=localeText('关联','Select');
     button.append(block,action);button.addEventListener('click',()=>linkQuestion(entry));out.append(button);
   }
 }
@@ -261,7 +265,7 @@ function validateForm(){
 function showPreview(){
   const data=validateForm();if(!data)return;
   const preview=get('previewPanel');preview.replaceChildren();
-  addText(preview,'h2','投稿预览 · Review');
+  addText(preview,'h2',localeText('投稿预览','Submission Preview'));
   if(data.kind==='question'){
     addText(preview,'small',(data.linkedQuestionId?'已关联 '+data.linkedQuestionId+' · '+
       (data.intent==='supplement'?'补充题目内容':'我也考过 / Seen this')+' · ':'')+
@@ -286,7 +290,7 @@ function showPreview(){
     addText(preview,'strong',data.title);
     addText(preview,'p',data.body);
   }
-  addText(preview,'small','内容将公开保存。 / This submission will be public.');
+  addText(preview,'small',localeText('内容将公开保存。','This submission will be public.'));
   preview.hidden=false;preview.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 get('previewButton').addEventListener('click',showPreview);
@@ -317,7 +321,7 @@ form.addEventListener('submit',async event=>{
   const data=validateForm();if(!data)return;
   const token=window.turnstile.getResponse(widgetId);
   if(!token){say('请完成人机验证。 / Please complete verification.','error');btn.disabled=true;return;}
-  submitting=true;btn.disabled=true;say('正在提交 / Submitting…');
+  submitting=true;btn.disabled=true;say(localeText('正在提交…','Submitting…'));
   try{
     const response=await fetch(config.apiEndpoint,{
       method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},
@@ -339,7 +343,7 @@ form.addEventListener('submit',async event=>{
     say('分享已提交，待核对与整理。 / Submitted! Contributions are reviewed before inclusion.','success');
     if(/^https:\/\/github\.com\/HKUST-ELPA\/HKUST-ELPA-Site-Source\/issues\/\d+$/.test(result.issueUrl||'')){
       const a=document.createElement('a');a.href=result.issueUrl;a.target='_blank';
-      a.rel='noopener noreferrer';a.textContent='查看投稿记录 / View submission';message.append(' ',a);
+      a.rel='noopener noreferrer';a.textContent=localeText('查看投稿记录','View Submission');message.append(' ',a);
     }
   }catch(e){say(e.message||'网络异常，请重试。 / Network error. Please try again.','error');}
   finally{

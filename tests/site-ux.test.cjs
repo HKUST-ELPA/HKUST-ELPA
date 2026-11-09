@@ -70,7 +70,7 @@ test('practice cards expose reviewed encounter action and uniform alignment',()=
  assert.match(practice,/相似问法 \/ Variants \(\$\{alternatives\.length\}\)/);
  assert.match(practice,/function questionAlternatives\(id,item\)/);
  assert.match(submit,/id="exam-context">01 · 考试校区与类型/);
- assert.match(submit,/id="submissionCampus" required>[\s\S]*?<option value="" selected disabled>选择校区 \/ Select campus<\/option>/);
+ assert.match(submit,/id="submissionCampus" required>[\s\S]*?<option value="" selected disabled data-i18n-en="Select Campus">选择校区<\/option>/);
  assert.match(submit,/if\(intent==='encounter'\)requestAnimationFrame\(\(\)=>\{/);
  assert.match(submit,/get\('exam-context'\)\.scrollIntoView\(\{block:'start',behavior:'instant'\}\)/);
  assert.match(submit,/get\('submissionCampus'\)\.focus\(\{preventScroll:true\}\)/);
@@ -245,8 +245,8 @@ test('all pages share one compact banner and the practice brand uses the site pa
 
 test('sources page keeps external references without duplicate question-bank documents',()=>{
  const sources=read('sources.html');
-  assert.match(sources,/id="official-sources">学校官方说明 <span[^>]*lang="en">Official Information<\/span><\/h2>/);
-  assert.match(sources,/id="community-sources">补充链接 <span[^>]*lang="en">Additional Links<\/span><\/h2>/);
+  assert.match(sources,/id="official-sources">学校官方说明\s*<\/h2>/);
+  assert.match(sources,/id="community-sources">补充链接\s*<\/h2>/);
  assert.match(sources,/docs\.qq\.com\/doc\/DT3BxSkJzSGdUamJE/);
  assert.match(sources,/docs\.qq\.com\/doc\/DSHJydEVYSHBtdkZO/);
  assert.doesNotMatch(sources,/站内题库文档|question-bank\/(?:2026-fall|previous-years|fast-track)\.md/);
@@ -259,7 +259,7 @@ test('seed advice uses the same track, phase and topic schema without invented p
  assert.equal(advice.filter(item=>item.id.startsWith('ADVICE-REGULAR-')).length,3);
  assert.equal(advice.filter(item=>item.track==='regular'&&item.phase==='during').length,3);
  for(const item of advice)assert.ok(!/HIST-|provenance|历史考情整理/.test(JSON.stringify(item)));
- assert.match(submit,/<select id="adviceTrack">[\s\S]*?<option value="regular">常规 ELPA · Regular<\/option>[\s\S]*?<option value="fast-track">ELPA Fast Track<\/option>/);
+ assert.match(submit,/<select id="adviceTrack">[\s\S]*?<option value="regular" data-i18n-en="Regular ELPA">常规 ELPA<\/option>[\s\S]*?<option value="fast-track">ELPA Fast Track<\/option>/);
 });
 
 test('guide separates the official Regular and Fast Track paths with one obvious switch',()=>{
@@ -285,8 +285,8 @@ test('guide separates the official Regular and Fast Track paths with one obvious
 test('homepage explains the full learning workflow without a repeated oversized practice CTA',()=>{
  const home=readPageSource('index.html');
  const practice=readPageSource('practice.html');
- assert.match(home,/id="home-overview-title">初次使用 <span[^>]*lang="en">Start here<\/span><\/h2>/);
- assert.match(home,/id="home-features-title">使用指南 <span[^>]*lang="en">Quick guide<\/span><\/h2>/);
+ assert.match(home,/id="home-overview-title">初次使用\s*<\/h2>/);
+ assert.match(home,/id="home-features-title">使用指南\s*<\/h2>/);
  assert.equal((home.match(/class="elpa-home-journey"/g)||[]).length,1);
  assert.equal((home.match(/class="elpa-home-feature"/g)||[]).length,4);
  for(const id of ['home-guide-title','home-bank-title','home-practice-title','home-record-title','home-more-title'])
@@ -326,11 +326,11 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.doesNotMatch(practice,/current\.length\+' 题 · '|past\.length\+' 题 · '/);
  assert.match(practice,/feedbackBankCount'\)\.textContent=current\.length\+' 题'/);
  assert.match(practice,/pastBankCount'\)\.textContent=past\.length\+' 题'/);
- assert.match(practice,/id="sessionFilter"[\s\S]*?<option value="">全部场次 \/ All sessions<\/option>/);
+ assert.match(practice,/id="sessionFilter"[\s\S]*?<option value="" data-i18n-en="All Sessions">全部场次<\/option>/);
  assert.match(practice,/#sessionFilter\{field-sizing:content\}/);
  assert.match(practice,/\.filter-select \{[^}]*width:auto; max-width:100%/);
  assert.match(practice,/appearance:none; -webkit-appearance:none; padding:7px 28px 7px 12px/);
- assert.match(practice,/id="statusFilter"[^>]*>[\s\S]*?<option value="all">备考状态 \/ Status<\/option>/);
+ assert.match(practice,/id="statusFilter"[^>]*>[\s\S]*?<option value="all" data-i18n-en="Study Status">备考状态<\/option>/);
  assert.match(practice,/\.progress-head-actions \.stat-pill,#recordsMenuBtn\{[^}]*height:36px;[^}]*white-space:nowrap/);
  assert.match(practice,/#recordsMenuBtn\{[^}]*width:auto;[^}]*padding:0 10px;[^}]*border-radius:999px/);
  assert.match(practice,/entry\.term\+' · '\+stage\.zh/);
