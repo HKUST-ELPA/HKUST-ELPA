@@ -10,7 +10,8 @@ test('new and closed Issues route to matching Team using canonical structured pa
  for(const group of ['campus:gz','campus:hk','track:regular','track:fast-track'])
   assert.ok(workflow.includes(group));
  assert.match(workflow,/@HKUST-ELPA\/\$\{REVIEW_TEAM\}/);
- assert.match(routing,/elpa-submission-v3/);
+ assert.match(routing,/verify-submission\.cjs/);
+ assert.match(fs.readFileSync(path.join(root,'scripts/verify-submission.cjs'),'utf8'),/elpa-submission-v3/);
  assert.doesNotMatch(routing,/issue\.labels/);
 });
 test('only live Team membership or organization owner can approve',()=>{
