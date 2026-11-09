@@ -290,7 +290,7 @@ def check_extended_behaviors(browser, origin):
         assert page.locator("#guideAdviceList article").count() == len(fast)
         assert page.locator("#guideAdviceFilters").is_visible() == bool(fast)
         assert page.locator("#guideAdviceEmpty").is_visible() == (not fast)
-        assert "experience=1&track=fast-track" in page.locator("#guideAdviceShare").get_attribute("href")
+        assert "campus=gz&track=fast-track&experience=1" in page.locator("#guideAdviceShare").get_attribute("href")
 
         page.goto(origin + "/practice.html?campus=hk", wait_until="load")
         for track in ("regular", "fast-track"):
