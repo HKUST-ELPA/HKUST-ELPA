@@ -276,16 +276,20 @@ def check_language_and_community(browser, origin):
 def check_extended_behaviors(browser, origin):
     context, page, errors = page_context(browser, 390)
     try:
+        reviewed = json.loads((ROOT / "question-bank/advice.json").read_text(encoding="utf-8"))
+        regular = [entry for entry in reviewed if entry.get("track", "regular") == "regular"]
+        speaking = [entry for entry in regular if "speaking-strategy" in entry.get("tags", [])]
+        fast = [entry for entry in reviewed if entry.get("track") == "fast-track"]
         page.goto(origin + "/guide.html", wait_until="load")
-        assert page.locator("#guideAdviceList article").count() == 3
+        assert page.locator("#guideAdviceList article").count() == len(regular)
         assert page.locator("#guideAdviceFilters").is_visible()
         page.locator("#adviceTagFilter").select_option("speaking-strategy")
-        assert page.locator("#guideAdviceList article").count() == 2
+        assert page.locator("#guideAdviceList article").count() == len(speaking)
         page.locator("#adviceTagFilter").select_option("")
         page.locator("#guideFastTab").click()
-        assert page.locator("#guideAdviceList article").count() == 0
-        assert not page.locator("#guideAdviceFilters").is_visible()
-        assert page.locator("#guideAdviceEmpty").is_visible()
+        assert page.locator("#guideAdviceList article").count() == len(fast)
+        assert page.locator("#guideAdviceFilters").is_visible() == bool(fast)
+        assert page.locator("#guideAdviceEmpty").is_visible() == (not fast)
         assert "experience=1&track=fast-track" in page.locator("#guideAdviceShare").get_attribute("href")
 
         page.goto(origin + "/practice.html?campus=clear-water-bay", wait_until="load")
