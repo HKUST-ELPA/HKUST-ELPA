@@ -15,7 +15,7 @@ Each Team has **Triage** access to Source, not code write access or Published ac
 
 1. A student submits a question, optionally with preparation advice. Both share a required campus and assessment type.
 2. The Cloudflare Worker verifies Turnstile and rate limiting, creates one Issue with a single GitHub App-signed `elpa-submission-v3` payload, and labels it `submission:pending`.
-3. An `issues: opened` workflow derives `campus` and `track` from the verified signed payload, adds `campus:*` and `track:*` labels, and mentions the designated Team.
+3. An `issues: opened` workflow derives `campus` and `track` from the verified signed payload, adds `campus:*` and `track:*` labels, and posts one structured GitHub-native notification mentioning the designated Team. The notification includes campus, assessment, term, stage, source, bilingual question, follow-ups, optional advice, and approval instructions. Reruns do not duplicate notifications.
 4. A reviewer checks the original content, accuracy, privacy, duplicates and references.
 5. **Close as completed** requests publication; **Close as not planned** rejects. Reopening restores pending status but does not undo published data.
 6. On completed closure, the workflow verifies the App-created Issue, its signed payload, and the authenticated event sender against the corresponding Team Membership API or organization Owner membership. It fails closed when authorization cannot be established. Unauthorized approvals are reopened.
