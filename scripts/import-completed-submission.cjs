@@ -14,9 +14,7 @@ const quote=s=>String(s).split(/\r?\n/).map(l=>'> '+l.replace(/</g,'&lt;')).join
 const output=(status,recorded)=>{console.log('Import status:',status);if(process.env.GITHUB_OUTPUT)fs.appendFileSync(process.env.GITHUB_OUTPUT,'result='+status+'\nrecorded='+recorded+'\n')};
 if(!Number.isSafeInteger(number)||number<1||!/^\[ELPA 投稿\]/.test(issue.title||''))throw Error('Not an ELPA submission');
 if(/\bTEST ONLY\b/i.test(issue.title))throw Error('Synthetic Issue may never enter reviewed data');
-const matches=[...(issue.body||'').matchAll(/^<!-- elpa-submission-v3:([A-Za-z0-9_-]+) -->\s*$/gm)];
-if(matches.length!==1)throw Error('Exactly one v3 payload marker is required');
-const data=JSON.parse(Buffer.from(matches[0][1],'base64url').toString('utf8'));
+const data=require('./verify-submission.cjs').decode(issue);
 const taxonomy=read('taxonomy.json');
 const allowed=(group,key)=>typeof key==='string'&&Object.hasOwn(taxonomy[group],key);
 const vAdvice=a=>!a||(allowed('advicePhases',a.phase)&&Array.isArray(a.tags)&&a.tags.length>=1&&a.tags.length<=4&&new Set(a.tags).size===a.tags.length&&a.tags.every(t=>allowed('adviceTags',t))&&valid(a.title,4,120)&&valid(a.body,20,6000));
