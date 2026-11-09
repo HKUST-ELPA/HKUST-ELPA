@@ -160,6 +160,44 @@ function formatV2(record){
     record.main.en.replace(/\s+/g,' ').slice(0,65),body:lines.join('\n')};
 }
 
+// Short-lived, repository-scoped GitHub App credentials. Never expose the key or token.
+function jwtBase64Url(value) {
+  const bytes = typeof value === 'string' ? new TextEncoder().encode(value) : new Uint8Array(value);
+  let raw = '';
+  for (const byte of bytes) raw += String.fromCharCode(byte);
+  return btoa(raw).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+async function githubInstallationToken(env) {
+  if (!/^\d+$/.test(String(env.GITHUB_APP_ID||'')) ||
+      !/^\d+$/.test(String(env.GITHUB_APP_INSTALLATION_ID||'')) ||
+      typeof env.GITHUB_APP_PRIVATE_KEY !== 'string') throw new Error('GitHub App not configured');
+  const pem = env.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g,'\n').replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g,'');
+  const binary = atob(pem);
+  const pkcs8 = Uint8Array.from(binary, c=>c.charCodeAt(0));
+  const key = await crypto.subtle.importKey('pkcs8',pkcs8,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
+  const now = Math.floor(Date.now()/1000);
+  const head = jwtBase64Url(JSON.stringify({alg:'RS256',typ:'JWT'}));
+  const claims = jwtBase64Url(JSON.stringify({iat:now-60,exp:now+480,iss:String(env.GITHUB_APP_ID)}));
+  const signingInput = head+'.'+claims;
+  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5',key,new TextEncoder().encode(signingInput));
+  const jwt = signingInput+'.'+jwtBase64Url(signature);
+  const response = await fetch('https://api.github.com/app/installations/'+env.GITHUB_APP_INSTALLATION_ID+'/access_tokens',{
+    method:'POST',
+    headers:{
+      Authorization:'Bearer '+jwt,
+      Accept:'application/vnd.github+json',
+      'X-GitHub-Api-Version':'2022-11-28',
+      'User-Agent':'HKUST-ELPA-Submission'
+    },
+    body:JSON.stringify({repositories:[REPO],permissions:{issues:'write'}}),
+    signal:AbortSignal.timeout(10000)
+  });
+  if(!response.ok)throw new Error('GitHub App token request failed: '+response.status);
+  const result=await response.json();
+  if(typeof result.token!=='string'||!result.token)throw new Error('Invalid GitHub App token response');
+  return result.token;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -189,7 +227,7 @@ export default {
           !Number.isSafeInteger(deadline) || Date.now() >= deadline)
         return reject('本次测试窗口已结束。',503);
     }
-    if (!env.GITHUB_TOKEN || !env.TURNSTILE_SECRET || !env.SUBMISSION_LIMITER)
+    if (!env.GITHUB_APP_ID || !env.GITHUB_APP_INSTALLATION_ID || !env.GITHUB_APP_PRIVATE_KEY || !env.TURNSTILE_SECRET || !env.SUBMISSION_LIMITER)
       return reject('投稿服务尚未配置完成。',503);
     if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || ''))
       return reject('仅支持 JSON 格式。',415);
@@ -264,10 +302,11 @@ export default {
     }
     let github;
     try {
+      const token=await githubInstallationToken(env);
       const response=await fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/issues',{
         method:'POST',
         headers:{
-          'Authorization':'Bearer '+env.GITHUB_TOKEN,
+          'Authorization':'Bearer '+token,
           'Accept':'application/vnd.github+json',
           'X-GitHub-Api-Version':'2022-11-28',
           'User-Agent':'HKUST-ELPA-Submission'
