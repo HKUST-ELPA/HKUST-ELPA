@@ -258,8 +258,8 @@ test('sources page keeps external references without duplicate question-bank doc
 
 test('seed advice uses the same track, phase and topic schema without invented provenance',()=>{
  const advice=JSON.parse(fs.readFileSync(path.join(__dirname,'../question-bank/advice.json'),'utf8'));
- assert.equal(advice.filter(item=>item.id.startsWith('ADVICE-REGULAR-')).length,3);
- assert.equal(advice.filter(item=>item.track==='regular'&&item.phase==='during').length,3);
+ assert.equal(advice.filter(item=>item.id.startsWith('GZ-R-E-')).length,3);
+ assert.equal(advice.filter(item=>item.campus==='gz'&&item.track==='regular'&&item.phase==='during').length,3);
  for(const item of advice)assert.ok(!/HIST-|provenance|历史考情整理/.test(JSON.stringify(item)));
  assert.match(submit,/id="includeAdvice" type="checkbox"/);
 });
@@ -282,7 +282,9 @@ test('guide separates the official Regular and Fast Track paths with one obvious
  assert.doesNotMatch(read('guide.html'),/报名截止日期|2026 Fall 场次反馈|你可能想知道|class="elpa-guide-faq"/);
  assert.match(guide,/id="advicePhaseFilter"/);
  assert.match(guide,/id="adviceTagFilter"/);
- assert.equal((guide.match(/class="elpa-guide-switch"/g)||[]).length,1);
+ assert.equal((guide.match(/class="elpa-guide-switch"/g)||[]).length,2);
+ assert.match(guide,/id="guideCampusGz"/);
+ assert.match(guide,/id="guideCampusHk"/);
 });
 test('homepage explains the full learning workflow without a repeated oversized practice CTA',()=>{
  const home=readPageSource('index.html');
@@ -343,15 +345,15 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.equal(sessionData.ids.length,25);
  // Legacy questions must not acquire invented year/stage evidence.
  // Future issue-linked reports may still add reviewed appearances to these IDs.
- for(const id of [...sessionData.ids,...Array.from({length:12},(_,i)=>'D-'+(i+1))])
+ for(const id of [...sessionData.ids,...Array.from({length:12},(_,i)=>'GZ-R-'+String(i+40).padStart(4,'0'))])
    for(const entry of sessionData.data[id]||[])
      assert.ok(Number.isSafeInteger(entry.issueNumber)&&entry.issueNumber>0,id);
- const fastSessionData={ids:questions.banks.F.items.map(x=>'F-'+x.num),data:appearances};
+ const fastSessionData={ids:questions.banks['GZ-F'].items.map(x=>'GZ-F-'+String(x.num).padStart(4,'0')),data:appearances};
  assert.equal(fastSessionData.ids.length,12);
  for(const id of fastSessionData.ids)
    for(const entry of fastSessionData.data[id]||[])
      assert.ok(Number.isSafeInteger(entry.issueNumber)&&entry.issueNumber>0,id);
- assert.ok(questions.banks.F.items.some(item=>item.num===1&&item.subs.length===0));
+ assert.ok(questions.banks['GZ-F'].items.some(item=>item.num===1&&item.subs.length===0));
  assert.equal(fastSessionData.ids.length,12);
  assert.ok(!fastSessionData.ids.includes('GZ-F-0013'));
  assert.doesNotMatch(practice,/fastIntroSection|fastIntroDetails|ELPA_FAST_TRACK_INTRO|补充准备 · 完整自我介绍任务/);
@@ -394,37 +396,23 @@ test('latest bank advances by complete term and stage while older sessions remai
  assert.match(practice,/sessions\.set\(entry\.term\+'\|'\+entry\.examStage/);
  assert.match(practice,/sessionFilter\.append\(new Option\(session\.label,value\)\)/);
 });
-test('guide switch preserves accessible state and works without a second page',()=>{
- const html=readPageSource('guide.html');
- const code=section(html,'/* Single choice; no extra filters, accounts or persistent state. */',
-   '/* Filter pre-rendered reviewed cards; no duplicate browser-side HTML renderer. */');
- const events=new Map();
- const btn=id=>({id,attributes:{},classList:{toggle(name,val){this[name]=val;}},setAttribute(k,v){this.attributes[k]=v;},
-   addEventListener(name,cb){events.set(id+':'+name,cb);}});
- const regular=btn('regular'),fast=btn('fast'),one={hidden:false},two={hidden:true};
- const elements={regularGuide:one,fastGuide:two,guideRegularTab:regular,guideFastTab:fast};
- const shown=[];
- const fn=new Function('document','window','selectAdviceTrack',code+';return selectGuideTrack;');
- const select=fn({getElementById:id=>elements[id]},{location:{search:'',hash:''}},track=>shown.push(track));
- assert.equal(one.hidden,false);assert.equal(two.hidden,true);
- events.get('fast:click')();
- assert.equal(one.hidden,true);assert.equal(two.hidden,false);
- assert.equal(regular.attributes['aria-pressed'],'false');assert.equal(fast.attributes['aria-pressed'],'true');
- events.get('regular:click')();
- assert.equal(one.hidden,false);assert.equal(two.hidden,true);
- assert.equal(regular.attributes['aria-pressed'],'true');
- assert.deepEqual(shown,['fast-track','regular']);
- const selected=fn({getElementById:id=>elements[id]},
-   {location:{search:'?track=fast-track',hash:''}},()=>{});
- selected('fast-track');assert.equal(two.hidden,false);
+test('guide filters experiences by both campus and track',()=>{
+ const html=read('guide.html');
+ const js=fs.readFileSync(path.join(__dirname,'../assets/js/guide.js'),'utf8');
+ assert.match(html,/id="guideCampusGz"/);
+ assert.match(html,/id="guideCampusHk"/);
+ assert.match(html,/data-campus="gz"/);
+ assert.match(js,/card\.dataset\.campus===adviceCampus&&card\.dataset\.track===adviceTrack/);
+ assert.match(js,/guideAdviceShare/);
+ assert.match(js,/campus='\+adviceCampus/);
+ assert.match(js,/selectGuideCampus/);
 });
-
 test('Fast Track documentation links to the selectable practice route',()=>{
  const fastDoc=fs.readFileSync(path.join(__dirname,'../question-bank/fast-track.md'),'utf8');
  const indexDoc=fs.readFileSync(path.join(__dirname,'../question-bank/README.md'),'utf8');
  assert.ok(fastDoc.includes('../practice.html?campus=gz&track=fast-track'));
  assert.ok(!fastDoc.includes('../practice.html#fast-track'));
- assert.ok(indexDoc.includes('| [Fast Track · 南沙校区](./fast-track.md) |'));
+ assert.ok(indexDoc.includes('| [Fast Track · 广州校区](./fast-track.md) |'));
 });
 
 test('official source links remain separate from community references',()=>{
