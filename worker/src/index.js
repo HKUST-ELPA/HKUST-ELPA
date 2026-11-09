@@ -58,6 +58,47 @@ function encodeBase64Url(text) {
   for (const byte of bytes) ascii += String.fromCharCode(byte);
   return btoa(ascii).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
+/* Sign a short-lived GitHub App JWT in Workers WebCrypto, then exchange it for an
+ * installation token restricted to the Source repository and Issues:write.
+ * The private key never leaves this Worker. No personal-token fallback.
+ */
+function appBase64Url(bytes){
+  let text='';
+  for(const byte of bytes)text+=String.fromCharCode(byte);
+  return btoa(text).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
+}
+async function appInstallationToken(env){
+  if(!/^\d+$/.test(env.GITHUB_APP_ID||'') ||
+     !/^\d+$/.test(env.GITHUB_APP_INSTALLATION_ID||'') ||
+     !env.GITHUB_APP_PRIVATE_KEY)throw new Error('GitHub App is not configured');
+  const pem=env.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g,'\n');
+  const encoded=pem.match(/-----BEGIN (?:RSA )?PRIVATE KEY-----([\s\S]+?)-----END (?:RSA )?PRIVATE KEY-----/);
+  if(!encoded)throw new Error('Invalid GitHub App private key');
+  const raw=Uint8Array.from(atob(encoded[1].replace(/\s/g,'')),ch=>ch.charCodeAt(0));
+  const key=await crypto.subtle.importKey('pkcs8',raw,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
+  const now=Math.floor(Date.now()/1000);
+  const header=appBase64Url(new TextEncoder().encode(JSON.stringify({alg:'RS256',typ:'JWT'})));
+  const payload=appBase64Url(new TextEncoder().encode(JSON.stringify({
+    iat:now-60,exp:now+480,iss:env.GITHUB_APP_ID
+  })));
+  const signingInput=header+'.'+payload;
+  const signature=appBase64Url(new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5',key,new TextEncoder().encode(signingInput))));
+  const response=await fetch('https://api.github.com/app/installations/'+env.GITHUB_APP_INSTALLATION_ID+'/access_tokens',{
+    method:'POST',headers:{
+      'Authorization':'Bearer '+signingInput+'.'+signature,
+      'Accept':'application/vnd.github+json',
+      'X-GitHub-Api-Version':'2022-11-28',
+      'User-Agent':'HKUST-ELPA-Submission'
+    },
+    body:JSON.stringify({repositories:[REPO],permissions:{issues:'write'}}),
+    signal:AbortSignal.timeout(10000)
+  });
+  if(!response.ok)throw new Error('GitHub App token exchange failed: '+response.status);
+  const result=await response.json();
+  if(typeof result.token!=='string'||!result.token)throw new Error('GitHub App token missing');
+  return result.token;
+}
+
 /* v2 values are validated again by the GitHub importer; don't trust browser checks. */
 const ADVICE_TAGS = new Set([
   'exam-process','speaking-strategy','time-management','stress-management',
@@ -189,7 +230,7 @@ export default {
           !Number.isSafeInteger(deadline) || Date.now() >= deadline)
         return reject('本次测试窗口已结束。',503);
     }
-    if (!env.GITHUB_TOKEN || !env.TURNSTILE_SECRET || !env.SUBMISSION_LIMITER)
+    if (!env.GITHUB_APP_ID || !env.GITHUB_APP_INSTALLATION_ID || !env.GITHUB_APP_PRIVATE_KEY || !env.TURNSTILE_SECRET || !env.SUBMISSION_LIMITER)
       return reject('投稿服务尚未配置完成。',503);
     if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || ''))
       return reject('仅支持 JSON 格式。',415);
@@ -264,10 +305,11 @@ export default {
     }
     let github;
     try {
+      const installationToken=await appInstallationToken(env);
       const response=await fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/issues',{
         method:'POST',
         headers:{
-          'Authorization':'Bearer '+env.GITHUB_TOKEN,
+          'Authorization':'Bearer '+installationToken,
           'Accept':'application/vnd.github+json',
           'X-GitHub-Api-Version':'2022-11-28',
           'User-Agent':'HKUST-ELPA-Submission'
