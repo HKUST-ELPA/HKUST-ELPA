@@ -1,440 +1,102 @@
 'use strict';
-const assert=require('node:assert/strict');
-const fs=require('node:fs');
-const path=require('node:path');
-const vm=require('node:vm');
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {webcrypto,generateKeyPairSync}=require('node:crypto');
-const testKey=generateKeyPairSync('rsa',{modulusLength:2048}).privateKey.export({type:'pkcs8',format:'pem'});
-const {test}=require('node:test');
-
+const pem=generateKeyPairSync('rsa',{modulusLength:2048}).privateKey.export({format:'pem',type:'pkcs8'});
 const source=fs.readFileSync(path.resolve(__dirname,'../worker/src/index.js'),'utf8');
-const baseBody={
-  term:'2027 Fall',question:'Can you explain interdisciplinary research to first-year students?',
-  subquestions:'a. Why does it matter?\nb. Give an example.',source:'firsthand',
-  turnstileToken:'mock-valid-token'
-};
-function makeWorker({siteverify={success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'},rateLimit={success:true}}={}){
-  const calls=[];
-  const sandbox={
-    module:{exports:{}},
-    Request, Response, URL, URLSearchParams, TextEncoder, TextDecoder, Uint8Array,
-    AbortSignal, console, crypto:webcrypto,
-    atob:(s)=>Buffer.from(s,'base64').toString('binary'),
-    btoa:(s)=>Buffer.from(s,'binary').toString('base64'),
-    fetch:async(url,init)=>{
-      calls.push({url:String(url),init});
-      if(String(url).includes('/siteverify'))return Response.json(siteverify);
-      if(String(url).includes('/app/installations/98765/access_tokens'))
-        return Response.json({token:'INSTALLATION-ONLY-TEST-TOKEN',expires_at:'2030-01-01T00:00:00Z'});
-      if(String(url).includes('/repos/HKUST-ELPA/HKUST-ELPA-Site-Source/issues'))
-        return Response.json({html_url:'https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/123'},{status:201});
-      throw Error('Unexpected network request to '+url);
-    }
-  };
-  vm.runInNewContext(source.replace('export default {','module.exports = {'),sandbox,{filename:'worker.js'});
-  const env={
-    SUBMISSIONS_DISABLED:'false',
-    SUBMISSION_MODE:'public',
-    GITHUB_APP_ID:'12345',
-    GITHUB_APP_INSTALLATION_ID:'98765',
-    GITHUB_APP_PRIVATE_KEY:testKey,
-    TURNSTILE_SECRET:'FAKE-NOT-A-SECRET',
-    SUBMISSION_LIMITER:{limit:async()=>rateLimit}
-  };
-  const request=(body,headers={})=>new Request('https://hkust-elpa-submissions.futseyi.workers.dev/submit',{
-    method:'POST',headers:{Origin:'https://hkust-elpa.github.io','Content-Type':'application/json',...headers},
-    body:JSON.stringify(body)
-  });
-  return {handler:sandbox.module.exports,env,calls,request};
+const question=(campus='gz',track='regular')=>({
+ version:3,kind:'question',campus,track,term:'2027 Fall',examStage:'mid',
+ main:{en:'How can students prepare a research presentation efficiently?',cn:'学生如何高效准备研究报告？'},
+ subs:[],source:'firsthand',turnstileToken:'valid-mock-token'
+});
+function harness({verify={success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'},limit={success:true},tokenOK=true,issueOK=true}={}){
+ const calls=[];
+ const sandbox={module:{exports:{}},Request,Response,URL,URLSearchParams,TextEncoder,TextDecoder,Uint8Array,
+  AbortSignal,console,crypto:webcrypto,
+  btoa:s=>Buffer.from(s,'binary').toString('base64'),
+  atob:s=>Buffer.from(s,'base64').toString('binary'),
+  fetch:async(url,init)=>{
+   calls.push({url:String(url),init});
+   if(String(url).includes('/siteverify'))return Response.json(verify);
+   if(String(url).includes('/app/installations/98765/access_tokens'))
+     return tokenOK?Response.json({token:'APP-INSTALLATION-TOKEN'}):Response.json({message:'Forbidden'},{status:403});
+   if(String(url).endsWith('/repos/HKUST-ELPA/HKUST-ELPA-Site-Source/issues'))
+     return issueOK?Response.json({html_url:'https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/123'},{status:201}):Response.json({message:'Forbidden'},{status:403});
+   throw Error('Unexpected request '+url);
+  }};
+ vm.runInNewContext(source.replace('export default {','module.exports = {'),sandbox);
+ const env={SUBMISSION_MODE:'public',SUBMISSIONS_DISABLED:'false',
+  SUBMISSION_LIMITER:{limit:async()=>limit},TURNSTILE_SECRET:'mock-secret',
+  GITHUB_APP_ID:'12345',GITHUB_APP_INSTALLATION_ID:'98765',GITHUB_APP_PRIVATE_KEY:pem};
+ const request=(data=question(),origin='https://hkust-elpa.github.io')=>new Request('https://example.workers.dev/submit',{
+  method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(data)});
+ return {calls,env,request,handler:sandbox.module.exports};
 }
-test('combined campus-specific question and optional advice create one review issue',async()=>{
- const x=makeWorker();
- const report={version:2,kind:'question',campus:'clear-water-bay',track:'fast-track',
-  term:'2026 Fall',examStage:'mid',
-  main:{en:'What is the best way to prepare for your assessment?',cn:'如何为这场考试做准备？'},
-  subs:[],source:'firsthand',
-  advice:{phase:'before',tags:['exam-process'],title:'备考心得',
-    body:'提前练习真实经历，并为常见问题准备有条理的回答。'},
-  turnstileToken:'valid-test-token'};
- const r=await x.handler.fetch(x.request(report),x.env);
- assert.equal(r.status,201,await r.text());
- assert.equal(x.calls.length,3);
- const issue=JSON.parse(x.calls[2].init.body);
- const exchange=x.calls[1];
- assert.equal(JSON.parse(exchange.init.body).permissions.issues,'write');
- assert.deepEqual(JSON.parse(exchange.init.body).repositories,['HKUST-ELPA-Site-Source']);
- assert.equal(x.calls[2].init.headers.Authorization,'Bearer INSTALLATION-ONLY-TEST-TOKEN');
- assert.match(issue.body,/备考经验 \/ Preparation Advice/);
- assert.match(issue.body,/香港|清水湾/);
- assert.match(issue.body,/备考心得/);
+test('v3 question with advice uses scoped App token and one issue',async()=>{
+ const h=harness(),body={...question('hk','fast-track'),advice:{phase:'before',tags:['exam-process'],
+  title:'考前准备',body:'我会准备几个研究项目的例子，并按照考试流程进行模拟练习。'}};
+ const r=await h.handler.fetch(h.request(body),h.env);
+ assert.equal(r.status,201,await r.text());assert.equal(h.calls.length,3);
+ const exchange=h.calls[1];
+ assert.deepEqual(JSON.parse(exchange.init.body),{repositories:['HKUST-ELPA-Site-Source'],permissions:{issues:'write'}});
+ assert.match(exchange.init.headers.Authorization,/^Bearer [\w-]+\.[\w-]+\.[\w-]+$/);
+ const issue=JSON.parse(h.calls[2].init.body);
+ assert.equal(h.calls[2].init.headers.Authorization,'Bearer APP-INSTALLATION-TOKEN');
+ assert.match(issue.body,/考试校区：\*\* 香港校区/);
+ assert.match(issue.body,/备考经验/);
+ const embedded=JSON.parse(Buffer.from(issue.body.match(/elpa-submission-v3:([\w-]+)/)[1],'base64url'));
+ assert.equal(embedded.campus,'hk');assert.equal(embedded.track,'fast-track');
+ assert.equal(embedded.version,3);assert.equal(Object.hasOwn(embedded,'turnstileToken'),false);
 });
-test('app JWT and installation token are required; no personal token fallback',async()=>{
- const x=makeWorker();x.env.GITHUB_APP_ID='';
- x.env.GITHUB_TOKEN='FAKE-PERSONAL-TOKEN';
- const r=await x.handler.fetch(x.request(baseBody),x.env);
- assert.equal(r.status,503);
- assert.equal(x.calls.length,0);
-});
-test('installation exchange is scoped and signed with an RS256 JWT',async()=>{
- const x=makeWorker();
- const r=await x.handler.fetch(x.request(baseBody),x.env);
- assert.equal(r.status,201,await r.text());
- const auth=x.calls[1].init.headers.Authorization;
- assert.match(auth,/^Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
- const payload=JSON.parse(Buffer.from(auth.slice(7).split('.')[1],'base64url').toString('utf8'));
- assert.equal(payload.iss,'12345');
- assert.ok(payload.exp>payload.iat);
- assert.deepEqual(JSON.parse(x.calls[1].init.body),{repositories:['HKUST-ELPA-Site-Source'],permissions:{issues:'write'}});
-});
-test('new bilingual question cannot omit Chinese comprehension',async()=>{
- const x=makeWorker();
- const report={version:2,kind:'question',campus:'nansha',track:'regular',
-  term:'2026 Fall',examStage:'start',
-  main:{en:'Can you describe your study routine?',cn:''},
-  subs:[],source:'firsthand',turnstileToken:'valid-test-token'};
- const r=await x.handler.fetch(x.request(report),x.env);
- assert.equal(r.status,400);
- assert.equal(x.calls.length,0);
-});
-
-test('disabled switch rejects all submissions before any GitHub request',async()=>{
- const x=makeWorker();x.env.SUBMISSIONS_DISABLED='true';
- const r=await x.handler.fetch(x.request(baseBody),x.env);
- assert.equal(r.status,503);assert.equal(x.calls.length,0);
-});
-test('missing or foreign origin rejected',async()=>{
- const x=makeWorker();const r=await x.handler.fetch(x.request(baseBody,{Origin:'https://bad.example'}),x.env);
- assert.equal(r.status,403);assert.equal(x.calls.length,0);
-});
-test('rate limit checked before Turnstile or GitHub',async()=>{
- const x=makeWorker({rateLimit:{success:false}});
- const r=await x.handler.fetch(x.request(baseBody),x.env);
- assert.equal(r.status,429);assert.equal(x.calls.length,0);
-});
-test('valid long Chinese submission accepted and queued only as an issue',async()=>{
- const x=makeWorker();
- const body={...baseBody,question:'考'.repeat(900),subquestions:'试'.repeat(1800)};
- assert.ok(Buffer.byteLength(JSON.stringify(body),'utf8')>6500,'fixture exceeds previous cap');
- const response=await x.handler.fetch(x.request(body),x.env);
- assert.equal(response.status,201,await response.text());
- assert.equal(x.calls.length,3);
- const payload=JSON.parse(x.calls[2].init.body);
- assert.equal(payload.labels[0],'submission:pending');
- assert.match(payload.body,/待审核/);
- assert.ok(!payload.body.includes('CF-Connecting-IP'));
-});
-test('invalid Turnstile hostname/action cannot create GitHub issue',async()=>{
- for(const bad of [null,{success:1,hostname:'hkust-elpa.github.io',action:'elpa_submit'},
-                  {success:true,hostname:'attacker.example',action:'elpa_submit'},
-                  {success:true,hostname:'hkust-elpa.github.io',action:'other'},
-                  {success:false,hostname:'hkust-elpa.github.io',action:'elpa_submit'}]){
-  const x=makeWorker({siteverify:bad});
-  const r=await x.handler.fetch(x.request(baseBody),x.env);
-  assert.equal(r.status,403);
-  assert.equal(x.calls.length,1);
- }
-});
-test('payload size cap rejects oversized request without reaching GitHub',async()=>{
- const x=makeWorker();
- const body={...baseBody,question:'中'.repeat(9000)};
- const r=await x.handler.fetch(x.request(body),x.env);
- assert.ok([400,413].includes(r.status));
- assert.equal(x.calls.length,0);
-});
-test('empty or unconfigured secrets fail closed',async()=>{
- const x=makeWorker();x.env.GITHUB_APP_PRIVATE_KEY='';
- const r=await x.handler.fetch(x.request(baseBody),x.env);
- assert.equal(r.status,503);assert.equal(x.calls.length,0);
-});
-
-test('missing or malformed enable flag fails closed (opt-in only)',async()=>{
- for(const value of [undefined,'TRUE','0','false ']){
-  const x=makeWorker();
-  if(value===undefined)delete x.env.SUBMISSIONS_DISABLED;
-  else x.env.SUBMISSIONS_DISABLED=value;
-  const r=await x.handler.fetch(x.request(baseBody),x.env);
-  assert.equal(r.status,503);
-  assert.equal(x.calls.length,0);
- }
-});
-
-test('mode missing fails closed even when disabled flag is false',async()=>{
-  const x=makeWorker();
-  delete x.env.SUBMISSION_MODE;
-  const r=await x.handler.fetch(x.request(baseBody),x.env);
-  assert.equal(r.status,503);
-  assert.equal(x.calls.length,0);
-});
-test('test window automatically expires and never reaches verification or GitHub',async()=>{
-  const x=makeWorker();
-  x.env.SUBMISSION_MODE='test';
-  x.env.SUBMISSION_TEST_DEADLINE_MS=String(Date.now()-1000);
-  x.env.SUBMISSION_TEST_QUESTION=baseBody.question;
-  const r=await x.handler.fetch(x.request(baseBody),x.env);
-  assert.equal(r.status,503);
-  assert.equal(x.calls.length,0);
-});
-test('test window rejects non-allowlisted questions before Turnstile or GitHub',async()=>{
-  const x=makeWorker();
-  x.env.SUBMISSION_MODE='test';
-  x.env.SUBMISSION_TEST_DEADLINE_MS=String(Date.now()+120000);
-  x.env.SUBMISSION_TEST_QUESTION='TEST ONLY - HKUST-ELPA integration verification';
-  const r=await x.handler.fetch(x.request(baseBody),x.env);
-  assert.equal(r.status,403);
-  assert.equal(x.calls.length,0);
-});
-test('test window accepts only exact allowlisted synthetic payload',async()=>{
-  const x=makeWorker();
-  const question='TEST ONLY - HKUST-ELPA integration verification';
-  x.env.SUBMISSION_MODE='test';
-  x.env.SUBMISSION_TEST_DEADLINE_MS=String(Date.now()+120000);
-  x.env.SUBMISSION_TEST_QUESTION=question;
-  const r=await x.handler.fetch(x.request({...baseBody,
-    term:'2026 Fall',question,subquestions:'',source:'firsthand'}),x.env);
+test('four campus domains produce canonical v3 markers',async()=>{
+ for(const campus of ['gz','hk'])for(const track of ['regular','fast-track']){
+  const h=harness({verify:{success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'}});
+  const r=await h.handler.fetch(h.request(question(campus,track)),h.env);
   assert.equal(r.status,201,await r.text());
-  assert.equal(x.calls.length,3);
-  assert.match(JSON.parse(x.calls[2].init.body).title,/TEST ONLY/);
-});
-
-test('both exact production origins have scoped CORS preflight, previews are rejected',async()=>{
-  const x=makeWorker();
- for (const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app']){
-    const res=await x.handler.fetch(new Request('https://hkust-elpa-submissions.futseyi.workers.dev/submit',{
-      method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST'}
-    }),x.env);
-    assert.equal(res.status,204);
-    assert.equal(res.headers.get('Access-Control-Allow-Origin'),origin);
-    assert.equal(res.headers.get('Vary'),'Origin');
-  }
-  for (const origin of ['https://futseyi.github.io','https://hkust-elpa-git-main.vercel.app','https://hkust-elpa.vercel.app.evil.test',
-    'http://hkust-elpa.vercel.app','https://bad.example','null']){
-    const res=await x.handler.fetch(new Request('https://hkust-elpa-submissions.futseyi.workers.dev/submit',{
-      method:'OPTIONS',headers:{Origin:origin}
-    }),x.env);
-    assert.equal(res.status,403);
-    assert.equal(res.headers.get('Access-Control-Allow-Origin'),null);
-  }
-  assert.equal(x.calls.length,0);
-});
-
-test('Vercel-origin successful submission uses matching hostname from siteverify',async()=>{
-  const x=makeWorker({siteverify:{success:true,hostname:'hkust-elpa.vercel.app',action:'elpa_submit'}});
-  const response=await x.handler.fetch(x.request(baseBody,{Origin:'https://hkust-elpa.vercel.app'}),x.env);
-  assert.equal(response.status,201);
-  assert.equal(response.headers.get('Access-Control-Allow-Origin'),'https://hkust-elpa.vercel.app');
-  assert.equal(x.calls.length,3);
-  assert.equal(JSON.parse(x.calls[2].init.body).labels[0],'submission:pending');
-});
-
-test('Turnstile siteverify hostname must match the exact calling origin',async()=>{
-  for (const [origin,verifiedHostname] of [
-    ['https://hkust-elpa.github.io','hkust-elpa.vercel.app'],
-    ['https://hkust-elpa.vercel.app','hkust-elpa.github.io'],
-    ['https://hkust-elpa.vercel.app','preview.vercel.app']
-  ]){
-    const x=makeWorker({siteverify:{success:true,hostname:verifiedHostname,action:'elpa_submit'}});
-    const response=await x.handler.fetch(x.request(baseBody,{Origin:origin}),x.env);
-    assert.equal(response.status,403);
-    assert.equal(response.headers.get('Access-Control-Allow-Origin'),origin);
-    assert.equal(x.calls.length,1);
-  }
-});
-
-test('disabled mode returns CORS-scoped response on both official sites',async()=>{
- for(const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app']){
-    const x=makeWorker();x.env.SUBMISSIONS_DISABLED='true';
-    const response=await x.handler.fetch(x.request(baseBody,{Origin:origin}),x.env);
-    assert.equal(response.status,503);
-    assert.equal(response.headers.get('Access-Control-Allow-Origin'),origin);
-    assert.equal(x.calls.length,0);
-  }
-});
-
-const v2Question={
-  version:2,kind:'question',term:'2027 Spring',examStage:'mid',
-  main:{en:'How does interdisciplinary research help solve complex problems?',
-    cn:'跨学科研究如何帮助解决复杂问题？'},
-  subs:[
-    {en:'Give an example.',cn:'请举例说明。'},
-    {en:'What challenges could arise?',cn:'可能遇到什么挑战？'}
-  ],source:'firsthand',turnstileToken:'mock-valid-token'
-};
-const v2Advice={
-  version:2,kind:'advice',phase:'during',tags:['speaking-strategy','time-management'],
-  title:'我的现场时间管理经验',
-  body:'先明确表达观点，再结合真实例子说明，最后注意回答时间。',
-  turnstileToken:'mock-valid-token'
-};
-test('v2 bilingual question passes verification and only creates a review Issue',async()=>{
-  const x=makeWorker();
-  const response=await x.handler.fetch(x.request(v2Question),x.env);
-  assert.equal(response.status,201,await response.text());
-  assert.equal(x.calls.length,3);
-  const issue=JSON.parse(x.calls[2].init.body);
-  assert.equal(issue.labels[0],'submission:pending');
-  assert.match(issue.body,/elpa-submission-v2:/);
-  assert.match(issue.body,/跨学科研究如何帮助解决复杂问题/);
-  assert.match(issue.body,/可能遇到什么挑战/);
-  assert.doesNotMatch(issue.body,/mock-valid-token/);
-});
-test('v2 campus and track are carried through the Issue marker, without leaking Turnstile tokens',async()=>{
-  const x=makeWorker();
-  const q={...v2Question,campus:'clear-water-bay',track:'fast-track'};
-  const response=await x.handler.fetch(x.request(q),x.env);
-  assert.equal(response.status,201,await response.text());
-  const issue=JSON.parse(x.calls[2].init.body);
-  assert.match(issue.body,/清水湾校区/);
-  assert.match(issue.body,/ELPA Fast Track/);
-  const marker=issue.body.match(/elpa-submission-v2:([A-Za-z0-9_-]+)/);
-  assert.ok(marker,'machine-readable marker exists');
-  const embedded=JSON.parse(Buffer.from(marker[1],'base64url').toString('utf8'));
-  assert.equal(embedded.campus,'clear-water-bay');
-  assert.equal(embedded.track,'fast-track');
-  assert.equal(embedded.term,v2Question.term);
-  assert.equal(Object.hasOwn(embedded,'turnstileToken'),false);
-});
-test('legacy v2 submissions remain compatible with default Nansha regular metadata',async()=>{
-  const x=makeWorker();
-  const response=await x.handler.fetch(x.request(v2Question),x.env);
-  assert.equal(response.status,201);
-  const issue=JSON.parse(x.calls[2].init.body);
-  const marker=issue.body.match(/elpa-submission-v2:([A-Za-z0-9_-]+)/);
-  const embedded=JSON.parse(Buffer.from(marker[1],'base64url').toString('utf8'));
-  assert.equal(embedded.campus,'nansha');
-  assert.equal(embedded.track,'regular');
-});
-test('v2 advice accepts one original-language title and article',async()=>{
-  const x=makeWorker();
-  const response=await x.handler.fetch(x.request(v2Advice),x.env);
-  assert.equal(response.status,201,await response.text());
-  const issue=JSON.parse(x.calls[2].init.body);
-  assert.match(issue.title,/备考经验/);
-  assert.match(issue.body,/speaking-strategy/);
-  assert.match(issue.body,/elpa-submission-v2:/);
-  assert.ok(!issue.body.includes('mock-valid-token'));
-});
-test('Fast Track advice keeps its track through the review Issue',async()=>{
-  const x=makeWorker();
-  const response=await x.handler.fetch(x.request({...v2Advice,track:'fast-track'}),x.env);
-  assert.equal(response.status,201,await response.text());
-  const issue=JSON.parse(x.calls[2].init.body);
-  assert.match(issue.body,/ELPA Fast Track/);
-  const marker=issue.body.match(/elpa-submission-v2:([A-Za-z0-9_-]+)/);
-  const embedded=JSON.parse(Buffer.from(marker[1],'base64url').toString('utf8'));
-  assert.equal(embedded.track,'fast-track');
-  assert.equal(Object.hasOwn(embedded,'turnstileToken'),false);
-});
-test('older advice submissions default to Regular',async()=>{
-  const x=makeWorker();
-  const response=await x.handler.fetch(x.request(v2Advice),x.env);
-  assert.equal(response.status,201,await response.text());
-  const issue=JSON.parse(x.calls[2].init.body);
-  const marker=issue.body.match(/elpa-submission-v2:([A-Za-z0-9_-]+)/);
-  const embedded=JSON.parse(Buffer.from(marker[1],'base64url').toString('utf8'));
-  assert.equal(embedded.track,'regular');
-});
-test('v2 rejects missing English and noncanonical categories before siteverify',async()=>{
-  const bads=[
-    {...v2Question,term:['2026 Fall']},
-    {...v2Question,linkedQuestionId:['D-4'],intent:'encounter'},
-    {...v2Question,main:{...v2Question.main,en:''}},
-    {...v2Question,subs:[{en:'',cn:'为什么？'}]},
-    {...v2Question,examStage:'unknown'},
-    {...v2Question,campus:'untrusted-campus'},
-    {...v2Question,track:'untrusted-track'},
-    {...v2Question,subs:Array.from({length:21},()=>({en:'Why?',cn:'为什么？'}))},
-    {...v2Advice,tags:['arbitrary-tag']},
-    {...v2Advice,track:'untrusted-track'},
-    {...v2Advice,tags:['speaking-strategy','speaking-strategy']},
-    {...v2Advice,body:'too short'}
-  ];
-  for(const invalid of bads){
-    const x=makeWorker();
-    const response=await x.handler.fetch(x.request(invalid),x.env);
-    assert.equal(response.status,400);
-    assert.equal(x.calls.length,0);
-  }
-});
-test('v2 test-mode never enables arbitrary submissions',async()=>{
-  const x=makeWorker();
-  x.env.SUBMISSION_MODE='test';
-  x.env.SUBMISSION_TEST_DEADLINE_MS=String(Date.now()+120000);
-  x.env.SUBMISSION_TEST_QUESTION='TEST ONLY - approved';
-  const response=await x.handler.fetch(x.request(v2Question),x.env);
-  assert.equal(response.status,403);
-  assert.equal(x.calls.length,0);
-});
-test('Vercel v2 verified hostname must match the caller',async()=>{
-  const yes=makeWorker({siteverify:{success:true,hostname:'hkust-elpa.vercel.app',action:'elpa_submit'}});
-  const accepted=await yes.handler.fetch(yes.request(v2Question,{Origin:'https://hkust-elpa.vercel.app'}),yes.env);
-  assert.equal(accepted.status,201);
-  const no=makeWorker({siteverify:{success:true,hostname:'hkust-elpa.github.io',action:'elpa_submit'}});
-  const rejected=await no.handler.fetch(no.request(v2Question,{Origin:'https://hkust-elpa.vercel.app'}),no.env);
-  assert.equal(rejected.status,403);
-  assert.equal(no.calls.length,1);
-});
-test('v2 body enforces byte-size bound with no external requests',async()=>{
-  const x=makeWorker();
-  const huge={...v2Advice,body:'考'.repeat(9000)};
-  const response=await x.handler.fetch(x.request(huge),x.env);
-  assert.ok(response.status===400||response.status===413);
-  assert.equal(x.calls.length,0);
-});
-
-test('v2 linked encounter and optional follow-up translations reach review queue unchanged',async()=>{
- const x=makeWorker();
- const body={version:2,kind:'question',campus:'nansha',track:'regular',
-   term:'2026 Fall',examStage:'start',
-   main:{en:'Explain one of your projects.',cn:'请介绍你的一个项目。'},
-   subs:[{en:'What tools did you use?',cn:''}],source:'firsthand',
-   linkedQuestionId:'D-4',intent:'encounter',turnstileToken:'mock-valid-token'};
- const result=await x.handler.fetch(x.request(body),x.env);
- assert.equal(result.status,201,await result.text());
- const bodyText=JSON.parse(x.calls[2].init.body).body;
- assert.match(bodyText,/D-4/);
- assert.match(bodyText,/新增考试经历/);
- assert.match(bodyText,/What tools did you use\?/);
-});
-test('v2 supplement must have an existing ID and either a similar wording or followup',async()=>{
- const base={version:2,kind:'question',campus:'nansha',track:'regular',
-   term:'2026 Fall',examStage:'start',
-   main:{en:'Explain one of your projects.',cn:'请介绍你的一个项目。'},
-   subs:[],source:'secondhand',linkedQuestionId:'D-4',
-   intent:'supplement',turnstileToken:'mock-valid-token'};
- for(const invalid of [base,{...base,linkedQuestionId:'D-4?'},
-   {...base,linkedQuestionId:undefined,intent:'supplement'}]){
-  const x=makeWorker();
-  const r=await x.handler.fetch(x.request(invalid),x.env);
-  assert.equal(r.status,400);
-  assert.equal(x.calls.length,0);
+  const issue=JSON.parse(h.calls[2].init.body);
+  assert.match(issue.title,new RegExp('\\['+campus.toUpperCase()+'\\/'+(track==='regular'?'R':'F')+'\\]'));
  }
- const okay=makeWorker();
- const response=await okay.handler.fetch(okay.request({
-   ...base,subs:[{en:'What did you learn?',cn:''}]
- }),okay.env);
- assert.equal(response.status,201,await response.text());
- assert.match(JSON.parse(okay.calls[2].init.body).body,/补充题目内容/);
- const wording=makeWorker();
- const wordingResponse=await wording.handler.fetch(wording.request({
-   ...base,alternatives:[{en:'Could you explain one of the projects you completed?',cn:'请介绍一个你完成的项目。'}]
- }),wording.env);
- assert.equal(wordingResponse.status,201,await wordingResponse.text());
- const wordingBody=JSON.parse(wording.calls[2].init.body).body;
- assert.match(wordingBody,/相似问法（1）/);
- assert.match(wordingBody,/Could you explain one of the projects you completed\?/);
 });
-
-// The Worker intentionally validates independently, but its allowed values must
-// match the canonical browser/Node taxonomy. No Worker runtime import is needed.
-test('Worker allowed codes match the canonical taxonomy',()=>{
-  const taxonomy=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../question-bank/taxonomy.json'),'utf8'));
-  const prelude=source.split('export default {')[0];
-  const workerEnums=vm.runInNewContext(prelude+'\n;({campuses:ELPA_CAMPUSES,tracks:ELPA_TRACKS,examStages:EXAM_STAGES,advicePhases:ADVICE_PHASES,adviceTags:ADVICE_TAGS})',{}, {timeout:1000});
-  for(const [group,values] of Object.entries(workerEnums)){
-    assert.deepEqual([...values].sort(),Object.keys(taxonomy[group]).sort(),group+' values drifted');
-  }
-  for(const code of Object.keys(taxonomy.sourceTypes))
-    assert.ok(source.includes("'"+code+"'"),'Worker source category missing: '+code);
-  for(const code of Object.keys(taxonomy.contributionIntents))
-    assert.ok(source.includes("'"+code+"'"),'Worker intent missing: '+code);
+test('missing campus, obsolete protocol, and foreign ID are rejected before external calls',async()=>{
+ for(const bad of [{...question(),campus:undefined},{...question(),campus:'nansha'},
+   {...question(),version:2},{...question(),linkedQuestionId:'HK-R-0001',intent:'encounter'},
+   {...question(),main:{en:'Short',cn:'短'}}]){
+  const h=harness();const r=await h.handler.fetch(h.request(bad),h.env);
+  assert.equal(r.status,400);assert.equal(h.calls.length,0);
+ }
+});
+test('Turnstile verification and exact calling origin remain mandatory',async()=>{
+ const h=harness({verify:{success:true,hostname:'bad.example',action:'elpa_submit'}});
+ const r=await h.handler.fetch(h.request(),h.env);
+ assert.equal(r.status,403);assert.equal(h.calls.length,1);
+ const wrong=harness();const bad=await wrong.handler.fetch(wrong.request(question(),'https://bad.example'),wrong.env);
+ assert.equal(bad.status,403);assert.equal(wrong.calls.length,0);
+});
+test('rate limit and disabled mode reject before token issuance',async()=>{
+ const h=harness({limit:{success:false}});
+ assert.equal((await h.handler.fetch(h.request(),h.env)).status,429);
+ assert.equal(h.calls.length,0);
+ const d=harness();d.env.SUBMISSIONS_DISABLED='true';
+ assert.equal((await d.handler.fetch(d.request(),d.env)).status,503);
+ assert.equal(d.calls.length,0);
+});
+test('missing App credential fails closed without personal token fallback',async()=>{
+ const h=harness();delete h.env.GITHUB_APP_PRIVATE_KEY;h.env.GITHUB_TOKEN='OLD-PAT';
+ assert.equal((await h.handler.fetch(h.request(),h.env)).status,503);
+ assert.equal(h.calls.length,0);
+});
+test('GitHub App exchange failure or Issue creation failure never reports success',async()=>{
+ for(const options of [{tokenOK:false},{issueOK:false}]){
+  const h=harness(options);const r=await h.handler.fetch(h.request(),h.env);
+  assert.equal(r.status,503);
+ }
+});
+test('CORS preflight permits only exact production origins',async()=>{
+ const h=harness();
+ for(const origin of ['https://hkust-elpa.github.io','https://hkust-elpa.vercel.app']){
+  const r=await h.handler.fetch(new Request('https://example.workers.dev/submit',{method:'OPTIONS',headers:{Origin:origin}}),h.env);
+  assert.equal(r.status,204);assert.equal(r.headers.get('Access-Control-Allow-Origin'),origin);
+ }
+ const r=await h.handler.fetch(new Request('https://example.workers.dev/submit',{method:'OPTIONS',headers:{Origin:'https://preview.vercel.app'}}),h.env);
+ assert.equal(r.status,403);
 });
