@@ -41,3 +41,23 @@
 **提示小问**
 
 > 无
+
+## 2026 Fall · 南沙校区 · 常规 ELPA · Issue #83
+
+考试阶段：start ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：D-1000083 ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/83)
+
+**English**
+
+> testtest
+
+**中文**
+
+> test
+
+**相似问法**
+
+> 无
+
+**提示小问**
+
+> 无

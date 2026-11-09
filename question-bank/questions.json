@@ -703,6 +703,13 @@
           "en": "What kind of skills do you hope to develop at HKUST(GZ)?",
           "cn": "你希望在香港科技大学（广州）培养哪些技能？",
           "subs": []
+        },
+        {
+          "num": 1000083,
+          "term": "2026 Fall",
+          "en": "testtest",
+          "cn": "test",
+          "subs": []
         }
       ]
     },
