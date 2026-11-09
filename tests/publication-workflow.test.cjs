@@ -16,6 +16,8 @@ test('new and closed Issues route to matching Team using canonical structured pa
 });
 test('only live Team membership or organization owner can approve',()=>{
  assert.match(workflow,/permission-members: read/);
+ assert.match(workflow,/Confirm issue was created by the submission App/);
+ assert.match(workflow,/ISSUE_AUTHOR/);
  assert.match(workflow,/\/orgs\/HKUST-ELPA\/memberships/);
  assert.match(workflow,/\/orgs\/HKUST-ELPA\/teams/);
  assert.match(workflow,/\.role/);
