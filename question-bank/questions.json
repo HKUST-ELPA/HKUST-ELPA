@@ -285,104 +285,6 @@
         },
         {
           "num": 8,
-          "en": "What can you learn from the Internet?",
-          "cn": "描述一下你在互联网中能学到什么？（有考生考场抽到的补充题）",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 9,
-          "en": "How would you explain a technical term to the first-year UG?",
-          "cn": "你会如何向大一本科生解释一个专业术语？",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 10,
-          "en": "Talk about your academic subject and why did you enjoy it?",
-          "cn": "谈谈你的学科，以及你为什么喜欢它",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 11,
-          "en": "Why is interdisciplinary studies so important?",
-          "cn": "为什么交叉学科研究如此重要？",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 12,
-          "en": "As a teaching assistant, how do you plan to guide the UG student to use AI ethically?",
-          "cn": "作为助教，你计划如何引导学生合乎伦理地使用 AI？",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 13,
-          "en": "Explain a core concept or technique in your research in simple terms, give an example of its application, and explain its limitations.",
-          "cn": "用简而易懂的话解释你研究中的核心概念或技术，举例说明应用并说明它的局限性。",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 14,
-          "en": "Briefly introduce the problems encountered in academic research, how you solved them through innovation, what the results were.",
-          "cn": "简要介绍研究中遇到的问题、你如何通过创新解决、结果如何",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 15,
-          "en": "Discuss the challenges of remote learning, and how to overcome it?",
-          "cn": "讨论远程学习的挑战以及如何克服",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 16,
-          "en": "Discuss the role of mentorship in academic success.",
-          "cn": "讨论导师制在学术成功中的作用",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 17,
-          "en": "How can PG students leverage AI to improve their language proficiency?",
-          "cn": "研究生如何利用 AI 提升语言能力？",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 18,
-          "en": "Why is integrity important for your academic discipline?",
-          "cn": "为什么诚信对你的学科很重要？",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 19,
-          "en": "How do PG students leverage digital tools?",
-          "cn": "研究生如何利用数字工具？",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 20,
-          "en": "Talk about the importance of feedback, including receiving and giving feedback.",
-          "cn": "谈谈反馈的重要性，包括接受和给予反馈",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 21,
-          "en": "Describe a time when you used creative approaches to solve a problem in academic research.",
-          "cn": "描述一个在学术研究中，你应用创造性手段解决什么问题。",
-          "subs": [],
-          "origin": "historical"
-        },
-        {
-          "num": 22,
           "en": "How would you explain a technical term to the first-year undergraduate?",
           "cn": "如何向大一新生解释一个专业术语",
           "subs": [
@@ -406,7 +308,7 @@
           "origin": "historical"
         },
         {
-          "num": 23,
+          "num": 9,
           "en": "Why is interdisciplinary studies so important?",
           "cn": "描述为什么交叉学科（interdisciplinary）很重要",
           "subs": [
@@ -430,7 +332,7 @@
           "origin": "historical"
         },
         {
-          "num": 24,
+          "num": 10,
           "en": "Talk about your academic subject and why you enjoy it.",
           "cn": "讲讲你的 academic subject，并说你为什么 enjoy",
           "subs": [
@@ -454,7 +356,7 @@
           "origin": "historical"
         },
         {
-          "num": 25,
+          "num": 11,
           "en": "As a teaching assistant, how do you guide the undergraduate student to use AI ethically?",
           "cn": "作为助教，如何引导本科生合乎伦理地使用 AI",
           "subs": [
@@ -474,14 +376,14 @@
           "origin": "historical"
         },
         {
-          "num": 26,
+          "num": 12,
           "en": "Explain a core concept or technique in your research field in simple terms, give an example of its application, and explain its limitations.",
           "cn": "用简单语言解释研究核心概念、实际应用及局限性",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 27,
+          "num": 13,
           "en": "Briefly introduce the problems you encountered in academic research, how you solved them, and what the results were.",
           "cn": "简要介绍学术研究遇到的问题，你如何解决，结果怎么样",
           "subs": [
@@ -501,7 +403,7 @@
           "origin": "historical"
         },
         {
-          "num": 28,
+          "num": 14,
           "en": "Discuss the challenges of remote or blended learning, and how to overcome it?",
           "cn": "讨论远程/混合式学习的挑战及克服方法",
           "subs": [
@@ -525,7 +427,7 @@
           "origin": "historical"
         },
         {
-          "num": 29,
+          "num": 15,
           "en": "Discuss the role of mentorship in academic success.",
           "cn": "讨论导师制在学术成功中的作用",
           "subs": [
@@ -549,7 +451,7 @@
           "origin": "historical"
         },
         {
-          "num": 30,
+          "num": 16,
           "en": "Why is integrity important for your academic discipline?",
           "cn": "为什么诚信对你的学科很重要？",
           "subs": [
@@ -565,14 +467,14 @@
           "origin": "historical"
         },
         {
-          "num": 31,
+          "num": 17,
           "en": "How do postgraduate students leverage digital tools (e.g. AI)?",
           "cn": "研究生如何利用数字工具（如 AI）？",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 32,
+          "num": 18,
           "en": "Importance of feedback, including receiving and giving feedback.",
           "cn": "反馈的重要性，包括接受和给予反馈",
           "subs": [
@@ -596,56 +498,56 @@
           "origin": "historical"
         },
         {
-          "num": 33,
+          "num": 19,
           "en": "Describe a time when you used creative approaches to solve a problem in academic research.",
           "cn": "描述在学术研究中创造性解决问题的经历",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 34,
+          "num": 20,
           "en": "Is AI dangerous or helpful?",
           "cn": "AI 是危险的还是有益的？",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 35,
+          "num": 21,
           "en": "What are the benefits and challenges of collaborating with people from different fields?",
           "cn": "与不同领域的人合作的好处与挑战？",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 36,
+          "num": 22,
           "en": "Talk about your experience of taking online courses.",
           "cn": "谈谈你参加网络课程的经历。",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 37,
+          "num": 23,
           "en": "What can you learn from the Internet?",
           "cn": "你能从互联网中学到什么？",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 38,
+          "num": 24,
           "en": "How can AI help language learning?",
           "cn": "AI 对语言学习的帮助",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 39,
-          "en": "Describe an event or situation where you were required to speak in English as a research postgraduate.",
-          "cn": "描述一次你作为研究型研究生需要使用英语发言的活动或情境。",
+          "num": 25,
+          "en": "How can PG students leverage AI to improve their language proficiency?",
+          "cn": "研究生如何利用 AI 提升语言能力？",
           "subs": [],
           "origin": "historical"
         },
         {
-          "num": 40,
+          "num": 26,
           "term": "2026 Fall",
           "en": "How would you explain a term such as supply chain or fluid dynamics to undergraduates?",
           "cn": "你会如何向本科生解释“供应链”或“流体力学”等专业术语？",
@@ -653,7 +555,7 @@
           "origin": "reported"
         },
         {
-          "num": 41,
+          "num": 27,
           "term": "2026 Fall",
           "en": "How would you guide students to use AI?",
           "cn": "你会如何指导学生使用人工智能？",
@@ -661,7 +563,7 @@
           "origin": "reported"
         },
         {
-          "num": 42,
+          "num": 28,
           "term": "2026 Fall",
           "en": "What do you think AI can do for your studies?",
           "cn": "你认为人工智能能够如何帮助你的学习？",
@@ -669,7 +571,7 @@
           "origin": "reported"
         },
         {
-          "num": 43,
+          "num": 29,
           "term": "2026 Fall",
           "en": "Explain one of your projects.",
           "cn": "请介绍一个你参与过的项目。",
@@ -677,7 +579,7 @@
           "origin": "reported"
         },
         {
-          "num": 44,
+          "num": 30,
           "term": "2026 Fall",
           "en": "If you were a teaching assistant and discovered that a student had used AI for an assignment where AI was not permitted, how would you respond?",
           "cn": "如果你是一名助教，发现学生在明确禁止使用人工智能的作业中使用了 AI，你会如何处理？",
@@ -685,7 +587,7 @@
           "origin": "reported"
         },
         {
-          "num": 45,
+          "num": 31,
           "term": "2026 Fall",
           "en": "Introduce a term from your field of study and explain it using an analogy.",
           "cn": "请介绍一个你专业领域的术语，并用类比的方法解释它。",
@@ -693,7 +595,7 @@
           "origin": "reported"
         },
         {
-          "num": 46,
+          "num": 32,
           "term": "2026 Fall",
           "en": "How would you interpret two studies that reach different conclusions on the same issue?",
           "cn": "你会如何理解针对同一个问题的两项研究得出了不同结论？",
@@ -701,7 +603,7 @@
           "origin": "reported"
         },
         {
-          "num": 47,
+          "num": 33,
           "term": "2026 Fall",
           "en": "How would you explain a difficult academic concept to undergraduates from different cultural and academic backgrounds?",
           "cn": "你会如何向文化背景和专业背景不同的本科生解释一个复杂的学术概念？",
@@ -709,7 +611,7 @@
           "origin": "reported"
         },
         {
-          "num": 48,
+          "num": 34,
           "term": "2026 Fall",
           "en": "What was your first impression of HKUST(GZ) when you arrived?",
           "cn": "你刚来到香港科技大学（广州）时，对学校的第一印象是什么？",
@@ -717,7 +619,7 @@
           "origin": "reported"
         },
         {
-          "num": 49,
+          "num": 35,
           "term": "2026 Fall",
           "en": "How could you use the unique platform of HKUST(GZ) to achieve your personal goals?",
           "cn": "你会如何利用香港科技大学（广州）的独特平台实现个人目标？",
@@ -725,7 +627,7 @@
           "origin": "reported"
         },
         {
-          "num": 50,
+          "num": 36,
           "term": "2026 Fall",
           "en": "What place at HKUST(GZ) would you most like to visit or experience, and why?",
           "cn": "在香港科技大学（广州），你最想参观或体验哪个地方？为什么？",
@@ -733,7 +635,7 @@
           "origin": "reported"
         },
         {
-          "num": 51,
+          "num": 37,
           "term": "2026 Fall",
           "en": "What kind of skills do you hope to develop at HKUST(GZ)?",
           "cn": "你希望在香港科技大学（广州）培养哪些技能？",
@@ -872,23 +774,23 @@
     "GZ-R-0005",
     "GZ-R-0006",
     "GZ-R-0007",
+    "GZ-R-0008",
+    "GZ-R-0009",
+    "GZ-R-0010",
+    "GZ-R-0011",
+    "GZ-R-0012",
+    "GZ-R-0013",
+    "GZ-R-0014",
+    "GZ-R-0015",
+    "GZ-R-0016",
+    "GZ-R-0017",
+    "GZ-R-0018",
+    "GZ-R-0019",
+    "GZ-R-0020",
+    "GZ-R-0021",
     "GZ-R-0022",
     "GZ-R-0023",
     "GZ-R-0024",
-    "GZ-R-0025",
-    "GZ-R-0026",
-    "GZ-R-0027",
-    "GZ-R-0028",
-    "GZ-R-0029",
-    "GZ-R-0030",
-    "GZ-R-0031",
-    "GZ-R-0032",
-    "GZ-R-0033",
-    "GZ-R-0034",
-    "GZ-R-0035",
-    "GZ-R-0036",
-    "GZ-R-0037",
-    "GZ-R-0038",
-    "GZ-R-0017"
+    "GZ-R-0025"
   ]
 }
