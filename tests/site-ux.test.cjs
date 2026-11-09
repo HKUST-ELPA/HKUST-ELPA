@@ -33,11 +33,11 @@ test('feedback count includes reviewed submissions and ties retain original orde
  const fixtures={
    'GZ-F-0001':{num:1,records:1},'GZ-F-0002':{num:2,records:2},
    'GZ-R-0040':{num:1,term:'2026 Fall'},'GZ-R-0001':{num:1},
-   'GZ-R-0040000301':{num:1000301,term:'2027 Fall'}
+   'GZ-R-0052':{num:52,origin:'community',term:'2027 Fall'}
  };
  const arrivals={'GZ-F-0001':[{issueNumber:9},{issueNumber:9},{issueNumber:10}],
    'GZ-F-0002':[], 'GZ-R-0040':[{issueNumber:11},{issueNumber:12,intent:'supplement'}],
-   'GZ-R-0040000301':[
+   'GZ-R-0052':[
      {issueNumber:301,intent:'encounter',subs:[{en:'What matters?',cn:''}]},
      {issueNumber:302,intent:'supplement',alternatives:[{en:'Could you explain this project?',cn:'你能解释这个项目吗？'}],subs:[{en:'What changed?',cn:''}]}
    ]};
@@ -47,11 +47,11 @@ test('feedback count includes reviewed submissions and ties retain original orde
  assert.equal(funcs.feedbackCount('GZ-F-0001'),3);
  assert.equal(funcs.feedbackCount('GZ-R-0040'),2);
  assert.equal(funcs.feedbackCount('GZ-R-0001'),1);
- assert.equal(funcs.feedbackCount('GZ-R-0040000301'),1,'imported issue counted exactly once');
- assert.deepEqual(funcs.questionFollowups('GZ-R-0040000301',{subs:[{en:'Original prompt?',cn:''}]}),[
+ assert.equal(funcs.feedbackCount('GZ-R-0052'),1,'imported issue counted exactly once');
+ assert.deepEqual(funcs.questionFollowups('GZ-R-0052',{subs:[{en:'Original prompt?',cn:''}]}),[
    {en:'Original prompt?',cn:''},{en:'What matters?',cn:''},{en:'What changed?',cn:''}
  ]);
- assert.deepEqual(funcs.questionAlternatives('GZ-R-0040000301',{en:'Original question'}),[
+ assert.deepEqual(funcs.questionAlternatives('GZ-R-0052',{en:'Original question'}),[
    {en:'Could you explain this project?',cn:'你能解释这个项目吗？'}
  ]);
  assert.deepEqual(funcs.feedbackRanked(['GZ-F-0002','GZ-R-0001','GZ-F-0001','GZ-R-0040']),['GZ-F-0001','GZ-F-0002','GZ-R-0040','GZ-R-0001']);
@@ -353,7 +353,7 @@ test('homepage explains the full learning workflow without a repeated oversized 
      assert.ok(Number.isSafeInteger(entry.issueNumber)&&entry.issueNumber>0,id);
  assert.ok(questions.banks.F.items.some(item=>item.num===1&&item.subs.length===0));
  assert.equal(fastSessionData.ids.length,12);
- assert.ok(!fastSessionData.ids.includes('GZ-F-00013'));
+ assert.ok(!fastSessionData.ids.includes('GZ-F-0013'));
  assert.doesNotMatch(practice,/fastIntroSection|fastIntroDetails|ELPA_FAST_TRACK_INTRO|补充准备 · 完整自我介绍任务/);
  assert.match(practice,/titleStatus\.textContent=total\?'第 '\+page\+' \/ '\+pages\+' 页 · 总 '\+total\+' 题':'0 题'/);
  assert.match(practice,/function activeLatestSessionLabel\(\)[\s\S]*?session\.term\+' · '\+ELPA_TAXONOMY\.examStages\[session\.stage\]\.zh/);
