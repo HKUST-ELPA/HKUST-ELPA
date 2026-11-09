@@ -21,18 +21,16 @@ function elpaLatestTerm() {
   return elpaLatestTermForIds(elpaAllPracticeIds());
 }
 function elpaAllPracticeIds() {
-  return PAST_QUESTION_IDS.concat(BANKS.D.items.map(item => 'D-' + item.num));
+  return Object.entries(BANKS).flatMap(([key,bank])=>bank.items.map(item=>key+'-'+String(item.num).padStart(4,'0')));
 }
 function elpaReportedTerms(id) {
   const terms = new Set();
-  const key=id.split('-')[0];
+  const key=id.split('-').slice(0,2).join('-');
   const bank=BANKS[key];
   const item=bank&&Array.isArray(bank.items)?
-    bank.items.find(entry=>key+'-'+entry.num===id):null;
+    bank.items.find(entry=>key+'-'+String(entry.num).padStart(4,'0')===id):null;
   if(item&&item.term)terms.add(item.term);
-  // Legacy D-series 2026 Fall reports predate explicit per-issue appearances.
-  else if(key==='D'&&item&&Number.isInteger(item.num)&&item.num>=1&&item.num<=12)
-    terms.add('2026 Fall');
+
   const records = typeof ELPA_APPEARANCES === 'undefined' ? [] : ELPA_APPEARANCES[id];
   if (Array.isArray(records)) {
     for (const entry of records) if (entry && entry.term) terms.add(entry.term);
