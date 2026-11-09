@@ -1,57 +1,40 @@
 # ELPA 题库 · Question Bank
 
-> **非官方资料｜考生分享与备考整理。** 本目录不代表香港科技大学（广州）官方题库。不同年份、批次和考场的流程及题目可能变化；所有记录以原始资料能够支持的范围为限。
+> **非官方学习资料。** 题目及考生经验由社区整理，不代表港科大官方题库；实际考试安排应以对应校区通知为准。
 
-这里是仓库的**独立、可长期维护的题库文档**；[在线练习页面](https://hkust-elpa.vercel.app/practice.html)提供检索、随机抽题、计时和个人学习记录等功能。
+## 四个考试领域
 
-## 题库导航
+| Domain | 校区 | 考试类型 | 题目 ID | 经验 ID | 审核 Team |
+| --- | --- | --- | --- | --- | --- |
+| `GZ-R` | 广州校区 | 常规 ELPA | `GZ-R-0001` | `GZ-R-E-0001` | `gz-regular-reviewers` |
+| `GZ-F` | 广州校区 | ELPA Fast Track | `GZ-F-0001` | `GZ-F-E-0001` | `gz-fast-track-reviewers` |
+| `HK-R` | 香港校区 | 常规 ELPA | `HK-R-0001` | `HK-R-E-0001` | `hk-regular-reviewers` |
+| `HK-F` | 香港校区 | ELPA Fast Track | `HK-F-0001` | `HK-F-E-0001` | `hk-fast-track-reviewers` |
 
-| 文档 | 范围 | 说明 |
-| --- | --- | --- |
-| [过往题库](./previous-years.md) | 25 道可练习题目 | 由原有往年、补充及反馈题汇总去重，保留已收集的小问 |
-| [2026 Fall 考情与反馈记录](./2026-fall.md) | 首批 12 道反馈题 | 已知所属 2026 Fall；具体开学／学期中／学期末阶段未逐题核实 |
-| [Fast Track · 南沙校区](./fast-track.md) | 12 道题 | 独立 F 系列题库，英语练习问法附中文释义 |
+**`gz/hk` 是唯一校区数据值；`regular/fast-track` 是唯一考试类型数据值。** 题目 ID 由考试领域和该领域的递增编号组成，与 Issue 编号分离。经验在对应领域内独立编号，并明确记录 `campus` 和 `track`。不使用 A/B/C/D/F/H/T 旧编号或南沙/清水湾旧字段。
 
-**题库按校区（南沙 / 清水湾）和考试类型（常规 ELPA / ELPA Fast Track）切换。** 当前已收录南沙校区常规 ELPA 和 Fast Track；HK 两组题库保留独立数据入口，尚无题目。仅对有来源支持的考试学期及阶段提供场次筛选；场次无法核实的题目仍可练习，不强行指定年份或阶段。已知 2026 Fall 的 D 系列归于当期，具体阶段待核实；Fast Track F 系列保留“场次待核实”展示。题目 ID 与既有学习记录不变。
+## 唯一数据源
 
-## 结构化数据与网页同步
+- [questions.json](./questions.json)：四领域题库和 `historicalQuestionIds`；题目包含英文、中文、小问和来源信息。
+- [appearances.json](./appearances.json)：经审核的考试场次与题目出现记录；补充问法不增加考试经历计数。
+- [advice.json](./advice.json)：每份经验所属的校区、考试类型、阶段、标签和可选关联题目。
+- [taxonomy.json](./taxonomy.json)：字段取值与中英文名称的统一规范。
+- [2026-fall.md](./2026-fall.md)、[previous-years.md](./previous-years.md)、[fast-track.md](./fast-track.md)：原始资料背景与整理说明。
 
-- **[questions.json](./questions.json)** 是所有校区和考试类型的统一结构化题库，保存 A/B/C/D/F/H/T 系列及各自稳定 ID。新增的社区题目须经维护者审核，选择 Close as completed 后由自动化安全发布，不允许匿名投稿直接改动已发布数据。新增／修正题目时，优先在此维护稳定 ID、英文题干、中文说明和提示小问；发布时 Python 自动生成浏览器数据脚本，不必修改 `index.html`。
-- 本目录下的 Markdown 文档负责**场次、来源、回忆差异与整理说明**，不是从数据文件自动生成的副本。更新题目时应一并检查相关说明是否需要同步修订。
-- **[appearances.json](./appearances.json)** 只保存经审核、有来源依据的考试场次与新增反馈；原有往年汇总或 Fast Track 练习题不凭空补录考试日期。`supplement` 不增加考试经历计数。
-- **[advice.json](./advice.json)** 保存考生经验；**[taxonomy.json](./taxonomy.json)** 提供稳定分类代码及中英文标签。
-- 网站按最新已收录的完整场次（学期 + 阶段）展示**当前场次题库**和**过往题库**；相同题目再次确认出现时复用原 ID。
+**只有 Source JSON 是结构化数据的权威来源。** `scripts/build-question-data.py` 将它们生成浏览器脚本；网站筛选及 Pagefind 使用相同的四领域分类。
 
-## 怎样使用
+## 投稿与审核
 
-1. 优先查看顶部最新学期题库，也可继续练习过往题库。
-2. 抽到具体问题时，优先理解主问题与提示小问；不要只靠固定模板答非所问。
-3. 如有新题，欢迎提交 **题目原文、中文说明、场次时间（如已知）、小问、来源及可信程度**。不清楚的部分请直接写“未记录／待核实”。
+网站只发送 `version:3` 的结构化题目投稿：明确选择 `campus`、`track`、学期、阶段、英文题目和中文理解；可顺带附加同领域备考经验。Worker 通过 Turnstile 和限流检查后，以 GitHub App 身份创建公开 Issue。
 
-## 来源与标记
+Issue 自动进入 `campus:gz/hk`、`track:regular/fast-track` 的对应 Team 队列。该 Team 的有效成员或 Organization Owner 可以 **Close as completed** 审核通过。审核工作流验证成员资格及数据并以 GitHub App 提交 Source，随后统一构建到 Published。
 
-本目录以仓库现有网页题库、整理者已收到的考生分享及下方资料为基础。资料中的问题包括英文原文、考生回忆和后期英语改写，**并非每条英文句子都能证明是现场逐字题干**。
+详见 [MODERATION.md](./MODERATION.md)。
 
-- **考生回忆**：有明确反馈来源的考试题目或场次记录；仍可能存在记忆偏差
-- **资料汇总**：外部共享文档或原有题库中的汇编，年份／具体场次可能不完全明确
-- **整理译文**：为方便检索而编写的英文表达或中文概括，不冒充原题
-- **待核实**：缺少小问或无法独立确认来源，原样保留不确定性
-
-### 外部原始资料
+## 来源与使用说明
 
 - [腾讯文档：ELPA 补充题库（8.25、8.26）](https://docs.qq.com/doc/DT3BxSkJzSGdUamJE)
-- [腾讯文档：26 ELPA 旧新题整理](https://docs.qq.com/doc/DSHJydEVYSHBtdkZO)（此版尚未逐条核对内容）
-- [有道云：ELPA 笔记分享](https://share.note.youdao.com/ynoteshare/index.html?_time=1788671277918&id=c753f55564beca3902cdaab5e1273c87&type=note)（此版尚未逐条核对内容）
+- [腾讯文档：26 ELPA 旧新题整理](https://docs.qq.com/doc/DSHJydEVYSHBtdkZO)
+- [有道云：ELPA 笔记分享](https://share.note.youdao.com/ynoteshare/index.html?_time=1788671277918&id=c753f55564beca3902cdaab5e1273c87&type=note)
 
-题目材料来自考生分享、既有资料汇总与本项目的持续整理。外部资料保留原始链接方便查证；内容引用及再利用应尊重各来源的相关权益。
-
-## 维护规则
-
-- 新增题前先查是否已有同主题记录，避免重复编号；确有不同问法时保留来源和差异。
-- **完整的主问题**优先采用来源英文问法；原资料仅有中文时，可以提供忠于原意的自然英文练习表达，但必须在来源文档标明其属于整理表述，不能冒充现场逐字题卡。
-- 对残缺题干与未记录的小问不擅自补全。备考思路可另写，但不写成“题卡原文”。
-- 不含个人学号、联系方式等信息；如需修订，提交 [Issue](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues) 或 Pull Request。
-
-## 审核与持续更新
-
-新题通过站内表单进入公开 GitHub Issues，**未经审核不得自动入库**。仓库所有者审核后选择 **Close as completed** 即批准发布，Actions 验证数据和测试后更新 `main`；关闭为 Not planned 或 Duplicate 则不入库。详见 [审核维护说明](./MODERATION.md)。
+资料可能包括现场回忆、整理后的英文练习表述和中文释义；不要将后期改写冒充现场逐字题卡。题目与经验可在 [网站题库](https://hkust-elpa.github.io/practice.html) 和 [备考指南](https://hkust-elpa.github.io/guide.html) 中按校区及类型查阅。
