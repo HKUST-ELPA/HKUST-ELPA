@@ -27,7 +27,7 @@ test('Python JSON build preserves all current question records and historical id
     assert.equal(result.status, 0, result.stderr);
     const question = vm.runInNewContext(
       fs.readFileSync(path.join(output, 'questions.js'), 'utf8') +
-      '\n;({banks:BANKS,pastQuestionIds:PAST_QUESTION_IDS,legacyQuestionAliases:LEGACY_QUESTION_ALIASES})');
+      '\n;({banks:BANKS,historicalQuestionIds:HISTORICAL_QUESTION_IDS})');
     const appearances = vm.runInNewContext(
       fs.readFileSync(path.join(output, 'appearances.js'), 'utf8') +
       '\n;ELPA_APPEARANCES');
@@ -57,11 +57,11 @@ test('Python builder rejects missing historical targets rather than emitting bro
       fs.copyFileSync(path.join(bankRoot,name+'.json'),path.join(source,name+'.json'));
     const file = path.join(source, 'questions.json');
     const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-    data.legacyQuestionAliases['A-附'] = 'C-999999';
+    data.historicalQuestionIds.push('GZ-R-9999');
     fs.writeFileSync(file, JSON.stringify(data));
     const result = build(source, output);
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /broken historical aliases/);
+    assert.match(result.stderr, /missing historical IDs/);
     assert.ok(!fs.existsSync(output), 'Invalid data must not create browser output');
   } finally {
     fs.rmSync(dir, {recursive:true, force:true});
