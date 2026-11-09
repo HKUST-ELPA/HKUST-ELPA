@@ -150,11 +150,7 @@ function cleanSubmission(body){
 const mdQuote=t=>String(t).split('\n').map(s=>'> '+s.replace(/</g,'&lt;')).join('\n');
 async function formatSubmission(record,env){
   const lines=[
-    '## ELPA 考题投稿（待审核）','',
-    '> 公开匿名投稿；考生回忆非学校官方原题。',
-    '',
-    '**审核 Team：** @HKUST-ELPA/'+record.campus+'-'+record.track+'-reviewers',
-    '', '**考试校区：** '+(record.campus==='gz'?'广州校区':'香港校区'),
+    '**考试校区：** '+(record.campus==='gz'?'广州校区':'香港校区'),
     '**考试类型：** '+(record.track==='regular'?'常规 ELPA':'ELPA Fast Track'),
     '**考试学期：** '+record.term,
     '**考试阶段：** '+record.examStage,
@@ -165,18 +161,20 @@ async function formatSubmission(record,env){
     ]:[]),
     '', '### 主问题 / English',mdQuote(record.main.en),
     '', '### 主问题 / 中文',mdQuote(record.main.cn),'',
-    '### 提示小问（'+record.subs.length+'）'
+    '### 提示小问'
   ];
   if(record.alternatives?.length){
-    lines.splice(lines.length-1,0,'### 相似问法（'+record.alternatives.length+'）');
+    lines.splice(lines.length-1,0,'### 相似问法');
     for(const alternative of record.alternatives)lines.splice(lines.length-1,0,'',mdQuote(alternative.en),mdQuote(alternative.cn));
   }
   for(const [i,sub] of record.subs.entries())lines.push('','**小问 '+(i+1)+' / English**',mdQuote(sub.en),
     '**小问 '+(i+1)+' / 中文**',mdQuote(sub.cn));
-  if(!record.subs.length)lines.push('> 未记录');
+  if(!record.subs.length)lines.push('','未分享');
   if(record.advice)lines.push('','### 备考经验 / Preparation Advice',
     '**阶段：** '+record.advice.phase,'**主题标签：** '+record.advice.tags.join(', '),
     '**标题：** '+record.advice.title,'',mdQuote(record.advice.body));
+  if(!record.advice)lines.push('','### 备考经验 / Preparation Advice','','未分享');
+  lines.push('','---','','**已分配至：** @HKUST-ELPA/'+record.campus+'-'+record.track+'-reviewers');
   const encoded=encodeBase64Url(JSON.stringify(record));
   const key=await appSigningKey(env);
   const signature=appBase64Url(new Uint8Array(await crypto.subtle.sign(
