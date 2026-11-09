@@ -47,6 +47,7 @@ for(const [code,labels] of Object.entries(taxonomy?.adviceTags||{})){
   label.append(input);
   const caption=addText(label,'span',localeText(labels.zh,labels.en));
   caption.dataset.i18nEn=labels.en;
+  caption.dataset.i18nZh=labels.zh;
   list.append(label);
 }
 function setKind(next){
