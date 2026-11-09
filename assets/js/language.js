@@ -13,7 +13,7 @@
     const key = source.trim();
     const explicit = node.parentElement?.dataset.i18nEn;
     if (explicit !== undefined) {
-      const desired = root.dataset.lang === 'en' ? source.replace(key, explicit) : source;
+      const desired = root.dataset.lang === 'en' ? source.replace(key, explicit) : source.replace(key, node.parentElement.dataset.i18nZh ?? key);
       saved.rendered = desired;
       originals.set(node, saved);
       if (current !== desired) node.nodeValue = desired;
