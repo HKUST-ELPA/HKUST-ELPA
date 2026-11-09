@@ -20,7 +20,7 @@ test('all current IDs survive JSON backup normalization and recovery',()=>{
  const code=section(practice,'function normalizePayload(data) {','function snapshot()');
  const clean=new Function('validRecord',code+';return normalizePayload')(
    v=>v!==null&&typeof v==='object'&&!Array.isArray(v));
- for(const id of ['GZ-R-0001','GZ-R-0043','GZ-F-0001','HK-R-0001','HK-F-0001']){
+ for(const id of ['GZ-R-0001','GZ-R-0029','GZ-F-0001','HK-R-0001','HK-F-0001']){
    const got=clean({statuses:{[id]:'done'},notes:{['qn-'+id]:'kept',[id+'-1']:'follow-up'}});
    assert.equal(got.statuses[id],'done',id);
    assert.equal(got.notes['qn-'+id],'kept',id);
@@ -32,12 +32,12 @@ test('feedback count includes reviewed submissions and ties retain original orde
  const code=section(practice,'function feedbackCount(id){','function toggleTranslation(id,button){');
  const fixtures={
    'GZ-F-0001':{num:1,records:1},'GZ-F-0002':{num:2,records:2},
-   'GZ-R-0040':{num:1,term:'2026 Fall'},'GZ-R-0001':{num:1},
-   'GZ-R-0052':{num:52,origin:'community',term:'2027 Fall'}
+   'GZ-R-0026':{num:1,term:'2026 Fall'},'GZ-R-0001':{num:1},
+   'GZ-R-0038':{num:52,origin:'community',term:'2027 Fall'}
  };
  const arrivals={'GZ-F-0001':[{issueNumber:9},{issueNumber:9},{issueNumber:10}],
-   'GZ-F-0002':[], 'GZ-R-0040':[{issueNumber:11},{issueNumber:12,intent:'supplement'}],
-   'GZ-R-0052':[
+   'GZ-F-0002':[], 'GZ-R-0026':[{issueNumber:11},{issueNumber:12,intent:'supplement'}],
+   'GZ-R-0038':[
      {issueNumber:301,intent:'encounter',subs:[{en:'What matters?',cn:''}]},
      {issueNumber:302,intent:'supplement',alternatives:[{en:'Could you explain this project?',cn:'你能解释这个项目吗？'}],subs:[{en:'What changed?',cn:''}]}
    ]};
@@ -45,16 +45,16 @@ test('feedback count includes reviewed submissions and ties retain original orde
    ';return {feedbackCount,feedbackRanked,questionFollowups,questionAlternatives}')(
    id=>fixtures[id],id=>arrivals[id]||[]);
  assert.equal(funcs.feedbackCount('GZ-F-0001'),3);
- assert.equal(funcs.feedbackCount('GZ-R-0040'),2);
+ assert.equal(funcs.feedbackCount('GZ-R-0026'),2);
  assert.equal(funcs.feedbackCount('GZ-R-0001'),1);
- assert.equal(funcs.feedbackCount('GZ-R-0052'),1,'imported issue counted exactly once');
- assert.deepEqual(funcs.questionFollowups('GZ-R-0052',{subs:[{en:'Original prompt?',cn:''}]}),[
+ assert.equal(funcs.feedbackCount('GZ-R-0038'),1,'imported issue counted exactly once');
+ assert.deepEqual(funcs.questionFollowups('GZ-R-0038',{subs:[{en:'Original prompt?',cn:''}]}),[
    {en:'Original prompt?',cn:''},{en:'What matters?',cn:''},{en:'What changed?',cn:''}
  ]);
- assert.deepEqual(funcs.questionAlternatives('GZ-R-0052',{en:'Original question'}),[
+ assert.deepEqual(funcs.questionAlternatives('GZ-R-0038',{en:'Original question'}),[
    {en:'Could you explain this project?',cn:'你能解释这个项目吗？'}
  ]);
- assert.deepEqual(funcs.feedbackRanked(['GZ-F-0002','GZ-R-0001','GZ-F-0001','GZ-R-0040']),['GZ-F-0001','GZ-F-0002','GZ-R-0040','GZ-R-0001']);
+ assert.deepEqual(funcs.feedbackRanked(['GZ-F-0002','GZ-R-0001','GZ-F-0001','GZ-R-0026']),['GZ-F-0001','GZ-F-0002','GZ-R-0026','GZ-R-0001']);
 });
 test('practice cards expose reviewed encounter action and uniform alignment',()=>{
  assert.match(practice,/过往考过 \$\{feedback\} 次/);
@@ -345,7 +345,7 @@ test('homepage explains the full learning workflow without a repeated oversized 
  assert.equal(sessionData.ids.length,25);
  // Legacy questions must not acquire invented year/stage evidence.
  // Future issue-linked reports may still add reviewed appearances to these IDs.
- for(const id of [...sessionData.ids,...Array.from({length:12},(_,i)=>'GZ-R-'+String(i+40).padStart(4,'0'))])
+ for(const id of [...sessionData.ids,...Array.from({length:12},(_,i)=>'GZ-R-'+String(i+26).padStart(4,'0'))])
    for(const entry of sessionData.data[id]||[])
      assert.ok(Number.isSafeInteger(entry.issueNumber)&&entry.issueNumber>0,id);
  const fastSessionData={ids:questions.banks['GZ-F'].items.map(x=>'GZ-F-'+String(x.num).padStart(4,'0')),data:appearances};
