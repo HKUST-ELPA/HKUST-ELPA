@@ -10,17 +10,18 @@ It does **not** edit website files or publish a question. Maintainer review rema
 1. Configure the Cloudflare Turnstile widget for **hkust-elpa.github.io** and **hkust-elpa.vercel.app**.
    Use action **elpa_submit**. Keep the Site Key public; keep the Secret private.
 2. Use a Wrangler version supporting this `wrangler.jsonc` and the native Rate Limiting binding. The configured `namespace_id` is `11247601`; it is account-specific and must be checked when deploying to another account.
-3. Create the GitHub label `submission:pending` in the repository before accepting submissions. The pending label is applied by the Worker when it creates an Issue. Then create a **fine-grained GitHub PAT** restricted to only
-   `HKUST-ELPA/HKUST-ELPA-Site-Source`, permission **Issues: Read and write**;
-   no Contents/Actions/Admin permissions. Store it only as a Worker secret.
+3. Create the GitHub label `submission:pending`. Install the existing HKUST-ELPA GitHub App on `HKUST-ELPA/HKUST-ELPA-Site-Source` with **Issues: read/write**. No personal PAT is required. Configure its App ID, installation ID and RSA private key using the Worker bindings listed below.
 4. Configure Worker secrets via:
    - `npx wrangler secret put TURNSTILE_SECRET`
-   - `npx wrangler secret put GITHUB_TOKEN`
+   - `npx wrangler secret put GITHUB_APP_PRIVATE_KEY` (PKCS#8 PEM from the GitHub App)
+   - `npx wrangler secret put GITHUB_APP_ID`
+   - `npx wrangler secret put GITHUB_APP_INSTALLATION_ID`
+   The App private key must be a PKCS#8 PEM (`-----BEGIN PRIVATE KEY-----`). If GitHub issues a PKCS#1 `BEGIN RSA PRIVATE KEY` file, convert it securely to PKCS#8 before storing; never commit or print the key. Keep these three secrets in Cloudflare, separately from the GitHub Actions `PUBLISH_APP_PRIVATE_KEY` secret.
    Optional kill switch (plaintext Worker environment variable):
    `SUBMISSIONS_DISABLED=true` disables POST submissions; requests are accepted **only** when set explicitly to `false` and all other validations succeed. If the binding is missing, submissions remain disabled.
 5. Deploy with `npx wrangler deploy`. The checked-in `wrangler.jsonc` deliberately
    defaults to `SUBMISSION_MODE=closed` and `SUBMISSIONS_DISABLED=true`.
-   **After every production deployment**, explicitly verify the live Worker settings
+   **Do not deploy the new Worker code before all three App bindings are configured and an Installation Token exchange is verified.** The new Worker intentionally has no PAT fallback and fails closed when App credentials are absent. **After every production deployment**, explicitly verify the live Worker settings
    and restore `SUBMISSION_MODE=public`, `SUBMISSIONS_DISABLED=false` only if submissions
    are intended to remain open. Never check secrets into the repository. In the public
    `submission-config.js`, set the HTTPS Worker URL ending in `/submit` and the public
@@ -40,7 +41,7 @@ It does **not** edit website files or publish a question. Maintainer review rema
   limiter or external verification are unavailable.
 - No DB, no submitted attachments, no contact details requested, no visitor IP
   stored in Issues. GitHub Issues are **public**, including unapproved entries.
-- A malicious actor may still attempt automated abuse; rotate the GitHub PAT,
+- A malicious actor may still attempt automated abuse; rotate the GitHub App private key when needed,
   monitor Worker usage, and toggle `SUBMISSIONS_DISABLED` when needed.
 
 ## Interface
@@ -71,7 +72,9 @@ straight to the question bank.
 - Worker: `hkust-elpa-submissions`; endpoint `https://hkust-elpa-submissions.futseyi.workers.dev/submit`.
 - Public Turnstile Site Key: `0x4AAAAAAFWWsgbB9w0JPOm3`. The widget must allow both production hostnames.
 - Rate limiter: `SUBMISSION_LIMITER`, namespace `11247601`, 3 requests / 60 seconds per IP per Cloudflare location.
-- The Worker secret `GITHUB_TOKEN` is scoped to Issues in `HKUST-ELPA/HKUST-ELPA-Site-Source`. Never commit or paste its value.
+- Worker authenticates with the existing GitHub App: `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID` and `GITHUB_APP_PRIVATE_KEY` are secret bindings. At submission time it signs an RS256 JWT and obtains a short-lived Installation Token limited to `HKUST-ELPA-Site-Source` with `issues:write`. Never commit or paste private keys.
+- Once production is verified, remove the obsolete `GITHUB_TOKEN` Cloudflare secret (old PAT); verify no other service still depends on it first.
+- The Source issue-publication workflow uses the same App's `PUBLISH_APP_ID` variable and `PUBLISH_APP_PRIVATE_KEY` GitHub Actions secret, scoped to the Source repository. The existing Source-to-Published workflow remains unchanged.
 - The live Worker uses `SUBMISSION_MODE=public` and `SUBMISSIONS_DISABLED=false` when submissions are open. Checked-in Wrangler defaults stay closed; verify live settings after every deployment.
 - A synthetic submission created [Issue #78](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/78) after token rotation and was closed as **not planned**, without entering the question bank. Repeat an end-to-end browser test when changing the Worker or Turnstile configuration.
 
