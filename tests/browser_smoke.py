@@ -276,7 +276,7 @@ def check_extended_behaviors(browser, origin):
     context, page, errors = page_context(browser, 390)
     try:
         page.goto(origin + "/guide.html", wait_until="load")
-        assert page.locator("#guideAdviceList article").count() == 3
+        assert page.locator("#guideAdviceList article").count() == len(json.loads((ROOT / "question-bank/advice.json").read_text(encoding="utf-8")))
         assert page.locator("#guideAdviceFilters").is_visible()
         page.locator("#adviceTagFilter").select_option("speaking-strategy")
         assert page.locator("#guideAdviceList article").count() == 2
