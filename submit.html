@@ -100,7 +100,7 @@
   <label class="contrib-optin"><input id="includeAdvice" type="checkbox"> <span data-i18n-en="Also share preparation advice">同时分享备考经验</span></label>
   <h2>备考阶段 <span lang="en">Preparation Stage</span></h2>
   <div class="contrib-row">
-     <div class="contrib-field"><label for="advicePhase">经验阶段 * </label>
+    <div class="contrib-field"><label for="advicePhase">经验阶段 <span class="contrib-advice-required" hidden>*</span></label>
       <select id="advicePhase" required>
         <option value="before" data-i18n-en="Before the Exam">考前准备</option>
         <option value="during" data-i18n-en="During the Exam">考试现场</option>
@@ -114,10 +114,10 @@
   <div id="adviceTags" class="contrib-tags" role="group" aria-label="备考经验主题标签"></div>
   <hr class="contrib-line">
   <h2>经验内容 <span lang="en">Your Experience</span></h2>
-  <div class="contrib-field"><label for="adviceTitle">标题 * </label>
+  <div class="contrib-field"><label for="adviceTitle">标题 <span class="contrib-advice-required" hidden>*</span></label>
     <input id="adviceTitle" type="text" minlength="4" maxlength="120" required>
   </div>
-  <div class="contrib-field"><label for="adviceBody">正文 * </label>
+  <div class="contrib-field"><label for="adviceBody">正文 <span class="contrib-advice-required" hidden>*</span></label>
     <textarea id="adviceBody" rows="7" minlength="20" maxlength="6000" required></textarea>
   </div>
   <p>可使用中文或英文，无需重复翻译。</p>
