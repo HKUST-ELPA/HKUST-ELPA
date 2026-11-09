@@ -1,10 +1,9 @@
-name: Publish completed ELPA submissions
+name: Review and publish ELPA submissions
 
 on:
   issues:
-    types: [closed, reopened]
+    types: [opened, closed, reopened]
 
-# Serialize issue reviews that may change question-bank data or labels.
 concurrency:
   group: elpa-question-bank-publication
   queue: max
@@ -31,36 +30,85 @@ jobs:
           repositories: HKUST-ELPA-Site-Source
           permission-contents: write
           permission-issues: write
+          permission-members: read
       - name: Resolve GitHub App bot identity
         id: bot
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           APP_SLUG: ${{ steps.app.outputs.app-slug }}
         run: echo "id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
-      - name: Ensure publication labels exist
+      - name: Checkout routing source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Validate submission domain and resolve team
+        id: route
+        run: node scripts/review-routing.cjs
+      - name: Ensure review labels
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
         run: |
-          gh label create submission:published --color 0e8a16 --description "已写入 Source main（不代表已上线）" --force
-          gh label create submission:failed --color b60205 --description "自动入库失败，请查看 Actions" --force
-      - uses: actions/checkout@v7
-        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && github.event.sender.login == 'FuTseYi' }}
+          gh label create submission:pending --color fbca04 --description "Awaiting designated team review" --force
+          gh label create submission:published --color 0e8a16 --description "Included in Source main" --force
+          gh label create submission:failed --color b60205 --description "Publication or validation failed" --force
+          for label in campus:gz campus:hk track:regular track:fast-track; do
+            gh label create "$label" --color 1d76db --description "ELPA review domain" --force
+          done
+      - name: Route new submission to its team
+        if: ${{ github.event.action == 'opened' }}
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REVIEW_TEAM: ${{ steps.route.outputs.team }}
+          REVIEW_CAMPUS: ${{ steps.route.outputs.campus }}
+          REVIEW_TRACK: ${{ steps.route.outputs.track }}
+        run: |
+          gh issue edit "$ISSUE_NUMBER" --add-label "submission:pending,campus:${REVIEW_CAMPUS},track:${REVIEW_TRACK}"
+          gh issue comment "$ISSUE_NUMBER" --body "Review queue: @HKUST-ELPA/${REVIEW_TEAM}. A member of this team or an organization owner can approve by closing as completed."
+      - name: Authorize completed review
+        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' }}
+        id: authorization
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REVIEW_TEAM: ${{ steps.route.outputs.team }}
+          CLOSING_USER: ${{ github.event.sender.login }}
+        run: |
+          set -euo pipefail
+          authorized=false
+          role=$(gh api "/orgs/HKUST-ELPA/memberships/${CLOSING_USER}" --jq '.role' 2>/dev/null || true)
+          if [[ "$role" == admin ]]; then
+            authorized=true
+          else
+            member=$(gh api "/orgs/HKUST-ELPA/teams/${REVIEW_TEAM}/memberships/${CLOSING_USER}" --jq '.state' 2>/dev/null || true)
+            if [[ "$member" == active ]]; then authorized=true; fi
+          fi
+          echo "authorized=$authorized" >> "$GITHUB_OUTPUT"
+      - name: Reject unauthorized approval
+        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && steps.authorization.outputs.authorized != 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          gh issue reopen "$ISSUE_NUMBER"
+          gh issue comment "$ISSUE_NUMBER" --body "Approval was not accepted: only the designated review team or an organization owner may publish this submission."
+      - name: Checkout for reviewed import
+        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && steps.authorization.outputs.authorized == 'true' }}
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
           token: ${{ steps.app.outputs.token }}
           persist-credentials: true
-      - uses: actions/setup-node@v7
-        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && github.event.sender.login == 'FuTseYi' }}
+      - uses: actions/setup-node@v4
+        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && steps.authorization.outputs.authorized == 'true' }}
         with:
           node-version: 22
-      - uses: actions/setup-python@v7
-        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && github.event.sender.login == 'FuTseYi' }}
+      - uses: actions/setup-python@v5
+        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && steps.authorization.outputs.authorized == 'true' }}
         with:
           python-version: '3.12'
       - name: Import, validate, and publish
         id: publish
-        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && github.event.sender.login == 'FuTseYi' }}
+        if: ${{ github.event.action == 'closed' && github.event.issue.state_reason == 'completed' && steps.authorization.outputs.authorized == 'true' }}
         shell: bash
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
@@ -76,63 +124,41 @@ jobs:
             git checkout -B submission-publication origin/main
             git reset --hard origin/main
             git clean -fd -- question-bank/
-            # Issue text is processed as data, never interpolated into shell.
             node scripts/import-completed-submission.cjs
             git add -A -- question-bank/
-            if git diff --cached --quiet; then
-              # The importer already classified this Issue; no shell parsing of bank data.
-              exit 0
-            fi
+            if git diff --cached --quiet; then exit 0; fi
             node scripts/check-submission-diff.cjs
             python preview.py --build-only
             node --test
             git commit -m "docs: publish reviewed ELPA issue #${ISSUE_NUMBER}"
-            if git push origin HEAD:main; then
-              exit 0
-            fi
+            if git push origin HEAD:main; then exit 0; fi
             echo "main moved; retrying clean import (${attempt}/3)"
             sleep 2
           done
           echo "Unable to publish after concurrent updates" >&2
           exit 1
-      - name: Synchronize Issue labels
-        if: ${{ success() }}
+      - name: Synchronize publication status
+        if: ${{ success() && github.event.action != 'opened' }}
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
+          REVIEW_AUTHORIZED: ${{ steps.authorization.outputs.authorized }}
+          RECORDED: ${{ steps.publish.outputs.recorded }}
           EVENT_ACTION: ${{ github.event.action }}
           CLOSE_REASON: ${{ github.event.issue.state_reason }}
-          CLOSING_USER: ${{ github.event.sender.login }}
-          RECORDED: ${{ steps.publish.outputs.recorded }}
         run: |
           set -euo pipefail
-          labels="$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name')"
-          has() { grep -Fxq "$1" <<< "$labels"; }
-          args=()
-          remove() { if has "$1"; then args+=(--remove-label "$1"); fi; }
-          add() { if ! has "$1"; then args+=(--add-label "$1"); fi; }
-          if [[ "$EVENT_ACTION" == "reopened" ]]; then
-            # A published record remains published; reopening cannot undo it.
-            add submission:pending
-            remove submission:failed
-          else
-            remove submission:pending
-            remove submission:failed
-            if [[ "$CLOSE_REASON" == "completed" && "$CLOSING_USER" == "FuTseYi" && "$RECORDED" == "true" ]]; then
-              add submission:published
-            fi
+          if [[ "$EVENT_ACTION" == reopened ]]; then
+            gh issue edit "$ISSUE_NUMBER" --add-label submission:pending --remove-label submission:failed || true
+          elif [[ "$CLOSE_REASON" == completed && "$REVIEW_AUTHORIZED" == true && "$RECORDED" == true ]]; then
+            gh issue edit "$ISSUE_NUMBER" --add-label submission:published --remove-label submission:pending || true
+          elif [[ "$CLOSE_REASON" != completed ]]; then
+            gh issue edit "$ISSUE_NUMBER" --remove-label submission:pending || true
           fi
-          if (( ${#args[@]} )); then gh issue edit "$ISSUE_NUMBER" "${args[@]}"; fi
-          if [[ "$EVENT_ACTION" == "closed" && "$CLOSE_REASON" == "completed" && "$CLOSING_USER" == "FuTseYi" && "$RECORDED" == "false" ]]; then
-            gh issue comment "$ISSUE_NUMBER" --body "No new record was published: the submission matched existing material but this Issue has no recorded appearance. Review whether it should be closed as duplicate."
-          fi
-      - name: Report publication failure
+      - name: Report import failure
         if: ${{ failure() && steps.publish.outcome == 'failure' }}
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          # Never replace an already-published status with a failure label.
-          if ! gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' | grep -Fxq 'submission:published'; then
-            gh issue edit "$ISSUE_NUMBER" --add-label submission:failed --remove-label submission:pending
-          fi
-          gh issue comment "$ISSUE_NUMBER" --body "Automatic question-bank publication failed. Check the [workflow run]($RUN_URL), fix the cause, and rerun the failed job. Completed does not guarantee publication."
+          gh issue edit "$ISSUE_NUMBER" --add-label submission:failed --remove-label submission:pending || true
+          gh issue comment "$ISSUE_NUMBER" --body "Publication failed. Review the [workflow run](${RUN_URL}) and retry after correction."
