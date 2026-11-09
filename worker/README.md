@@ -75,7 +75,7 @@ straight to the question bank.
 - Worker authenticates with the existing GitHub App: `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID` and `GITHUB_APP_PRIVATE_KEY` are secret bindings. At submission time it signs an RS256 JWT and obtains a short-lived Installation Token limited to `HKUST-ELPA-Site-Source` with `issues:write`. Never commit or paste private keys.
 - The Source issue-publication workflow uses the same App's `PUBLISH_APP_ID` variable and `PUBLISH_APP_PRIVATE_KEY` GitHub Actions secret, scoped to the Source repository. The existing Source-to-Published workflow remains unchanged.
 - The live Worker uses `SUBMISSION_MODE=public` and `SUBMISSIONS_DISABLED=false` when submissions are open. Checked-in Wrangler defaults stay closed; verify live settings after every deployment.
-- A synthetic submission created [Issue #78](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/78) after token rotation and was closed as **not planned**, without entering the question bank. Repeat an end-to-end browser test when changing the Worker or Turnstile configuration.
+- Repeat an end-to-end browser test when changing the Worker or Turnstile configuration. Close synthetic test Issues as **not planned** without approving them.
 
 ## Time-bounded live verification
 

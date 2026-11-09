@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const {read:readArtifact}=require('./site-support.cjs');
-const read=file=>readArtifact(file).replace(/\?v=[a-f0-9]{12}(?=")/g,'');
+const read=file=>readArtifact(file).replace(/\r\n/g,'\n').replace(/\?v=[a-f0-9]{12}(?=")/g,'');
 
 test('all six built pages reuse homepage chrome with one selected navigation link',()=>{
   const footer=read('index.html').match(/<footer class="elpa-footer"[\s\S]*?<\/footer>/)[0];
