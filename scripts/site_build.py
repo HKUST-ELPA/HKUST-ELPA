@@ -41,7 +41,7 @@ def render_guide_advice(page, root):
     """Build reviewed advice cards from the canonical records before first paint."""
     entries = json.loads((root / "question-bank/advice.json").read_text(encoding="utf-8"))
     taxonomy = json.loads((root / "question-bank/taxonomy.json").read_text(encoding="utf-8"))
-    regular = [entry for entry in entries if entry.get("track", "regular") == "regular"]
+    regular = [entry for entry in entries if entry["campus"] == "gz" and entry["track"] == "regular"]
 
     def label(group, key):
         names = group[key]
@@ -49,16 +49,16 @@ def render_guide_advice(page, root):
 
     cards = []
     for entry in entries:
-        track = entry.get("track", "regular")
+        track = entry["track"]
         phase = entry["phase"]
         tags = entry.get("tags", [])
         chips = []
-        campus = entry.get("campus")
+        campus = entry["campus"]
         if campus in taxonomy["campuses"]:
             chips.append('<span data-i18n-en="' + escape(
-                "Guangzhou Campus" if campus == "nansha" else "Hong Kong Campus",
+                taxonomy["campuses"][campus]["en"],
                 quote=True) + '">' +
-                ("广州校区" if campus == "nansha" else "香港校区") + '</span>')
+                taxonomy["campuses"][campus]["zh"] + '</span>')
         if phase in taxonomy["advicePhases"]:
             chips.append(label(taxonomy["advicePhases"], phase))
         chips.extend(label(taxonomy["adviceTags"], tag)
@@ -72,9 +72,10 @@ def render_guide_advice(page, root):
                            + '" data-i18n-en="Original post">原始分享</a>')
         cards.append(
             '<article class="elpa-advice-card" data-track="' + escape(track, quote=True)
+            + '" data-campus="' + escape(campus, quote=True)
             + '" data-phase="' + escape(phase, quote=True)
             + '" data-tags="' + escape(",".join(tags), quote=True) + '"'
-            + (' hidden' if track != "regular" else "") + '>'
+            + (' hidden' if campus != "gz" or track != "regular" else "") + '>'
             + '<div class="elpa-advice-chips">' + chips_html + '</div>'
             + '<h3>' + escape(entry["title"]) + '</h3>'
             + '<p class="elpa-advice-content">' + escape(entry["body"]) + '</p>'
@@ -159,13 +160,11 @@ def build(root, destination, options):
     records = destination / "search-records"
     records.mkdir()
     for key, bank_data in questions["banks"].items():
-        campus = "clear-water-bay" if key in ("H", "T") else "nansha"
-        track = "fast-track" if key in ("F", "T") else "regular"
+        campus = key.split("-")[0].lower()
+        track = "regular" if key.endswith("-R") else "fast-track"
         for item in bank_data["items"]:
-            question_id = f'{key}-{item["num"]}'
+            question_id = f'{key}-{item["num"]:04d}'
             terms = {item["term"]} if item.get("term") else set()
-            if key == "D" and item["num"] <= 12:
-                terms.add("2026 Fall")
             terms.update(entry["term"] for entry in appearances.get(question_id, []) if entry.get("term"))
             filters = [f'<span data-pagefind-filter="term:{escape(term, quote=True)}"></span>'
                        for term in sorted(terms)]

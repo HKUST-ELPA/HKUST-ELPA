@@ -62,15 +62,16 @@ function validateSite(){
   }
   const json=name=>JSON.parse(read('question-bank/'+name+'.json'));
   const questions=json('questions');
-  const data={banks:questions.banks,past:questions.pastQuestionIds,aliases:questions.legacyQuestionAliases,
+  const data={banks:questions.banks,historical:questions.historicalQuestionIds,
     appearances:json('appearances'),advice:json('advice'),taxonomy:json('taxonomy')};
   const questionIds=new Set();
   for(const [key,bank] of Object.entries(data.banks)){
+    assert.match(key,/^(GZ|HK)-(R|F)$/);
     assert.ok(Array.isArray(bank.items),'Invalid bank '+key);
     for(const item of bank.items){
-      const id=key+'-'+item.num;
+      const id=key+'-'+String(item.num).padStart(4,'0');
       assert.ok(!questionIds.has(id),'Duplicate question '+id);
-      assert.ok((Number.isSafeInteger(item.num)&&item.num>0)||id==='A-附','Invalid stable ID '+id);
+      assert.ok(Number.isSafeInteger(item.num)&&item.num>0&&item.num<10000,'Invalid stable ID '+id);
       assert.ok(typeof item.en==='string'&&item.en.trim(),'Missing question text '+id);
       assert.ok(!/^TEST ONLY(?:\b|\s*[-:])/i.test(item.en),'Synthetic test question in public bank: '+id);
       assert.ok(Array.isArray(item.subs),'Invalid follow-ups '+id);
@@ -78,9 +79,9 @@ function validateSite(){
       questionIds.add(id);
     }
   }
-  assert.equal(new Set(data.past).size,data.past.length,'Duplicate past-bank IDs');
-  for(const id of data.past)assert.ok(questionIds.has(id),'Unknown past-bank question '+id);
-  for(const [oldId,id] of Object.entries(data.aliases))assert.ok(questionIds.has(oldId)&&questionIds.has(id),'Broken legacy alias '+oldId);
+  assert.deepEqual(Object.keys(data.banks),['GZ-R','GZ-F','HK-R','HK-F']);
+  assert.equal(new Set(data.historical).size,data.historical.length,'Duplicate historical IDs');
+  for(const id of data.historical)assert.ok(questionIds.has(id),'Unknown historical question '+id);
   for(const [id,appearances] of Object.entries(data.appearances)){
     assert.ok(questionIds.has(id),'Unknown appearance question '+id);
     assert.ok(Array.isArray(appearances),'Invalid appearances '+id);
@@ -97,13 +98,16 @@ function validateSite(){
   const adviceIds=new Set();
   for(const entry of data.advice){
     assert.ok(!adviceIds.has(entry.id)&&entry.title&&entry.body,'Invalid advice '+entry.id);
+    assert.ok(data.taxonomy.campuses[entry.campus],'Missing advice campus '+entry.id);
+    assert.ok(data.taxonomy.tracks[entry.track],'Missing advice track '+entry.id);
+    assert.match(entry.id,/^(GZ|HK)-(R|F)-E-\d{4}$/);
     assert.ok(data.taxonomy.advicePhases[entry.phase],'Invalid advice phase '+entry.id);
     for(const tag of entry.tags)assert.ok(data.taxonomy.adviceTags[tag],'Invalid advice tag '+entry.id);
     adviceIds.add(entry.id);
   }
   const jpeg=fs.readFileSync(path.join(root,'assets/images/Administration-Building-14-1536x864.jpg'));
   assert.ok(jpeg.length>8000&&jpeg[0]===255&&jpeg[1]===216&&jpeg.at(-2)===255&&jpeg.at(-1)===217,'Invalid campus JPEG');
-  console.log('Validated 5 pages, local resources, '+questionIds.size+' stable question IDs, '+data.advice.length+' advice entries and legacy aliases');
+  console.log('Validated 5 pages, local resources, '+questionIds.size+' stable question IDs, '+data.advice.length+' advice entries across four ELPA domains');
 }
 test('generated site, canonical data, local references and JavaScript syntax',()=>{
   validateSite();

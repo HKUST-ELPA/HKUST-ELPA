@@ -32,10 +32,10 @@ function addText(parent,tag,text,cls){
 const year=get('submissionYear');
 year.value='';
 year.addEventListener('input',()=>{year.value=year.value.replace(/[^0-9]/g,'').slice(0,4);});
-function syncCampus(){const gz=trimmed('submissionCampus')==='nansha';campusGz.setAttribute('aria-pressed',String(gz));campusHk.setAttribute('aria-pressed',String(!gz));}
+function syncCampus(){const gz=trimmed('submissionCampus')==='gz';campusGz.setAttribute('aria-pressed',String(gz));campusHk.setAttribute('aria-pressed',String(!gz));}
 function setCampus(value){get('submissionCampus').value=value;get('submissionCampus').dispatchEvent(new Event('change',{bubbles:true}));syncCampus();}
-campusGz.addEventListener('click',()=>setCampus('nansha'));
-campusHk.addEventListener('click',()=>setCampus('clear-water-bay'));
+campusGz.addEventListener('click',()=>setCampus('gz'));
+campusHk.addEventListener('click',()=>setCampus('hk'));
 for(const radio of form.querySelectorAll('input[name="trackPicker"]'))radio.addEventListener('change',()=>{get('submissionTrack').value=radio.value;get('submissionTrack').dispatchEvent(new Event('change',{bubbles:true}));});
 for(const radio of form.querySelectorAll('input[name="sourcePicker"]'))radio.addEventListener('change',()=>{get('submissionSource').value=radio.value;get('submissionSource').dispatchEvent(new Event('change',{bubbles:true}));});
 function syncChoices(){syncCampus();for(const n of ['trackPicker','sourcePicker']){const id=n==='trackPicker'?'submissionTrack':'submissionSource';for(const radio of form.querySelectorAll('input[name="'+n+'"]'))radio.checked=radio.value===get(id).value;}}
@@ -114,25 +114,18 @@ function matchScore(entry,query){
   const zhScore=pairs.length?pairs.filter(p=>targetH.includes(p)).length/pairs.length:0;
   return Math.max(wordScore,zhScore);
 }
-function availableQuestions(){
+function selectedDomain(){
   const campus=trimmed('submissionCampus'),track=trimmed('submissionTrack');
-  const keys=campus==='nansha'?(track==='regular'?
-    PAST_QUESTION_IDS.concat(BANKS.D.items.map(it=>'D-'+it.num)):
-    BANKS.F.items.map(it=>'F-'+it.num)):
-    (BANKS[track==='regular'?'H':'T']?.items||[]).map(it=>(track==='regular'?'H-':'T-')+it.num);
-  return keys.map(id=>{
-    const key=id.split('-')[0],entry=BANKS[key].items.find(it=>key+'-'+it.num===id);
-    return entry?{id,en:entry.en,cn:entry.cn||''}:null;
-  }).filter(Boolean);
+  return campus.toUpperCase()+'-'+(track==='fast-track'?'F':'R');
+}
+function availableQuestions(){
+  const key=selectedDomain();
+  return (BANKS[key]?.items||[]).map(item=>({
+    id:key+'-'+String(item.num).padStart(4,'0'),en:item.en,cn:item.cn||''
+  }));
 }
 function findQuestion(id){
-  const track=trimmed('submissionTrack'),campus=trimmed('submissionCampus');
-  const allowed=campus==='nansha'?(track==='fast-track'?['F']:['A','B','C','D']):
-    campus==='clear-water-bay'?(track==='fast-track'?['T']:['H']):
-    (track==='fast-track'?['F','T']:['A','B','C','D','H']);
-  const key=String(id||'').split('-')[0],bank=allowed.includes(key)&&BANKS[key];
-  const entry=bank&&bank.items.find(it=>key+'-'+it.num===id);
-  return entry?{id,en:entry.en,cn:entry.cn||''}:null;
+  return availableQuestions().find(item=>item.id===id)||null;
 }
 function clearLink(){
   invalidatePreview();
@@ -199,7 +192,7 @@ for(const id of ['submissionCampus','submissionTrack'])get(id).addEventListener(
 function loadQuestionLink(){
   const params=new URLSearchParams(location.search);
   const campus=params.get('campus'),track=params.get('track'),id=params.get('question');
-  if(['nansha','clear-water-bay'].includes(campus))get('submissionCampus').value=campus;
+  if(['gz','hk'].includes(campus))get('submissionCampus').value=campus;
   if(['regular','fast-track'].includes(track))get('submissionTrack').value=track;
   if(params.get('experience')==='1'||params.get('kind')==='advice')get('includeAdvice').checked=true;
   const q=id&&findQuestion(id);
@@ -240,7 +233,7 @@ function buildData(){
     throw new Error('填写中文理解时，也请填写补充的英文题目。');
   if(intent==='supplement'&&!alternative.en&&!subs.length)
     throw new Error('仅补充题目内容时，请填写相似问法或至少添加一条新的提示小问。');
-  return {version:2,kind:'question',campus:trimmed('submissionCampus'),track:trimmed('submissionTrack'),
+  return {version:3,kind:'question',campus:trimmed('submissionCampus'),track:trimmed('submissionTrack'),
     term:trimmed('submissionYear')+' '+semester,
     examStage,main:{en:trimmed('mainEn'),cn:trimmed('mainCn')},
     subs,source:trimmed('submissionSource'),
@@ -262,7 +255,7 @@ function showPreview(){
   const preview=get('previewPanel');preview.replaceChildren();
   addText(preview,'h2',localeText('投稿预览','Submission Preview'));
   addText(preview,'small',(data.linkedQuestionId?'已关联 '+data.linkedQuestionId+' · ':'')+
-    (data.campus==='nansha'?'GZ':'HK')+' · '+
+    (data.campus==='gz'?'GZ':'HK')+' · '+
     (data.track==='regular'?'常规 ELPA · Regular':'ELPA Fast Track')+' · '+data.term+' · '+taxonomy.examStages[data.examStage].zh+
     ' · '+taxonomy.sourceTypes[data.source].zh);
   addText(preview,'strong',data.main.en);
@@ -342,7 +335,7 @@ form.addEventListener('submit',async event=>{
 });
 updateExperience();syncChoices();
 /* Keep unfinished work in this tab, separately for each contribution entry. */
-const draftKey='elpa-submission-draft-v1:'+location.search;
+const draftKey='elpa-submission-draft-v3:'+location.search;
 const draftFields=['submissionCampus','submissionTrack','submissionYear','submissionSlot','submissionSource',
   'mainEn','mainCn','supplementEn','supplementCn','advicePhase','adviceTitle','adviceBody'];
 function draftNotice(text){

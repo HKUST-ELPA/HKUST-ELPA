@@ -1,7 +1,13 @@
 {
   "campuses": {
-    "nansha": "GZ",
-    "clear-water-bay": "HK"
+    "gz": {
+      "zh": "广州校区",
+      "en": "Guangzhou Campus"
+    },
+    "hk": {
+      "zh": "香港校区",
+      "en": "Hong Kong Campus"
+    }
   },
   "tracks": {
     "regular": "Regular",

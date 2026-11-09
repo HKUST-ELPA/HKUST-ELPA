@@ -3,23 +3,24 @@
 
 /* 题目数据由 question-bank/questions.js 提供，见同目录的来源说明。 */
 
-/* Campus distinguishes the source of a question, not the university-wide assessment category. */
-let activeCampus='nansha',activeTrack='regular';
+/* Each practice domain is the canonical campus + assessment track. */
+let activeCampus='gz',activeTrack='regular';
 const examChoiceNote=document.getElementById('elpaChoiceNote');
-function isNanshaRegular(){return activeCampus==='nansha'&&activeTrack==='regular';}
+function isGzRegular(){return activeCampus==='gz'&&activeTrack==='regular';}
+function domainKey(campus=activeCampus,track=activeTrack){return campus.toUpperCase()+'-'+(track==='regular'?'R':'F');}
 function activePracticeIds(){
-  if(activeCampus==='nansha'&&activeTrack==='fast-track')return BANKS.F.items.map(it=>'F-'+it.num);
-  if(activeCampus==='clear-water-bay')return (activeTrack==='regular'?BANKS.H:BANKS.T).items.map(it=>(activeTrack==='regular'?'H-':'T-')+it.num);
-  return elpaAllPracticeIds();
+  const key=domainKey();
+  return BANKS[key].items.map(item=>qId(key,item.num));
 }
 /* Browser learning records, backups and optional folder sync live in practice-storage.js. */
-function qId(bank, num) { return bank + '-' + num; }
+function qId(bank, num) { return bank + '-' + String(num).padStart(4,'0'); }
+function idBank(id){return String(id).split('-').slice(0,2).join('-');}
 function questionTranslation(bankKey,item) {
   return item.cn || '';
 }
 function questionSourceNote(bankKey,item) {
   if(item && typeof item.recallTag === 'string')return item.recallTag;
-  if(bankKey==='F' && item && item.verbatim===false)
+  if(bankKey==='GZ-F' && item && item.verbatim===false)
     return '英文根据中文回忆整理，用于练习；非已核实的现场逐字题干。';
   return '';
 }
@@ -33,7 +34,7 @@ function feedbackCount(id){
   const reports=appearancesFor(id);
   // Historic student recollections start at one; Fast Track retains its sourced report count.
   // Newly imported questions already have their originating Issue in appearances.
-  const imported=Number(item.num)>=1000000&&reports.length>0;
+  const imported=item.origin==='community'&&reports.length>0;
   const baseline=imported?0:(Number.isInteger(item.records)&&item.records>0?item.records:1);
   const encounters=reports.filter(x=>x&&x.intent!=='supplement'&&
     Number.isInteger(x.issueNumber)&&x.issueNumber>0);
@@ -133,7 +134,7 @@ function activeArchivedIds(){
   return activePracticeIds().filter(id=>!current.has(id));
 }
 function renderTOC() {
-  const campus=activeCampus==='nansha'?'GZ':'HK';
+  const campus=activeCampus==='gz'?'GZ':'HK';
   const type=activeTrack==='regular'?'常规 ELPA · Regular':'ELPA Fast Track';
   const count=activePracticeIds().length;
   const sessionLabel=activeLatestSessionLabel(),current=activeCurrentIds(),past=activeArchivedIds();
@@ -166,27 +167,17 @@ function renderTOC() {
 }
 
 function questionById(id) {
-  const key = id.split('-')[0];
-  return BANKS[key].items.find(it => qId(key, it.num) === id);
+  const key = idBank(id);
+  return BANKS[key]?.items.find(it => qId(key, it.num) === id);
 }
 function allPracticeIds() {
   return activePracticeIds();
 }
 function renderQuestionIds(ids) {
   return feedbackRanked(ids).map((id,index) => {
-    const key=id.split('-')[0],item=questionById(id);
+    const key=idBank(id),item=questionById(id);
     return renderBank(key,[item],index);
   }).join('');
-}
-function migrateLegacyPractice() {
-  let changed = false;
-  for (const [oldId, newId] of Object.entries(LEGACY_QUESTION_ALIASES)) {
-    if (!statuses[newId] && statuses[oldId]) { statuses[newId] = statuses[oldId]; changed = true; }
-    if (!notes['qn-' + newId] && notes['qn-' + oldId]) {
-      notes['qn-' + newId] = notes['qn-' + oldId]; changed = true;
-    }
-  }
-  return changed;
 }
 function renderBank(bankKey, items = BANKS[bankKey].items, startIndex = 0) {
   return items.map((item, idx) => {
@@ -450,7 +441,7 @@ function cycleStatus(id, btn) {
 }
 
 function copyQuestion(id) {
-  const bankKey = id.split('-')[0];
+  const bankKey = idBank(id);
   const item = questionById(id);
   if (!item) return;
   const currentIds=activeCurrentIds();
@@ -459,7 +450,7 @@ function copyQuestion(id) {
   const section=category+' · '+(inCurrent?activeLatestSessionLabel():'过往题库');
   const number=feedbackRanked(inCurrent?currentIds:activeArchivedIds()).indexOf(id)+1;
   let text = `【${section} · 第 ${number} 题】\n${item.en}\n`;
-  const copyCn=questionTranslation(id.split('-')[0],item);
+  const copyCn=questionTranslation(idBank(id),item);
   if (copyCn) text += `（${copyCn}）\n`;
   const copyNote=questionSourceNote(bankKey,item);
   if (copyNote) text += `来源说明：${copyNote}\n`;
@@ -643,7 +634,7 @@ async function renderSearchResults(){
     searchResults.append(summary);
     for(const item of data){
       const resultPath=new URL(item.url,location.href).pathname;
-      const record=/([A-Z]-\d+)-(main|sub|alt)-\d+\.html$/.exec(resultPath);
+      const record=/((?:GZ|HK)-(?:R|F)-\d{4})-(main|sub|alt)-\d+\.html$/.exec(resultPath);
       const id=record?.[1];
       if(!id)continue;
       const button=document.createElement('button');
@@ -658,8 +649,8 @@ async function renderSearchResults(){
       if(item.plain_excerpt){const excerpt=document.createElement('small');excerpt.textContent=item.plain_excerpt;button.append(excerpt);}
       button.addEventListener('click',()=>{
         const url=new URL('./practice.html',location.href);
-        url.searchParams.set('campus',id[0]==='H'||id[0]==='T'?'clear-water-bay':'nansha');
-        url.searchParams.set('track',id[0]==='F'||id[0]==='T'?'fast-track':'regular');
+        url.searchParams.set('campus',idBank(id).startsWith('HK-')?'hk':'gz');
+        url.searchParams.set('track',idBank(id).endsWith('-F')?'fast-track':'regular');
         url.searchParams.set('question',id);
         location.assign(url.href);
       });
@@ -830,7 +821,7 @@ document.addEventListener('keydown',e=>{
 /* ============ 导出全部笔记（Markdown 下载） ============ */
 document.getElementById('exportBtn').addEventListener('click', () => {
   let md = '# ELPA 备考笔记导出\n\n> 导出时间：' + new Date().toLocaleString('zh-CN') + '\n\n';
-  const category=(activeCampus==='nansha'?'GZ':'HK')+' · '+
+  const category=(activeCampus==='gz'?'GZ':'HK')+' · '+
     (activeTrack==='fast-track'?'ELPA Fast Track':'常规 ELPA · Regular');
   const sections=[
     {name:category+' · '+activeLatestSessionLabel(),ids:activeCurrentIds()},
@@ -843,8 +834,8 @@ document.getElementById('exportBtn').addEventListener('click', () => {
       const st = statuses[id] || 'new';
       const stLabel = { new: '未练 New', doing: '练习中 Doing', done: '已掌握 Done' }[st];
       md += '### ' + (i + 1) + '. ' + it.en + '\n';
-      const cn=questionTranslation(id.split('-')[0],it);
-      const historicalNote=questionSourceNote(id.split('-')[0],it);
+      const cn=questionTranslation(idBank(id),it);
+      const historicalNote=questionSourceNote(idBank(id),it);
       if (cn) md += '> ' + cn + '\n';
       if (historicalNote) md += '> 来源说明：' + historicalNote + '\n';
       md += '*状态：' + stLabel + '*\n\n';
@@ -890,7 +881,6 @@ toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smoot
 
 /* ============ 渲染（读取数据后统一执行） ============ */
 function renderAll() {
-  if (migrateLegacyPractice()) markDirty();
   const currentIds=activeCurrentIds(),archivedIds=activeArchivedIds();
   document.getElementById('bankD').innerHTML=currentIds.length?renderQuestionIds(currentIds):'';
   document.getElementById('bankPast').innerHTML=renderQuestionIds(archivedIds);
@@ -915,7 +905,7 @@ document.querySelectorAll('[data-track]').forEach(b=>b.addEventListener('click',
 /* ============ 初始化：先读取同目录 JSON，再渲染 ============ */
 (function init() {
   const route=new URLSearchParams(location.search);
-  if(['nansha','clear-water-bay'].includes(route.get('campus')))activeCampus=route.get('campus');
+  if(['gz','hk'].includes(route.get('campus')))activeCampus=route.get('campus');
   if(['regular','fast-track'].includes(route.get('track')))activeTrack=route.get('track');
   document.querySelectorAll('[data-campus]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.campus===activeCampus)));
   document.querySelectorAll('[data-track]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.track===activeTrack)));
@@ -924,7 +914,7 @@ document.querySelectorAll('[data-track]').forEach(b=>b.addEventListener('click',
   populateExamFilters();
   renderAll();
   const requested=route.get('question');
-  if(requested && /^[A-Z]-\d+$/.test(requested)){
+  if(requested && /^(GZ|HK)-(R|F)-\d{4}$/.test(requested)){
     const card=document.getElementById('q-'+requested);
     if(card){
       const kind=card.closest('#bankD')?'fall':'past';

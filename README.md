@@ -11,7 +11,7 @@
 - **考试指南**：查阅常规 ELPA、Fast Track 流程与学生备考经验。
 - **题库练习**：按校区、考试类型、场次和学习状态筛选，使用 Pagefind 搜索题目及小问，随机抽题并计时。
 - **学习记录**：在本地浏览器保存掌握状态与笔记，支持备份和恢复。更换设备或网站地址前请先备份。
-- **社区投稿**：通过 Cloudflare Worker 提交回忆题目或经验，由维护者审核后收录。
+- **社区投稿**：通过 Cloudflare Worker 提交考题及可选备考经验，由对应校区和考试类型的审核 Team 审核后收录。
 
 网站不代表学校官方立场；考试安排与要求以学校当期通知为准。投稿请勿包含姓名、学号或联系方式。
 
@@ -37,7 +37,7 @@ HKUST-ELPA-Site-Source/
 ## 技术栈
 
 - **HTML / CSS / JavaScript**：静态页面、题库交互与本地学习记录
-- **Python**：生成五个页面及浏览器题库资源
+- **Python**：生成六个页面及浏览器题库资源
 - **Cloudflare Worker + Turnstile**：校验投稿并创建 Source Issue
 - **GitHub Issues + Actions**：审核入库、测试和跨仓库发布
 - **GitHub App**：同一 App 分别申请 Source 投稿、审核入库和 Published 发布所需的短期安装 token
@@ -54,7 +54,7 @@ python preview.py
 
 ## 构建与发布
 
-**Source**（本仓库）维护页面、题库、投稿审核和唯一的生产构建。**Published**（`HKUST-ELPA/HKUST-ELPA.github.io`）只保存构建结果；GitHub Pages 与 Vercel 直接部署其 `main`，不再构建网站。Published 的 `README.md` 由 [PUBLISHED_README.md](PUBLISHED_README.md) 生成。
+**Source**（本仓库）维护页面、四领域题库（GZ-R / GZ-F / HK-R / HK-F）、Team 投稿审核和唯一的生产构建。**Published**（`HKUST-ELPA/HKUST-ELPA.github.io`）只保存构建结果；GitHub Pages 与 Vercel 直接部署其 `main`，不再构建网站。Published 的 `README.md` 由 [PUBLISHED_README.md](PUBLISHED_README.md) 生成。
 
 ```mermaid
 sequenceDiagram
@@ -63,7 +63,8 @@ sequenceDiagram
     participant Worker as Cloudflare Worker
     participant App as GitHub App
     participant Issue as Source Issue
-    actor Maintainer as 维护者
+    actor Reviewer as 对应审核 Team / Owner
+    participant Routing as 分类路由 Action
     participant Review as 审核 Action
     participant Source as Source main
     participant Action as 发布 Action
@@ -71,18 +72,21 @@ sequenceDiagram
     participant Hosts as Pages / Vercel
 
     opt 学生投稿并审核通过
-        Student->>Worker: 提交题目或经验（Turnstile 验证）
+        Student->>Worker: v3 题目 + 可选经验（campus/track）
         Worker->>App: 申请 Source Issues 写入 token
         App-->>Worker: 短期安装 token
         Worker->>Issue: 以 App Bot 创建待审核 Issue
-        Maintainer->>Issue: Close as completed
+        Issue->>Routing: opened · 分类 campus/track
+        Routing->>Issue: 标记领域，通知对应 Team
+        Reviewer->>Issue: Close as completed
         Issue->>Review: 触发审核工作流
-        Review->>App: 申请 Source Contents / Issues 写入 token
+        Review->>App: 申请 Source Contents / Issues / Members token
+        Review->>Review: 验证审核者 Team 成员或 Owner 身份
         App-->>Review: 短期安装 token
         Review->>Source: 验证后以 App Bot 写入题库
     end
     opt 日常代码或内容更新
-        Maintainer->>Source: Push / merge
+        Reviewer->>Source: 代码 PR 经授权合并
     end
     Source->>Action: main 更新或审核入库
     Note over Action: 测试并生成唯一 _site/

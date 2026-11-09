@@ -29,10 +29,9 @@ test('portable site build publishes all pages and generates scripts from JSON',(
       vm.runInContext(fs.readFileSync(path.join(dest,'question-bank',script+'.js'),'utf8'),
         context,{filename:script+'.js',timeout:1000});
     const generated=JSON.parse(JSON.stringify(vm.runInContext(
-      '({banks:BANKS,ids:PAST_QUESTION_IDS,aliases:LEGACY_QUESTION_ALIASES})',context)));
+      '({banks:BANKS,ids:HISTORICAL_QUESTION_IDS})',context)));
     assert.deepEqual(generated.banks,bank.banks);
-    assert.deepEqual(generated.ids,bank.pastQuestionIds);
-    assert.deepEqual(generated.aliases,bank.legacyQuestionAliases);
+    assert.deepEqual(generated.ids,bank.historicalQuestionIds);
     const references=fs.readFileSync(path.join(dest,'question-bank/fast-track.md'),'utf8');
     assert.match(references,/github\.com\/HKUST-ELPA\/HKUST-ELPA-Site-Source\/blob\/main\/question-bank\/questions\.json/);
     const practice=fs.readFileSync(path.join(dest,'practice.html'),'utf8').replace(/\?v=[a-f0-9]{12}(?=")/g,'');

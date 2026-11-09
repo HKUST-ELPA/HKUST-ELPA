@@ -113,8 +113,8 @@ def check_practice(page, base):
     page.locator("#searchInput").fill("supply chain")
     page.locator("#searchResults .search-result").first.wait_for(timeout=20000)
     page.locator("#searchResults .search-result").first.click()
-    page.wait_for_url("**question=D-1")
-    assert page.locator("#q-D-1.search-target").is_visible()
+    page.wait_for_url("**question=GZ-R-0026")
+    assert page.locator("#q-GZ-R-0026.search-target").is_visible()
     page.locator("#searchOpen").click()
     page.locator("#searchInput").fill("What was your degree")
     page.locator("#searchResults .search-result-kind").first.wait_for(timeout=20000)
@@ -157,7 +157,7 @@ def check_practice(page, base):
     assert "updated strategy" in page.locator("#previewPanel").inner_text()
     page.reload(wait_until="load")
     assert page.locator("#adviceTitle").input_value() == "Python browser test"
-    page.goto(base + "/submit.html?question=D-1&intent=supplement", wait_until="load")
+    page.goto(base + "/submit.html?question=GZ-R-0026&intent=supplement", wait_until="load")
     assert page.locator("#linkedQuestion").is_visible()
     page.locator("#campusGz").click()
     assert page.locator("#linkedQuestion").is_visible()
@@ -196,7 +196,7 @@ def check_navigation(browser, origin):
                     assert page.evaluate("""() => document.querySelector('.elpa-nav') === window.__persistentShell
                         && document.querySelector('.elpa-footer') === window.__persistentFooter""")
                     page.go_back()
-                    page.wait_for_url("**/guide.html")
+                    page.wait_for_url("**/guide.html*")
                     assert page.locator("#regularGuide").is_visible()
                     assert page.evaluate("document.querySelector('.elpa-nav') === window.__persistentShell")
                     page.reload(wait_until="load")
@@ -290,14 +290,14 @@ def check_extended_behaviors(browser, origin):
         assert page.locator("#guideAdviceList article").count() == len(fast)
         assert page.locator("#guideAdviceFilters").is_visible() == bool(fast)
         assert page.locator("#guideAdviceEmpty").is_visible() == (not fast)
-        assert "experience=1&track=fast-track" in page.locator("#guideAdviceShare").get_attribute("href")
+        assert "campus=gz&track=fast-track&experience=1" in page.locator("#guideAdviceShare").get_attribute("href")
 
-        page.goto(origin + "/practice.html?campus=clear-water-bay", wait_until="load")
+        page.goto(origin + "/practice.html?campus=hk", wait_until="load")
         for track in ("regular", "fast-track"):
             page.locator(f'[data-track="{track}"]').click()
             assert page.locator("#categoryEmpty").is_visible()
             assert page.locator("#timerDrill").is_disabled()
-        page.locator('[data-campus="nansha"]').click()
+        page.locator('[data-campus="gz"]').click()
         assert not page.locator("#categoryEmpty").is_visible()
         assert page.locator("#timerDrill").is_enabled()
         page.locator("#searchOpen").click()
@@ -323,7 +323,7 @@ def check_extended_behaviors(browser, origin):
                     if re.match(r"^### \d+\. ", line)]
         assert exported == questions, "Markdown export must preserve the displayed question order"
 
-        page.goto(origin + "/submit.html?question=D-1&intent=supplement", wait_until="load")
+        page.goto(origin + "/submit.html?question=GZ-R-0026&intent=supplement", wait_until="load")
         page.locator("#campusGz").click()
         page.locator("#submissionSlot").select_option(index=1)
         page.locator("#supplementEn").fill("Draft-only alternative wording")

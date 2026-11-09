@@ -47,7 +47,7 @@ test('four source entrypoints generate six complete published pages',()=>{
     const built=read(page+'.html').replace('<main id="main" data-pagefind-body>','<main id="main">');
     if(page==='guide'){
       assert.ok(built.includes(fragment.split('<section class="elpa-advice-section"')[0]));
-      assert.match(read('guide.html'),/class="elpa-advice-card" data-track="regular"/);
+      assert.match(read('guide.html'),/class="elpa-advice-card" data-track="regular" data-campus="gz"/);
       assert.doesNotMatch(read('guide.html'),/id="sec-advice" hidden/);
     }else{
       assert.ok(built.includes(fragment));
