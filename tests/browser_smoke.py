@@ -1,4 +1,5 @@
 """End-to-end checks against the portable static site using Python Playwright."""
+import json
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -226,7 +227,8 @@ def check_without_scripts(browser, origin):
         page.wait_for_url("**/sources.html")
         assert page.locator("#official-sources").is_visible()
         page.goto(origin + "/guide.html", wait_until="load")
-        assert page.locator("#guideAdviceList article").count() == 3
+        reviewed = json.loads((ROOT / "question-bank/advice.json").read_text(encoding="utf-8"))
+        assert page.locator("#guideAdviceList article").count() == len(reviewed)
         assert page.locator("#sec-advice").is_visible()
     finally:
         context.close()
