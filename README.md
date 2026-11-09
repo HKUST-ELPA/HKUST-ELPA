@@ -44,16 +44,13 @@ HKUST-ELPA-Site-Source/
 
 ## 本地开发
 
-需要 Python 3.10+ 和 Node.js 22+。在 Source 根目录运行：
+需要 Python 3.10+。在 Source 根目录运行以下命令，启动本地预览：
 
 ```sh
 python preview.py
-python preview.py --build-only
-node --test
-python -m unittest discover -s tests -t . -p "test_*.py"
 ```
 
-Windows 可使用 `py -3` 替代 `python`。预览、浏览器回归和发布配置见 [PREVIEW.md](PREVIEW.md)。
+打开 <http://127.0.0.1:8765/>；修改源码后刷新页面即可查看结果，结束时按 Ctrl+C。Windows 可使用 `py -3` 替代 `python`。只构建、运行测试或检查浏览器时，按 [PREVIEW.md](PREVIEW.md) 中对应步骤操作；运行 JavaScript 测试需要 Node.js 22+。
 
 ## 构建与发布
 

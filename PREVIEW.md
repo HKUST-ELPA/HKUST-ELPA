@@ -2,16 +2,23 @@
 
 ## 本地预览和验证
 
-需要 Python 3.10+ 与 Node.js 22+。在 Source 根目录运行：
+需要 Python 3.10+；测试 JavaScript 时还需要 Node.js 22+。以下命令均在 Source 根目录运行，按任务选择：
+
+**日常预览**：启动本地网站；修改源码后刷新浏览器，结束时按 Ctrl+C。
 
 ```sh
 python preview.py
+```
+
+**提交前检查**：先构建完整静态网站，再运行 JavaScript 与 Python 测试。
+
+```sh
 python preview.py --build-only
 node --test
 python -m unittest discover -s tests -t . -p 'test_*.py'
 ```
 
-Windows 可用 `py -3` 替代 `python`。预览地址为 `http://127.0.0.1:8765/`，静态输出在 `_site/`。界面改动另运行 `python tests/browser_smoke.py`；依赖见 `requirements-dev.txt`。
+Windows 可用 `py -3` 替代 `python`。预览地址为 `http://127.0.0.1:8765/`，静态输出在 `_site/`。**界面改动**还需运行 `python tests/browser_smoke.py`；先安装 [requirements-dev.txt](requirements-dev.txt) 中的依赖和 Playwright 浏览器。
 
 ## 发布与凭据
 
