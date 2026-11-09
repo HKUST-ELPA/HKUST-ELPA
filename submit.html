@@ -18,31 +18,24 @@
 <form id="submissionForm" class="contrib-form">
 <p class="contrib-notice">无需注册账号。提交内容会公开保存，并在必要核对与整理后收录。请勿填写姓名、学号或联系方式。 <span class="elpa-en-summary" lang="en">No account needed. Submissions are public and may be included after review. Do not include names, student IDs or contact details.</span></p>
 <p id="submissionDraftStatus" class="contrib-caption" role="status">草稿仅在当前标签页暂存，刷新或返回此页可继续填写；尚未提交。 <span class="elpa-en-summary" lang="en">Drafts stay in this tab for refresh or return visits. Nothing has been submitted.</span></p>
-<div class="contrib-tabs" role="group" aria-label="投稿类别">
-<button id="tabQuestion" class="contrib-tab" type="button" aria-pressed="true" data-i18n-en="Contribute Questions">贡献考题</button>
-<button id="tabAdvice" class="contrib-tab" type="button" aria-pressed="false" data-i18n-en="Share Tips">分享经验</button>
+<div class="contrib-section"><h2 data-i18n-en="01 · Exam Campus">01 · 考试校区</h2>
+<div class="contrib-tabs" role="group" aria-label="考试校区">
+<button id="campusGz" class="contrib-tab" type="button" aria-pressed="true" data-i18n-en="Guangzhou Campus · GZ">广州校区 · GZ</button>
+<button id="campusHk" class="contrib-tab" type="button" aria-pressed="false" data-i18n-en="Hong Kong Campus · HK">香港校区 · HK</button>
 </div>
+<select id="submissionCampus" class="contrib-visually-hidden" aria-label="考试校区" required><option value="nansha">GZ</option><option value="clear-water-bay">HK</option></select>
+<p class="contrib-caption">考题与备考经验自动归属于所选校区。</p></div>
 <div id="questionFields" class="contrib-section">
-  <h2 id="exam-context">01 · 考试校区与类型 <span lang="en">Campus &amp; Assessment</span></h2>
-  <div class="contrib-row">
-    <div class="contrib-field"><label for="submissionCampus">考试校区 * </label>
-      <select id="submissionCampus" required>
-        <option value="" selected disabled data-i18n-en="Select Campus">选择校区</option>
-        <option value="nansha">GZ</option>
-        <option value="clear-water-bay">HK</option>
-      </select>
-    </div>
-    <div class="contrib-field"><label for="submissionTrack">考试类型 * </label>
-      <select id="submissionTrack" required>
-        <option value="regular" data-i18n-en="Regular ELPA">常规 ELPA</option>
-        <option value="fast-track">ELPA Fast Track</option>
-      </select>
-    </div>
+  <h2 id="exam-context">02 · 考试类型 <span lang="en">Assessment Type</span></h2>
+  <div class="contrib-track" role="radiogroup" aria-label="考试类型">
+    <label><input type="radio" name="trackPicker" value="regular" checked> <span data-i18n-en="Regular ELPA">常规 ELPA</span></label>
+    <label><input type="radio" name="trackPicker" value="fast-track"> <span>ELPA Fast Track</span></label>
   </div>
-  <h2 id="exam-session" tabindex="-1">02 · 考试场次 <span lang="en">Exam Session</span></h2>
+  <select id="submissionTrack" class="contrib-visually-hidden" aria-label="考试类型" required><option value="regular">Regular</option><option value="fast-track">Fast Track</option></select>
+  <h2 id="exam-session" tabindex="-1">03 · 考试场次 <span lang="en">Exam Session</span></h2>
   <div class="contrib-row">
     <div class="contrib-field"><label for="submissionYear">考试年份 * </label>
-      <select id="submissionYear" required></select>
+      <input id="submissionYear" type="text" inputmode="numeric" pattern="20[0-9]{2}" minlength="4" maxlength="4" placeholder="例如：2026" title="请输入 2000–2099 之间的四位考试年份" required><small class="contrib-caption">填写四位数字，例如 2026</small>
     </div>
     <div class="contrib-field"><label for="submissionSlot">学期及场次 * </label>
       <select id="submissionSlot" required>
@@ -55,12 +48,19 @@
     </div>
   </div>
   <hr class="contrib-line">
-  <h2>03 · 主问题 <span lang="en">Main Question</span></h2>
+  <h2>04 · 反馈来源 <span lang="en">Source</span></h2>
+  <div class="contrib-track" role="radiogroup" aria-label="反馈来源">
+    <label><input type="radio" name="sourcePicker" value="firsthand" checked> <span data-i18n-en="Firsthand">本人亲历</span></label>
+    <label><input type="radio" name="sourcePicker" value="secondhand"> <span data-i18n-en="Reported by a Classmate">同学转述</span></label>
+  </div>
+  <select id="submissionSource" class="contrib-visually-hidden" required aria-label="反馈来源"><option value="firsthand">本人亲历</option><option value="secondhand">同学转述</option></select>
+  <hr class="contrib-line">
+  <h2>05 · 主问题 <span lang="en">Main Question</span></h2>
   <div class="contrib-field" id="mainEnField"><label for="mainEn">英文题目 * </label>
     <textarea id="mainEn" rows="3" maxlength="1000" minlength="8" required></textarea>
   </div>
-  <div class="contrib-field" id="mainCnField"><label for="mainCn">中文理解（选填） </label>
-    <textarea id="mainCn" rows="3" maxlength="1000"></textarea>
+  <div class="contrib-field" id="mainCnField"><label for="mainCn">中文理解 * </label>
+    <textarea id="mainCn" rows="3" maxlength="1000" minlength="2" required></textarea>
   </div>
   <div id="matchingPanel" class="contrib-matches" hidden>
     <strong>题库中可能已有类似题目</strong>
@@ -86,28 +86,21 @@
     </div>
   </div>
   <hr class="contrib-line">
-  <h2>04 · 提示小问 <span lang="en">Follow-ups</span></h2>
+  <h2>06 · 提示小问 <span lang="en">Follow-ups</span></h2>
   <p>记得的小问才填写，可只提供英文；中文翻译不强制。</p>
   <div id="followupList" class="contrib-section" aria-live="polite"></div>
   <div class="contrib-actions"><button id="addFollowup" class="contrib-button" type="button">＋ 添加提示小问 </button>
     <span id="followupCount" class="contrib-caption">0 / 20</span></div>
   <hr class="contrib-line">
-  <h2>05 · 反馈来源 <span lang="en">Source</span></h2>
-  <div class="contrib-field"><label for="submissionSource">来源类型 * </label>
-    <select id="submissionSource" required><option value="firsthand" data-i18n-en="Firsthand">本人亲历</option>
-    <option value="secondhand" data-i18n-en="Reported by a Classmate">同学转述</option></select>
-  </div>
+
 </div>
-<div id="adviceFields" class="contrib-section" hidden>
-  <h2>01 · 备考阶段 <span lang="en">Preparation Stage</span></h2>
+<div id="adviceFields" class="contrib-section">
+  <hr class="contrib-line"><h2>07 · 分享备考经验 <span lang="en">Optional Preparation Advice</span></h2>
+  <p>备考经验可选，填写区域始终展示；勾选后标题和正文等内容必须填写。</p>
+  <label class="contrib-optin"><input id="includeAdvice" type="checkbox"> <span data-i18n-en="Also share preparation advice">同时分享备考经验</span></label>
+  <h2>备考阶段 <span lang="en">Preparation Stage</span></h2>
   <div class="contrib-row">
-    <div class="contrib-field"><label for="adviceTrack">考试方式（选填） </label>
-      <select id="adviceTrack">
-        <option value="regular" data-i18n-en="Regular ELPA">常规 ELPA</option>
-        <option value="fast-track">ELPA Fast Track</option>
-      </select>
-    </div>
-    <div class="contrib-field"><label for="advicePhase">经验阶段 * </label>
+     <div class="contrib-field"><label for="advicePhase">经验阶段 * </label>
       <select id="advicePhase" required>
         <option value="before" data-i18n-en="Before the Exam">考前准备</option>
         <option value="during" data-i18n-en="During the Exam">考试现场</option>
@@ -116,11 +109,11 @@
     </div>
   </div>
   <hr class="contrib-line">
-  <h2>02 · 主题标签 <span lang="en">Topics</span></h2>
+  <h2>主题标签 <span lang="en">Topics</span></h2>
   <p>选择 1–4 个相关主题。</p>
   <div id="adviceTags" class="contrib-tags" role="group" aria-label="备考经验主题标签"></div>
   <hr class="contrib-line">
-  <h2>03 · 经验内容 <span lang="en">Your Experience</span></h2>
+  <h2>经验内容 <span lang="en">Your Experience</span></h2>
   <div class="contrib-field"><label for="adviceTitle">标题 * </label>
     <input id="adviceTitle" type="text" minlength="4" maxlength="120" required>
   </div>
