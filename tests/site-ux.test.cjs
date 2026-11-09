@@ -217,14 +217,14 @@ test('footer is concise, community-oriented and identical across five pages',()=
  });
  for(const f of footers){
    assert.equal(f,footers[0],'Footer must match across all pages');
-   for(const label of ['Built with Passion. Shared with Everyone.','为爱发电 · 开源共建 · 互帮互助','Built with GitHub · Vercel · Cloudflare','Initiated by','FuTseYi'])
+   for(const label of ['Founded by','FuTseYi','Infrastructure provided and maintained by the founder.'])
      assert.ok(f.includes(label),'Footer missing '+label);
-   assert.match(f,/href="\.\/submit\.html">分享考题与经验 <span[^>]*lang="en">Share questions & tips<\/span><\/a>/);
-   assert.match(f,/>参与开源共建 <span[^>]*lang="en">Contribute on GitHub<\/span><\/a>/);
+   assert.match(f,/href="\.\/submit\.html">投稿分享<\/a>/);
+   assert.match(f,/class="footer-github"/);
    assert.doesNotMatch(f,/Not affiliated with or endorsed by HKUST|资料来源与声明|Created &amp; Maintained by/);
  }
  assert.match(read('sources.html'),/本站为学生整理的备考资源，并非学校官方题库/);
- assert.match(read('assets/css/site.css'),/\.elpa-footer \.elpa-footer-action\{[^}]*min-height:28px/);
+ assert.match(read('assets/css/shell.css'),/\.footer-grid\{/);
  assert.match(read('assets/css/site.css'),/\.question-feedback a::after/);
  assert.equal((read('practice.html').match(/id="exportBtn"/g)||[]).length,1);
 });
@@ -273,7 +273,7 @@ test('guide separates the official Regular and Fast Track paths with one obvious
  assert.doesNotMatch(guide,/约 30 分钟|最多 4 名|IELTS 口语|TOEFL 口语|Automatic Exemption/);
  assert.match(guide,/track=regular#sec-bankD/);
  assert.match(guide,/track=fast-track#sec-bankD/);
- assert.doesNotMatch(guide,/报名截止日期|2026 Fall 场次反馈|你可能想知道|elpa-guide-faq/);
+ assert.doesNotMatch(read('guide.html'),/报名截止日期|2026 Fall 场次反馈|你可能想知道|class="elpa-guide-faq"/);
  assert.match(guide,/id="advicePhaseFilter"/);
  assert.match(guide,/id="adviceTagFilter"/);
  assert.equal((guide.match(/class="elpa-guide-switch"/g)||[]).length,1);

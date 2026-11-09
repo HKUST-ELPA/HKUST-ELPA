@@ -28,9 +28,8 @@ def replace_once(html, pattern, replacement):
 def navigation(nav, page):
     nav = nav.replace(' class="active"', '').replace(' aria-current="page"', '')
     if page == "submit":
-        return (nav.replace('width="38" height="38"', 'width="29" height="29"')
-                .replace('<a class="elpa-nav-submit"',
-                         '<a class="elpa-nav-submit" aria-current="page"'))
+        return nav.replace('class="elpa-nav-submit nav-contribute"',
+                           'class="elpa-nav-submit nav-contribute" aria-current="page"')
     target = f'<a href="./{page}.html"'
     if target not in nav:
         raise ValueError("Missing navigation target: " + page)
@@ -147,6 +146,46 @@ def build(root, destination, options):
             html = replace_once(html, r'<footer class="elpa-footer"[\s\S]*?</footer>|<!-- shared-footer -->',
                                 footer.group(0))
         (destination / (page + ".html")).write_text(html, encoding="utf-8")
+    # Pagefind indexes a static representation of each reviewed question.
+    # Practice remains the only user-facing question route and data owner.
+    questions = json.loads((root / "question-bank/questions.json").read_text(encoding="utf-8"))
+    appearances = json.loads((root / "question-bank/appearances.json").read_text(encoding="utf-8"))
+    records = destination / "search-records"
+    records.mkdir()
+    for key, bank_data in questions["banks"].items():
+        campus = "clear-water-bay" if key in ("H", "T") else "nansha"
+        track = "fast-track" if key in ("F", "T") else "regular"
+        for item in bank_data["items"]:
+            question_id = f'{key}-{item["num"]}'
+            terms = {item["term"]} if item.get("term") else set()
+            if key == "D" and item["num"] <= 12:
+                terms.add("2026 Fall")
+            terms.update(entry["term"] for entry in appearances.get(question_id, []) if entry.get("term"))
+            filters = [f'<span data-pagefind-filter="term:{escape(term, quote=True)}"></span>'
+                       for term in sorted(terms)]
+            filters += [f'<span data-pagefind-filter="session:{escape(entry["term"] + "|" + entry["examStage"], quote=True)}"></span>'
+                        for entry in appearances.get(question_id, []) if entry.get("term") and entry.get("examStage")]
+            parts = [("main", item)]
+            seen = {(item["en"], item.get("cn", ""))}
+            for kind, entries in (("sub", item.get("subs", []) + [part for entry in appearances.get(question_id, []) for part in entry.get("subs", [])]),
+                                  ("alt", item.get("alternatives", []) + [part for entry in appearances.get(question_id, []) for part in entry.get("alternatives", [])])):
+                for part in entries:
+                    identity = (part.get("en", ""), part.get("cn", ""))
+                    if not any(identity) or identity in seen:
+                        continue
+                    seen.add(identity)
+                    parts.append((kind, part))
+            link = f'../practice.html?campus={campus}&amp;track={track}&amp;question={question_id}'
+            for position, (kind, part) in enumerate(parts):
+                title = escape(part.get("en") or part.get("cn", ""))
+                record = (f'<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">'
+                          f'<meta name="robots" content="noindex"><title>{title}｜HKUST-ELPA</title>'
+                          f'<meta data-pagefind-filter="campus:{campus}">'
+                          f'<meta data-pagefind-filter="track:{track}"></head><body>'
+                          f'<main data-pagefind-body><h1>{title}</h1>'
+                          + (f'<p>{escape(part.get("cn", ""))}</p>' if part.get("cn") else '')
+                          + f'<a href="{link}">在题库中练习</a></main>' + ''.join(filters) + '</body></html>')
+                (records / f'{question_id}-{kind}-{position}.html').write_text(record, encoding="utf-8")
     for name in ("submission-config.js", "elpa_data.json"):
         shutil.copy2(root / "data" / name, destination / name)
     shutil.copytree(root / "assets", destination / "assets")
@@ -158,4 +197,12 @@ def build(root, destination, options):
         sys.executable, str(root / "scripts/build-question-data.py"),
         "--input", str(root / "question-bank"), "--output", str(bank),
     ], check=True)
+    search = subprocess.run([sys.executable, "-m", "pagefind", "--site", str(destination),
+                             "--force-language", "zh"], cwd=root, capture_output=True,
+                            encoding="utf-8", errors="replace")
+    if search.returncode:
+        sys.stderr.write(search.stdout + search.stderr)
+        raise subprocess.CalledProcessError(search.returncode, "pagefind")
+    if not (destination / "pagefind/pagefind.js").is_file():
+        raise ValueError("Pagefind did not generate a usable index")
     return ([f"{len(PAGES)} 个页面 / pages", "题库已验证 / question data verified"], [])

@@ -44,12 +44,13 @@ test('three source entrypoints generate five complete published pages',()=>{
     const pattern=new RegExp('<template data-page="'+page+'">\\s*(<main id="main">[\\s\\S]*?<\\/main>)\\s*<\\/template>');
     const fragment=homepage.match(pattern)?.[1];
     assert.ok(fragment,'Missing authored '+page+' template in homepage');
+    const built=read(page+'.html').replace('<main id="main" data-pagefind-body>','<main id="main">');
     if(page==='guide'){
-      assert.ok(read('guide.html').includes(fragment.split('<section class="elpa-advice-section"')[0]));
+      assert.ok(built.includes(fragment.split('<section class="elpa-advice-section"')[0]));
       assert.match(read('guide.html'),/class="elpa-advice-card" data-track="regular"/);
       assert.doesNotMatch(read('guide.html'),/id="sec-advice" hidden/);
     }else{
-      assert.ok(read(page+'.html').includes(fragment));
+      assert.ok(built.includes(fragment));
     }
   }
   assert.doesNotMatch(read('index.html'),/<template data-page=/);
