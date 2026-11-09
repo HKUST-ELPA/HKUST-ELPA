@@ -284,7 +284,7 @@ def check_extended_behaviors(browser, origin):
         assert page.locator("#guideAdviceList article").count() == 0
         assert not page.locator("#guideAdviceFilters").is_visible()
         assert page.locator("#guideAdviceEmpty").is_visible()
-        assert "kind=advice&track=fast-track" in page.locator("#guideAdviceShare").get_attribute("href")
+        assert "experience=1&track=fast-track" in page.locator("#guideAdviceShare").get_attribute("href")
 
         page.goto(origin + "/practice.html?campus=clear-water-bay", wait_until="load")
         for track in ("regular", "fast-track"):
