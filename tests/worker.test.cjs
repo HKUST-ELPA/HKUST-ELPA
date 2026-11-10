@@ -20,8 +20,8 @@ function harness({verify={success:true,hostname:'hkust-elpa.github.io',action:'e
    if(String(url).includes('/siteverify'))return Response.json(verify);
    if(String(url).includes('/app/installations/98765/access_tokens'))
      return tokenOK?Response.json({token:'APP-INSTALLATION-TOKEN'}):Response.json({message:'Forbidden'},{status:403});
-   if(String(url).endsWith('/repos/HKUST-ELPA/HKUST-ELPA-Site-Source/issues'))
-     return issueOK?Response.json({html_url:'https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/123'},{status:201}):Response.json({message:'Forbidden'},{status:403});
+   if(String(url).endsWith('/repos/HKUST-ELPA/HKUST-ELPA/issues'))
+     return issueOK?Response.json({html_url:'https://github.com/HKUST-ELPA/HKUST-ELPA/issues/123'},{status:201}):Response.json({message:'Forbidden'},{status:403});
    throw Error('Unexpected request '+url);
   }};
  vm.runInNewContext(source.replace('export default {','module.exports = {'),sandbox);
@@ -38,7 +38,7 @@ test('v3 question with advice uses scoped App token and one issue',async()=>{
  const r=await h.handler.fetch(h.request(body),h.env);
  assert.equal(r.status,201,await r.text());assert.equal(h.calls.length,3);
  const exchange=h.calls[1];
- assert.deepEqual(JSON.parse(exchange.init.body),{repositories:['HKUST-ELPA-Site-Source'],permissions:{issues:'write'}});
+ assert.deepEqual(JSON.parse(exchange.init.body),{repositories:['HKUST-ELPA'],permissions:{issues:'write'}});
  assert.match(exchange.init.headers.Authorization,/^Bearer [\w-]+\.[\w-]+\.[\w-]+$/);
  const issue=JSON.parse(h.calls[2].init.body);
  assert.equal(h.calls[2].init.headers.Authorization,'Bearer APP-INSTALLATION-TOKEN');

@@ -59,7 +59,7 @@ const occurrence={issueNumber:number,term:data.term,examStage:data.examStage,
  ...((data.alternatives||[]).length?{alternatives:data.alternatives.map(x=>({en:x.en.trim(),cn:x.cn.trim()}))}:{})};
 appearances[id]=[...(appearances[id]||[]),occurrence];
 const cn=taxonomy.campuses[data.campus].zh,track=data.track==='regular'?'常规 ELPA':'ELPA Fast Track';
-const issueUrl='https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/'+number;
+const issueUrl='https://github.com/HKUST-ELPA/HKUST-ELPA/issues/'+number;
 const doc='community-submissions.md';
 fs.appendFileSync(loc(doc),'\n## '+data.term+' · '+cn+' · '+track+' · Issue #'+number+
  '\n\n来源：'+(data.source==='firsthand'?'本人亲历':'同学转述')+' ｜ 题目：'+id+

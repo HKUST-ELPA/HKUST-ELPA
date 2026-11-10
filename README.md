@@ -1,8 +1,8 @@
-# HKUST-ELPA-Site-Source
+# HKUST-ELPA
 
 香港科技大学及香港科技大学（广州）学生维护的非官方 ELPA 口语备考网站。本仓库是唯一的源码与构建入口；生成的静态文件发布到 [HKUST-ELPA.github.io](https://github.com/HKUST-ELPA/HKUST-ELPA.github.io)，供 [GitHub Pages](https://hkust-elpa.github.io/) 和 [Vercel](https://hkust-elpa.vercel.app/) 使用。
 
-[![Website validation](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/site-checks.yml/badge.svg)](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/site-checks.yml) [![Build and publish](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/actions/workflows/deploy-pages.yml)
+[![Website validation](https://github.com/HKUST-ELPA/HKUST-ELPA/actions/workflows/site-checks.yml/badge.svg)](https://github.com/HKUST-ELPA/HKUST-ELPA/actions/workflows/site-checks.yml) [![Build and publish](https://github.com/HKUST-ELPA/HKUST-ELPA/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/HKUST-ELPA/HKUST-ELPA/actions/workflows/deploy-pages.yml)
 
 ![考试指南、抽题计时、笔记进度与考题分享演示](./assets/demos/feature-grid.gif)
 
@@ -18,7 +18,7 @@
 ## 项目结构
 
 ```text
-HKUST-ELPA-Site-Source/
+HKUST-ELPA/
 ├── .github/workflows/  # PR 验证、审核入库与跨仓库发布
 ├── assets/             # 样式、脚本与媒体
 ├── data/               # 投稿配置与学习记录模板
@@ -109,6 +109,6 @@ sequenceDiagram
 - [worker/README.md](worker/README.md)：Worker 部署与安全配置
 - [PUBLISHED_README.md](PUBLISHED_README.md)：Published README 的唯一来源
 
-欢迎通过 [Issues](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues) 反馈资料问题，或通过 [Pull Requests](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/pulls) 参与共建。
+欢迎通过 [Issues](https://github.com/HKUST-ELPA/HKUST-ELPA/issues) 反馈资料问题，或通过 [Pull Requests](https://github.com/HKUST-ELPA/HKUST-ELPA/pulls) 参与共建。
 
 **Built with Passion. Shared with Everyone.** Initiated by [FuTseYi](https://github.com/FuTseYi).

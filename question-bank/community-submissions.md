@@ -4,7 +4,7 @@
 
 ## 2026 Fall · 广州校区 · 常规 ELPA · Issue #57
 
-考试阶段：mid ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：GZ-R-0030 ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/57)
+考试阶段：mid ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：GZ-R-0030 ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA/issues/57)
 
 **English**
 
@@ -24,7 +24,7 @@
 
 ## 2026 Fall · 广州校区 · 常规 ELPA · Issue #58
 
-考试阶段：mid ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：GZ-R-0017 ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA-Site-Source/issues/58)
+考试阶段：mid ｜ 来源：本人亲历 ｜ 类型：新增考试经历 ｜ 关联题目：GZ-R-0017 ｜ [投稿记录](https://github.com/HKUST-ELPA/HKUST-ELPA/issues/58)
 
 **English**
 

@@ -2,7 +2,7 @@
 
 HKUST-ELPA is a student-maintained static ELPA preparation website built with HTML, CSS, JavaScript and Python. Cloudflare Workers handles submissions; GitHub Issues handles moderation.
 
-`HKUST-ELPA/HKUST-ELPA-Site-Source` owns source, issue moderation and the only production build. `HKUST-ELPA/HKUST-ELPA.github.io` contains generated output only; never edit it directly after bootstrapping. See `README.md` for the publishing flow and `PREVIEW.md` for commands.
+`HKUST-ELPA/HKUST-ELPA` owns source, issue moderation and the only production build. `HKUST-ELPA/HKUST-ELPA.github.io` contains generated output only; never edit it directly after bootstrapping. See `README.md` for the publishing flow and `PREVIEW.md` for commands.
 
 **Every line of code should justify its existence. Define once. Reuse everywhere.**
 

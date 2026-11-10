@@ -4,7 +4,7 @@
 // Only production origins, never preview domains or wildcard subdomains.
 const ORIGINS = new Set(['https://hkust-elpa.github.io', 'https://hkust-elpa.vercel.app']);
 const OWNER = 'HKUST-ELPA';
-const REPO = 'HKUST-ELPA-Site-Source';
+const REPO = 'HKUST-ELPA';
 const MAX_BODY_BYTES = 24576;
 
 function json(payload, status = 200, origin = false) {

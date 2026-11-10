@@ -323,7 +323,7 @@ form.addEventListener('submit',async event=>{
     try{sessionStorage.removeItem(draftKey);}catch{}
     draftNotice('投稿成功，本页暂存草稿已清除。 / Submitted. This draft has been cleared.');
     say('分享已提交，待核对与整理。 / Submitted! Contributions are reviewed before inclusion.','success');
-    if(/^https:\/\/github\.com\/HKUST-ELPA\/HKUST-ELPA-Site-Source\/issues\/\d+$/.test(result.issueUrl||'')){
+    if(/^https:\/\/github\.com\/HKUST-ELPA\/HKUST-ELPA\/issues\/\d+$/.test(result.issueUrl||'')){
       const a=document.createElement('a');a.href=result.issueUrl;a.target='_blank';
       a.rel='noopener noreferrer';a.textContent=localeText('查看投稿记录','View Submission');message.append(' ',a);
     }
