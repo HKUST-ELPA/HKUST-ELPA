@@ -277,25 +277,28 @@ function showPreview(){
 }
 get('previewButton').addEventListener('click',showPreview);
 if(!ready){
-  say('投稿暂不可用。 / Submissions are unavailable. Please try later.','error');
+  say(config.localPreview
+    ? '本地预览可填写、预览和保存草稿；投稿验证仅在正式网站提供。 / Local preview supports drafting; verification is available on the published site.'
+    : '投稿暂不可用。 / Submissions are unavailable. Please try later.',config.localPreview?'info':'error');
 }else{
-  say('填写后完成人机验证。 / Complete the form and verification to submit.');
-  const started=Date.now();
-  const initialize=()=>{
-    if(window.turnstile&&typeof window.turnstile.render==='function'){
-      try{
-        widgetId=window.turnstile.render('#submissionTurnstile',{
-          sitekey:config.turnstileSiteKey,
-          action:'elpa_submit',
-          callback:()=>{if(!submitting){btn.disabled=false;say('验证完成，可以提交。 / Verified. You can submit now.');}},
-          'expired-callback':()=>{btn.disabled=true;say('验证已过期。 / Verification expired. Please verify again.','error');},
-          'error-callback':()=>{btn.disabled=true;say('验证失败。 / Verification failed. Please refresh and retry.','error');}
-        });
-      }catch{say('验证初始化失败。 / Verification could not start. Please refresh.','error');}
-    }else if(Date.now()-started<12000)setTimeout(initialize,200);
-    else say('验证加载失败。 / Verification could not load. Please refresh.','error');
+  get('submissionTurnstile').hidden=false;
+  say('请先完成人机验证，再确认公开投稿。 / Complete verification before submitting.');
+  const captchaScript=document.createElement('script');
+  captchaScript.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  captchaScript.async=true;
+  captchaScript.onload=()=>{
+    try{
+      widgetId=window.turnstile.render('#submissionTurnstile',{
+        sitekey:config.turnstileSiteKey,
+        action:'elpa_submit',
+        callback:()=>{if(!submitting){btn.disabled=false;say('验证完成，可以提交。 / Verified. You can submit now.','success');}},
+        'expired-callback':()=>{btn.disabled=true;say('验证已过期。 / Verification expired. Please verify again.','error');},
+        'error-callback':()=>{btn.disabled=true;say('人机验证暂不可用，请刷新重试。 / Verification unavailable. Please refresh.','error');}
+      });
+    }catch{say('无法加载人机验证，请刷新重试。 / Verification could not start. Please refresh.','error');}
   };
-  initialize();
+  captchaScript.onerror=()=>say('无法加载人机验证，请稍后重试。 / Verification could not load. Please retry later.','error');
+  document.head.append(captchaScript);
 }
 form.addEventListener('submit',async event=>{
   event.preventDefault();

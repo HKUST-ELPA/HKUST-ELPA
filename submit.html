@@ -126,9 +126,11 @@
 <div class="contrib-actions"><button type="button" class="contrib-button" id="previewButton">预览投稿 </button>
   <a href="./practice.html">返回题库练习 </a></div>
 <section id="previewPanel" class="contrib-preview" aria-label="投稿预览" hidden></section>
-<div id="submissionTurnstile" class="contrib-turnstile" aria-label="人机验证"></div>
-<div class="contrib-actions"><button id="submissionButton" class="contrib-button primary" type="submit" disabled>提交分享 </button></div>
-<p id="submissionMessage" class="contrib-message" role="status" aria-live="polite"></p>
+<section class="contrib-checkpoint" aria-label="确认投稿">
+  <div class="contrib-checkpoint-heading"><strong>确认公开投稿</strong><p>提交后将创建公开 GitHub Issue，经审核后才会在资料中展示。</p></div>
+  <div id="submissionTurnstile" class="contrib-turnstile" aria-label="人机验证" hidden></div>
+  <div class="contrib-checkpoint-actions"><button id="submissionButton" class="contrib-button primary" type="submit" aria-describedby="submissionMessage" disabled>提交分享</button><p id="submissionMessage" class="contrib-message" role="status" aria-live="polite" data-state="info">正在加载投稿验证…</p></div>
+</section>
 </form>
 </section>
 </div>
@@ -137,7 +139,6 @@
 <script src="./question-bank/questions.js"></script>
 <script src="./question-bank/taxonomy.js"></script>
 <script src="./submission-config.js"></script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script src="./assets/js/submit.js"></script>
 </body>
 </html>

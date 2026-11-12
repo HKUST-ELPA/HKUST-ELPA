@@ -2,7 +2,9 @@
 import contextlib
 import importlib.util
 import io
+from functools import partial
 from http import HTTPStatus
+from http.client import HTTPConnection
 from pathlib import Path
 import subprocess
 import tempfile
@@ -17,6 +19,24 @@ spec.loader.exec_module(preview)
 
 
 class PreviewTests(unittest.TestCase):
+    def test_local_preview_disables_public_submission_verification(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, "submission-config.js").write_text("window.ELPA_SUBMISSION_CONFIG={apiEndpoint:'production'};")
+            server = preview.PreviewServer(("127.0.0.1", 0), partial(preview.PreviewHandler, directory=directory))
+            thread = Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                connection = HTTPConnection("127.0.0.1", server.server_port)
+                connection.request("GET", "/submission-config.js?v=1")
+                response = connection.getresponse()
+                self.assertEqual(response.status, 200)
+                self.assertEqual(response.read(), b"window.ELPA_SUBMISSION_CONFIG={localPreview:true};\n")
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join()
+
     def preview_root(self, root):
         for name in ("assets", "scripts", "_site"):
             (root / name).mkdir(parents=True)

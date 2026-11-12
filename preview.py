@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build, verify and serve the complete website locally (Python 3.10+)."""
 import argparse
+from io import BytesIO
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 from threading import Event, RLock, Thread
+from urllib.parse import urlsplit
 import time
 import unicodedata
 
@@ -45,6 +47,13 @@ class PreviewHandler(SimpleHTTPRequestHandler):
         super().end_headers()
 
     def send_head(self):
+        if urlsplit(self.path).path == "/submission-config.js":
+            content = b"window.ELPA_SUBMISSION_CONFIG={localPreview:true};\n"
+            self.send_response(200)
+            self.send_header("Content-Type", "application/javascript; charset=utf-8")
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            return BytesIO(content)
         # Always serve the current build, including clients with old cached files.
         if "If-Modified-Since" in self.headers:
             del self.headers["If-Modified-Since"]
