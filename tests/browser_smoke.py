@@ -398,6 +398,20 @@ def check_extended_behaviors(browser, origin):
         context.close()
 
 
+def check_submit_refresh_scroll(browser, origin):
+    context, page, errors = page_context(browser, 1280, motion="no-preference")
+    try:
+        page.goto(origin + "/submit.html", wait_until="load")
+        assert page.evaluate("getComputedStyle(document.documentElement).scrollBehavior") == "auto"
+        page.evaluate("window.scrollTo(0, 900)")
+        page.wait_for_function("scrollY > 800")
+        page.reload(wait_until="load")
+        assert page.evaluate("getComputedStyle(document.documentElement).scrollBehavior") == "auto"
+        assert not errors, (browser.browser_type.name, errors)
+    finally:
+        context.close()
+
+
 def main():
     server = ThreadingHTTPServer(
         ("127.0.0.1", 0), partial(Handler, directory=str(ROOT / "_site"))
@@ -416,6 +430,7 @@ def main():
                     check_without_scripts(browser, origin)
                     check_language_and_community(browser, origin)
                     check_extended_behaviors(browser, origin)
+                    check_submit_refresh_scroll(browser, origin)
                 finally:
                     browser.close()
     finally:

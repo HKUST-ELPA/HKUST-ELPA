@@ -1,6 +1,6 @@
 :root { --site-navy:var(--accent); --site-blue:var(--accent); --site-gold:#f4c65a; --site-ink:var(--text); --site-muted:var(--muted); --site-line:var(--line); --site-bg:var(--bg); }
 * { box-sizing:border-box; }
-html { scroll-behavior:smooth; scroll-padding-top:90px; }
+html { scroll-behavior:auto; scroll-padding-top:90px; }
 body { margin:0; }
 .elpa-body { min-height:100vh; min-height:100svh; display:flex; flex-direction:column; }
 .elpa-body > #main { flex:1 0 auto; width:100%; }

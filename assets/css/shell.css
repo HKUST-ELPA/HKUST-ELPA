@@ -76,9 +76,8 @@ a:is(:hover,:focus-visible) .link-arrow{transform:translateX(3px) rotate(45deg)}
 .sidebar-bottom{align-items:center;gap:6px}
 .language-toggle{min-width:44px;min-height:44px;padding:8px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .language-toggle:hover,.language-toggle:focus-visible{background:var(--soft);color:var(--accent)}
-.footer-bottom-credit{display:flex;align-items:center;flex-wrap:wrap;gap:6px 20px}
-.elpa-footer .footer-bottom-credit{color:var(--muted)}
-.elpa-footer .footer-bottom-credit:hover{color:var(--accent)}
+.elpa-footer .footer-copyright{color:var(--muted)}
+.elpa-footer .footer-copyright:hover{color:var(--accent)}
 .footer-github{display:inline-flex;align-items:center;gap:7px}
 .footer-github svg{width:16px;height:16px;flex:none}
 .elpa-en-sub,.elpa-en-inline,.elpa-en-summary{display:none!important}
