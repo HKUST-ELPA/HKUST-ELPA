@@ -57,6 +57,16 @@ def assert_layout(page, label):
     assert page.locator(".elpa-footer").count() == 1, label
 
 
+def assert_intro_alignment(page, content):
+    positions = page.evaluate("""selector => {
+      const heading = document.querySelector('.elpa-subhero-inner').getBoundingClientRect();
+      const body = document.querySelector(selector);
+      return {heading: heading.left,
+              content: body.getBoundingClientRect().left + parseFloat(getComputedStyle(body).paddingLeft)};
+    }""", content)
+    assert abs(positions["heading"] - positions["content"]) <= 1, positions
+
+
 def click_nav(page, name):
     if page.viewport_size["width"] <= 900:
         page.locator("#menu-toggle").click()
@@ -71,14 +81,28 @@ def check_content(browser, base, width):
         assert page.locator(".elpa-home-feature").count() == 4
         assert page.locator(".elpa-home-help[open]").count() == 0
         assert_layout(page, "home")
+        assert_intro_alignment(page, ".elpa-home-main")
+        hero = page.evaluate("""() => {
+          const title = document.querySelector('#hero-title');
+          const rect = title.getBoundingClientRect();
+          const banner = document.querySelector('.campus-banner').getBoundingClientRect();
+          return { top: rect.top, bottom: rect.bottom, bannerBottom: banner.bottom,
+            italic: getComputedStyle(title).fontStyle, lines: title.querySelectorAll('br').length };
+        }""")
+        assert hero["lines"] == 1 and hero["italic"] == "italic"
+        assert hero["top"] < hero["bannerBottom"] < hero["bottom"]
+        home_gradient = page.locator(".campus-banner").evaluate("node => getComputedStyle(node, '::after').backgroundImage")
         page.goto(base + "/sources.html", wait_until="load")
         assert page.locator(".elpa-resource-tag").count() == 4
         assert page.locator("#official-sources").is_visible()
         assert_layout(page, "sources")
+        assert_intro_alignment(page, ".elpa-main")
         page.evaluate("window.__sameDocument = true")
         click_nav(page, "sources")
         assert page.evaluate("window.__sameDocument"), "Revisiting current route should not reload"
         page.goto(base + "/guide.html", wait_until="load")
+        guide_gradient = page.locator(".campus-banner").evaluate("node => getComputedStyle(node, '::after').backgroundImage")
+        assert guide_gradient == home_gradient
         assert page.locator("#regularGuide").is_visible()
         assert not page.locator("#fastGuide").is_visible()
         page.locator("#guideFastTab").click()
@@ -87,7 +111,20 @@ def check_content(browser, base, width):
         assert "track=fast-track" in page.locator("#fastGuide .elpa-guide-practice").get_attribute("href")
         page.locator("#guideRegularTab").click()
         assert page.locator("#regularGuide").is_visible()
+        page.evaluate("document.documentElement.dataset.theme = 'dark'")
+        guide_colors = page.evaluate("""() => ({
+          panelBorder: getComputedStyle(document.querySelector('#regularGuide')).borderTopWidth,
+          stepBorder: getComputedStyle(document.querySelector('#regularGuide .elpa-guide-steps-detailed li')).borderLeftWidth,
+          active: getComputedStyle(document.querySelector('#guideRegularTab')).backgroundColor,
+          switch: getComputedStyle(document.querySelector('.elpa-guide-switch')).backgroundColor
+        })""")
+        assert guide_colors["panelBorder"] == guide_colors["stepBorder"] == "0px"
+        assert guide_colors["switch"] != guide_colors["active"]
         assert_layout(page, "guide")
+        assert_intro_alignment(page, ".elpa-guide-main")
+        page.goto(base + "/community.html", wait_until="load")
+        assert_layout(page, "community")
+        assert_intro_alignment(page, ".community-content")
         page.goto(base + "/practice.html", wait_until="load")
         page.locator("#bankD .qcard").first.wait_for(timeout=20000)
         assert page.locator("#practiceLauncher").is_visible()
@@ -96,6 +133,15 @@ def check_content(browser, base, width):
         page.locator("#practiceLauncher").click()
         assert page.locator("#timerPanel").is_visible()
         page.locator("#practiceLauncher").click()
+        page.evaluate("document.documentElement.dataset.theme = 'dark'")
+        page.locator("#recordsMenuBtn").click()
+        practice_colors = page.evaluate("""() => ({
+          panel: getComputedStyle(document.querySelector('.records-menu-panel')).backgroundColor,
+          progress: getComputedStyle(document.querySelector('.progress-card')).backgroundColor,
+          translation: getComputedStyle(document.querySelector('.translation-toggle')).backgroundColor
+        })""")
+        assert practice_colors["panel"] == practice_colors["progress"] == practice_colors["translation"]
+        page.locator("#recordsMenuBtn").click()
         buttons = page.locator("#bankD .qcard").first.locator(".q-actions button").evaluate_all(
             "items => items.map(b => ({w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height}))"
         )
@@ -141,6 +187,23 @@ def check_practice(page, base):
     page.locator("#timerStartPause").click()
     page.locator("#timerReset").click()
     page.goto(base + "/submit.html?kind=advice", wait_until="load")
+    assert_intro_alignment(page, ".contrib-main")
+    assert page.locator(".contrib-panel").evaluate(
+        "el => getComputedStyle(el).borderTopWidth") == "0px"
+    assert page.locator("#submissionTurnstile").is_visible()
+    page.evaluate("document.documentElement.dataset.theme = 'dark'")
+    controls = page.evaluate("""() => {
+      const year = document.querySelector('#submissionYear');
+      const slot = document.querySelector('#submissionSlot');
+      const style = getComputedStyle(year);
+      return {surface: style.backgroundColor,
+              yearTop: year.getBoundingClientRect().top,
+              slotTop: slot.getBoundingClientRect().top};
+    }""")
+    assert controls["surface"] == page.evaluate(
+        "() => { const el = document.createElement('div'); el.style.background = getComputedStyle(document.documentElement).getPropertyValue('--surface'); document.body.append(el); const color = getComputedStyle(el).backgroundColor; el.remove(); return color; }")
+    if page.viewport_size["width"] > 600:
+        assert abs(controls["yearTop"] - controls["slotTop"]) <= 2
     page.locator("#submissionYear").fill("2026")
     page.locator("#submissionSlot").select_option(index=1)
     page.locator("#mainEn").fill("What is your favorite learning strategy?")
@@ -347,6 +410,20 @@ def check_extended_behaviors(browser, origin):
         context.close()
 
 
+def check_submit_refresh_scroll(browser, origin):
+    context, page, errors = page_context(browser, 1280, motion="no-preference")
+    try:
+        page.goto(origin + "/submit.html", wait_until="load")
+        assert page.evaluate("getComputedStyle(document.documentElement).scrollBehavior") == "auto"
+        page.evaluate("window.scrollTo(0, 900)")
+        page.wait_for_function("scrollY > 800")
+        page.reload(wait_until="load")
+        assert page.evaluate("getComputedStyle(document.documentElement).scrollBehavior") == "auto"
+        assert not errors, (browser.browser_type.name, errors)
+    finally:
+        context.close()
+
+
 def main():
     server = ThreadingHTTPServer(
         ("127.0.0.1", 0), partial(Handler, directory=str(ROOT / "_site"))
@@ -365,6 +442,7 @@ def main():
                     check_without_scripts(browser, origin)
                     check_language_and_community(browser, origin)
                     check_extended_behaviors(browser, origin)
+                    check_submit_refresh_scroll(browser, origin)
                 finally:
                     browser.close()
     finally:

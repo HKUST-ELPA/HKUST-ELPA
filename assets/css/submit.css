@@ -1,5 +1,5 @@
-.contrib-main{max-width:860px;margin:38px auto 76px;padding:0 20px}
-.contrib-panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,4vw,34px);box-shadow:none}
+.contrib-main{width:min(820px,calc(100% - 48px));margin:0 auto 76px;padding:0}
+.contrib-panel{color:var(--text)}
 .contrib-form{display:grid;gap:24px}
 .contrib-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--soft);padding:5px;border-radius:12px}
 .contrib-tab{border:0;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:15px;font-weight:700;padding:12px 6px;min-height:44px}
@@ -8,16 +8,16 @@
 .contrib-section[hidden]{display:none}
 .contrib-section h2{font-size:1.04rem;margin:0;color:var(--text)}
 .contrib-section p{margin:-7px 0 0;font-size:.86rem;color:var(--muted)}
-.contrib-row{display:grid;grid-template-columns:1fr 1.3fr;gap:12px}
+.contrib-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
 .contrib-field{display:grid;gap:6px;min-width:0}
 .contrib-field label,.contrib-field legend{font-size:.9rem;color:var(--text);font-weight:700}
-.contrib-field :is(input,textarea,select){width:100%;min-width:0;padding:11px 12px;border-radius:9px;border:1px solid var(--line);background:white;color:var(--text);font:inherit;font-size:15px;line-height:1.55}
-.contrib-field textarea{resize:vertical;min-height:80px}
-.contrib-field :is(input,textarea,select):focus{outline:2px solid #94c4f2;outline-offset:1px;border-color:var(--accent)}
-.contrib-field :is(input,textarea)::placeholder{color:#7e8a99;opacity:1}
+.contrib-field :is(input:not([type=checkbox]):not([type=radio]),textarea,select){display:block;width:100%;min-width:0;min-height:48px;padding:12px 14px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text);font:inherit;font-size:15px;line-height:1.55}
+.contrib-field textarea{field-sizing:content;resize:vertical;min-height:110px;overflow-y:auto}
+.contrib-field :is(input,textarea,select):focus{border-color:var(--accent)}
+.contrib-field :is(input,textarea)::placeholder{color:var(--muted);opacity:1}
 .contrib-caption{color:var(--muted);font-size:.84rem}
 .contrib-line{border:0;border-top:1px solid var(--line);margin:0}
-.contrib-notice{margin:0;padding:12px 14px;background:var(--soft);color:var(--text);border-radius:10px;line-height:1.65;font-size:.85rem}
+.contrib-notice{margin:0;padding:14px 16px;background:var(--soft);color:var(--text);border-radius:11px;line-height:1.7;font-size:13px}
 .contrib-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .contrib-button{font:inherit;cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:10px 15px;background:var(--surface);color:var(--accent);font-weight:700;min-height:44px}
 .contrib-button.primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
@@ -36,18 +36,23 @@
 .contrib-tag:has(input:checked){background:var(--soft);color:var(--accent);border-color:#88b6de}
 .contrib-tag input{accent-color:var(--accent)}
 .contrib-fieldset{border:0;padding:0;display:grid;gap:10px;margin:0}
-.contrib-message{min-height:1.5em;margin:0;font-size:.9rem}
+.contrib-checkpoint{display:grid;gap:16px;padding:22px 0 0;border-top:1px solid var(--line);background:transparent}
+.contrib-checkpoint-heading strong{font-size:16px;color:var(--text)}
+.contrib-checkpoint-heading p{margin:4px 0 0;font-size:13px;line-height:1.7;color:var(--muted)}
+.contrib-checkpoint-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+.contrib-message{flex:1 1 230px;min-height:1.5em;margin:0;font-size:13px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
 .contrib-message[data-state="error"]{color:#a32626}
 .contrib-message[data-state="success"]{color:#17613a}
 .contrib-message[data-state="info"]{color:#416078}
-.contrib-turnstile{min-height:65px}
+.contrib-turnstile{min-height:65px;max-width:100%;overflow:visible}
+.contrib-turnstile[hidden]{display:none}
 .contrib-preview{padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);display:grid;gap:10px;overflow-wrap:anywhere}
 .contrib-preview[hidden]{display:none}
 .contrib-preview h2{font-size:1rem;margin:0}
 .contrib-preview p{margin:0;white-space:pre-wrap}
 .contrib-preview small{color:var(--muted)}
 .contrib-preview-line{border-top:1px solid #dce6f0;padding-top:10px}
-@media(max-width:600px){.contrib-main{margin:24px auto 45px;padding:0 14px}.contrib-row{grid-template-columns:1fr}.contrib-panel{padding:18px}.contrib-tab{font-size:14px}.contrib-actions .primary{flex:1}}
+@media(max-width:600px){.contrib-main{width:calc(100% - 40px);margin-bottom:42px}.contrib-row{grid-template-columns:1fr}.contrib-tab{font-size:14px}.contrib-actions .primary{flex:1}}
 
 .contrib-matches{padding:12px 14px;margin:12px 0 6px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
 .contrib-matches[hidden],#linkedQuestion[hidden]{display:none!important}
@@ -58,7 +63,7 @@
 .contrib-match span{display:block;font-size:13px;line-height:1.45}
 .contrib-match small{display:block;color:var(--muted);margin-top:4px;font-size:12px}
 .contrib-match em{font-style:normal;font-size:11px;white-space:nowrap;color:#276b9f}
-#linkedQuestion{background:white;border-radius:8px;padding:10px;font-size:12px;color:#245a77}
+#linkedQuestion{background:var(--surface);border-radius:8px;padding:10px;font-size:12px;color:var(--text)}
 #linkedQuestion button{margin-left:8px;border:0;background:none;color:#16619b;text-decoration:underline;cursor:pointer}
 
 
@@ -82,16 +87,6 @@
 .contrib-track input,.contrib-optin input{accent-color:var(--accent)}
 .contrib-optin{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--text)}
 
-[data-theme=dark] .contrib-track label{background:var(--surface);border-color:var(--line);color:var(--text)}
-[data-theme=dark] .contrib-track label:has(input:checked){background:var(--soft);border-color:var(--accent)}
-[data-theme=dark] .contrib-optin{color:var(--text)}
-@media(prefers-color-scheme:dark){:root:not([data-theme]) .contrib-track label{background:var(--surface);border-color:var(--line);color:var(--text)}:root:not([data-theme]) .contrib-track label:has(input:checked){background:var(--soft);border-color:var(--accent)}:root:not([data-theme]) .contrib-optin{color:var(--text)}}
-
-/* Native form controls inherit the shared UEM semantic palette. */
-.contrib-panel,.contrib-preview,.contrib-follow,.contrib-matches,.contrib-match,.contrib-tag,.contrib-track label,.contrib-tab[aria-pressed=true]{color:var(--text)}
-.contrib-form :is(input,select,textarea,button){color:var(--text)}
 .contrib-form :is(input,select,textarea):disabled,.contrib-form :is(button):disabled{opacity:.55;cursor:not-allowed}
 .contrib-form input[type=checkbox],.contrib-form input[type=radio]{accent-color:var(--accent);width:18px;height:18px;flex:none}
 .contrib-form :is(input,select,textarea,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.contrib-button.primary{color:var(--bg)}
-.contrib-tab[aria-pressed=true]{color:var(--accent)}
