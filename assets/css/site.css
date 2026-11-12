@@ -394,7 +394,7 @@ body { margin:0; }
 }
 
 /* Minimal regular / Fast Track guide switch. */
-.elpa-guide-main{max-width:970px}
+.elpa-guide-main{max-width:1200px}
 .elpa-guide-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:5px;border:1px solid var(--line);border-radius:13px;background:var(--soft);margin:19px 0 21px}
 .elpa-guide-switch button{appearance:none;border:0;border-radius:9px;background:transparent;color:var(--text);min-height:46px;min-width:0;padding:9px 12px;font:inherit;font-size:14px;font-weight:750;cursor:pointer}
 .elpa-guide-switch button.active{color:var(--accent);background:var(--surface);box-shadow:0 2px 10px rgba(20,55,85,.09)}

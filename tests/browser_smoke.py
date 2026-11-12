@@ -82,6 +82,15 @@ def check_content(browser, base, width):
         assert page.locator(".elpa-home-help[open]").count() == 0
         assert_layout(page, "home")
         assert_intro_alignment(page, ".elpa-home-main")
+        hero = page.evaluate("""() => {
+          const title = document.querySelector('#hero-title');
+          const rect = title.getBoundingClientRect();
+          const banner = document.querySelector('.campus-banner').getBoundingClientRect();
+          return { top: rect.top, bottom: rect.bottom, bannerBottom: banner.bottom,
+            italic: getComputedStyle(title).fontStyle, lines: title.querySelectorAll('br').length };
+        }""")
+        assert hero["lines"] == 1 and hero["italic"] == "italic"
+        assert hero["top"] < hero["bannerBottom"] < hero["bottom"]
         page.goto(base + "/sources.html", wait_until="load")
         assert page.locator(".elpa-resource-tag").count() == 4
         assert page.locator("#official-sources").is_visible()
