@@ -91,6 +91,7 @@ def check_content(browser, base, width):
         }""")
         assert hero["lines"] == 1 and hero["italic"] == "italic"
         assert hero["top"] < hero["bannerBottom"] < hero["bottom"]
+        home_gradient = page.locator(".campus-banner").evaluate("node => getComputedStyle(node, '::after').backgroundImage")
         page.goto(base + "/sources.html", wait_until="load")
         assert page.locator(".elpa-resource-tag").count() == 4
         assert page.locator("#official-sources").is_visible()
@@ -100,6 +101,8 @@ def check_content(browser, base, width):
         click_nav(page, "sources")
         assert page.evaluate("window.__sameDocument"), "Revisiting current route should not reload"
         page.goto(base + "/guide.html", wait_until="load")
+        guide_gradient = page.locator(".campus-banner").evaluate("node => getComputedStyle(node, '::after').backgroundImage")
+        assert guide_gradient == home_gradient
         assert page.locator("#regularGuide").is_visible()
         assert not page.locator("#fastGuide").is_visible()
         page.locator("#guideFastTab").click()
