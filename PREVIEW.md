@@ -30,3 +30,9 @@ Source 的 `site-checks.yml` 验证 PR；`deploy-pages.yml` 在 `main` 更新、
 Published 的 GitHub Pages 选择 `main` 分支根目录。Vercel 项目连接 Published `main`，使用仓库中的 `vercel.json`，不配置第二次 Python 构建。上线后查看 Source Actions、Published `build-info.json`、Pages URL 和 Vercel 部署，区分构建成功与上线成功。
 
 投稿 Worker 使用同一 App 的独立 Cloudflare Secret，只申请 Source 仓库的 **Issues: write** 短期安装 token；Turnstile 允许实际站点域名。详见 [Worker 操作](worker/README.md)。迁移域名时提醒用户先备份旧地址上的本地学习记录，再在新地址恢复。
+
+## SEO 元数据
+
+`index.html` 的 canonical 与 `og:site_name` 定义主站地址和站点名称。`scripts/site_metadata.py` 从每页已有标题、描述生成 canonical、Open Graph 和 Twitter Card，并为六个公开路由生成 `sitemap.xml` 与 `robots.txt`。GitHub Pages 为规范主站，Vercel 与本地子路径预览保留相同 canonical。搜索内部记录继续使用 `noindex`，不进入 sitemap。语言切换是同一 URL 的界面状态，因此不声明不存在的独立语言页面。
+
+构建校验规范 URL、分享信息、图片资源与 sitemap 路由集合；站内导航和历史返回同步文档元数据。浏览器回归覆盖根路径和 `/HKUST-ELPA/`。这些检查验证站点输出，搜索收录与排名仍由搜索引擎决定。

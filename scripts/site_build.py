@@ -5,6 +5,8 @@ import re
 import shutil
 import subprocess
 import sys
+from .site_metadata import identity as site_identity, render, write_discovery
+from .site_verify import verify_metadata
 
 PAGES = ("index", "guide", "practice", "sources", "submit", "community")
 SOURCE_FILES = ("index.html", "practice.html", "submit.html", "community.html")
@@ -116,6 +118,7 @@ def render_guide_advice(page, root):
 def build(root, destination, options):
     destination.mkdir()
     homepage = (root / "index.html").read_text(encoding="utf-8")
+    origin, site_name = site_identity(homepage)
     nav = re.search(r'<nav class="elpa-nav"[\s\S]*?</nav>', homepage)
     footer = re.search(r'<footer class="elpa-footer"[\s\S]*?</footer>', homepage)
     if not nav or not footer:
@@ -152,7 +155,8 @@ def build(root, destination, options):
                                 navigation(nav.group(0), page))
             html = replace_once(html, r'<footer class="elpa-footer"[\s\S]*?</footer>|<!-- shared-footer -->',
                                 footer.group(0))
-        (destination / (page + ".html")).write_text(html, encoding="utf-8")
+        (destination / (page + ".html")).write_text(render(html, origin, site_name, page), encoding="utf-8")
+    write_discovery(destination, origin, PAGES)
     # Pagefind indexes a static representation of each reviewed question.
     # Practice remains the only user-facing question route and data owner.
     questions = json.loads((root / "question-bank/questions.json").read_text(encoding="utf-8"))
@@ -210,4 +214,5 @@ def build(root, destination, options):
         raise subprocess.CalledProcessError(search.returncode, "pagefind")
     if not (destination / "pagefind/pagefind.js").is_file():
         raise ValueError("Pagefind did not generate a usable index")
+    verify_metadata(destination, PAGES)
     return ([f"{len(PAGES)} 个页面 / pages", "题库已验证 / question data verified"], [])

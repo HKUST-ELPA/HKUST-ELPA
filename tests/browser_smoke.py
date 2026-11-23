@@ -7,6 +7,7 @@ from threading import Thread
 from urllib.parse import urlsplit
 
 from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGES_PREFIX = "/HKUST-ELPA"
@@ -245,6 +246,9 @@ def check_navigation(browser, origin):
                     for name in ("guide", "sources", "practice", "sources", "index", "sources"):
                         click_nav(page, name)
                         page.wait_for_url("**/" + name + ".html")
+                        canonical = "https://hkust-elpa.github.io/" + ("" if name == "index" else name + ".html")
+                        expect(page.locator('link[rel="canonical"]')).to_have_attribute("href", canonical)
+                        expect(page.locator('meta[property="og:url"]')).to_have_attribute("content", canonical)
                         assert_layout(page, "navigation")
                         assert page.evaluate(
                             "getComputedStyle(document.querySelector('main')).viewTransitionName === 'none'"
@@ -260,6 +264,7 @@ def check_navigation(browser, origin):
                         && document.querySelector('.elpa-footer') === window.__persistentFooter""")
                     page.go_back()
                     page.wait_for_url("**/guide.html*")
+                    expect(page.locator('link[rel="canonical"]')).to_have_attribute("href", "https://hkust-elpa.github.io/guide.html")
                     assert page.locator("#regularGuide").is_visible()
                     assert page.evaluate("document.querySelector('.elpa-nav') === window.__persistentShell")
                     page.reload(wait_until="load")

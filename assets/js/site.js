@@ -101,6 +101,7 @@ if (elpaActiveRoute) {
     main: document.getElementById('main'),
     bodyClass: document.body.className,
     title: document.title,
+    metadata: [...document.head.querySelectorAll('[data-page-metadata]')],
     description: document.querySelector('meta[name="description"]')?.content || '',
     scripts: [],
   });
@@ -118,6 +119,7 @@ async function elpaLoadRoute(url, route) {
     main,
     bodyClass: parsed.body.className,
     title: parsed.title,
+    metadata: [...parsed.head.querySelectorAll('[data-page-metadata]')],
     description: parsed.querySelector('meta[name="description"]')?.content || '',
     scripts: [...parsed.querySelectorAll('script[src]')]
       .map(tag => new URL(tag.getAttribute('src'), url.href).href)
@@ -169,6 +171,8 @@ async function elpaActivate(page, route, scroll) {
   document.getElementById('main').replaceWith(page.main);
   document.body.className = page.bodyClass;
   document.title = page.title;
+  document.head.querySelectorAll('[data-page-metadata]').forEach(tag => tag.remove());
+  document.head.append(...page.metadata.map(tag => tag.cloneNode(true)));
   const description = document.querySelector('meta[name="description"]');
   if (description) description.content = page.description;
   elpaSetCurrentNav(route);
